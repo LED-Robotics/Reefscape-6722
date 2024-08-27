@@ -1,0 +1,198 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.9,
+      "y": 4.029526143280197
+    },
+    "rotation": 120.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "TargetSpeaker"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "WaitAligned"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "OmegaDisable"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "toFarNote"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "DriveOff"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "GoTo180"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "HuntNote"
+                }
+              },
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "TargetSpeaker"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "farToSpeaker"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "WaitAligned"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "OmegaDisable"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "toFarNote2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "DriveOff"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "GoTo180"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "HuntNote"
+                }
+              },
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "TargetSpeaker"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "farToSpeaker"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "WaitAligned"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
