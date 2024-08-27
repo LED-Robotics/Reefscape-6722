@@ -15,24 +15,25 @@ using namespace frc;
 using namespace rev;
 using namespace pathplanner;
 
-DriveSubsystem::DriveSubsystem(LimelightSubsystem *reference, JetsonSubsystem *jetRef, int *targetRef, Orchestra *orcRef)
+DriveSubsystem::DriveSubsystem(int *targetRef, ctre::phoenix6::Orchestra *orcRef)
       //Wheel motors
-    : backLeft{kBackLeftPort, "canCan"},
-      frontLeft{kFrontLeftPort, "canCan"},
-      backRight{kBackRightPort, "canCan"},
-      frontRight{kFrontRightPort, "canCan"},
+    : backLeft{kBackLeftPort},
+      frontLeft{kFrontLeftPort},
+      backRight{kBackRightPort},
+      frontRight{kFrontRightPort},
+      trapOpener{21},
 
       //Degree of wheel motors
-      backLeftTheta{kBackLeftThetaPort, "canCan"},
-      frontLeftTheta{kFrontLeftThetaPort, "canCan"},
-      backRightTheta{kBackRightThetaPort, "canCan"},
-      frontRightTheta{kFrontRightThetaPort, "canCan"},
+      backLeftTheta{kBackLeftThetaPort},
+      frontLeftTheta{kFrontLeftThetaPort},
+      backRightTheta{kBackRightThetaPort},
+      frontRightTheta{kFrontRightThetaPort},
 
       //Mag encoder motor controllers
-      blCANCoder{kBackLeftEncoderPort, "canCan"},
-      flCANCoder{kFrontLeftEncoderPort, "canCan"},
-      brCANCoder{kBackRightEncoderPort, "canCan"},
-      frCANCoder{kFrontRightEncoderPort, "canCan"},
+      backLeftEncoder{kBackLeftEncoderPort},
+      frontLeftEncoder{kFrontLeftEncoderPort},
+      backRightEncoder{kBackRightEncoderPort},
+      frontRightEncoder{kFrontRightEncoderPort},
 
       //Swerve group motors
       s_backLeft{&backLeft, &backLeftTheta},
@@ -40,18 +41,18 @@ DriveSubsystem::DriveSubsystem(LimelightSubsystem *reference, JetsonSubsystem *j
       s_backRight{&backRight, &backRightTheta},
       s_frontRight{&frontRight, &frontRightTheta},
 
+
       //Gryo
-      gyro{0, "canCan"},
+      gyro{0},
 
       //Odometry
       odometry{kDriveKinematics, {GetRotation()}, {s_frontLeft.GetPosition(), s_frontRight.GetPosition(), s_backLeft.GetPosition(),
-      s_backRight.GetPosition()}, frc::Pose2d{{1.39_m, 4.11_m}, {180_deg}}},
+      s_backRight.GetPosition()}, frc::Pose2d{{1.3_m, 5.5_m}, {180_deg}}},
       
       xAccel{kDriveAccelerationLimit},
       yAccel{kDriveAccelerationLimit},
       xDecel{kDriveDecelerationLimit},
       yDecel{kDriveDecelerationLimit} {
-        // ResetEncoders();
         orca = orcRef;
         orca->AddInstrument(backLeft);
         orca->AddInstrument(frontLeft);
@@ -61,112 +62,82 @@ DriveSubsystem::DriveSubsystem(LimelightSubsystem *reference, JetsonSubsystem *j
         orca->AddInstrument(frontLeftTheta);
         orca->AddInstrument(backRightTheta);
         orca->AddInstrument(frontRightTheta);
-        limelight = reference;
-        jetson = jetRef;
+        std::cout << "Drive Constructor\n";
+        ResetEncoders();
+        ZeroSwervePosition();
+        SmartDashboard::PutBoolean("TrapThingy", trapRelease);
+        
 
         thetaTarget = targetRef;
 
-        configs::TalonFXConfiguration driveConfig{};
-        driveConfig.MotorOutput.Inverted = signals::InvertedValue::Clockwise_Positive;
-        driveConfig.Slot0.kP = kDriveP;
-        driveConfig.Slot0.kV = kDriveV;
-        driveConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kDriveRamp;
-        driveConfig.CurrentLimits.SupplyCurrentLimit = kDriveCurrentLimit;
-        driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        driveConfig.Audio.AllowMusicDurDisable = true;
-        
-        backLeft.GetConfigurator().Apply(driveConfig);
-        frontLeft.GetConfigurator().Apply(driveConfig);
-        backRight.GetConfigurator().Apply(driveConfig);
-        frontRight.GetConfigurator().Apply(driveConfig);
+        // backLeft.SetInverted(true);
+        // frontLeft.SetInverted(true);
+        // backRight.SetInverted(true);
+        // frontRight.SetInverted(true);
 
-        configs::TalonFXConfiguration turnConfig{};
-        turnConfig.MotorOutput.Inverted = signals::InvertedValue::Clockwise_Positive;
-        turnConfig.Slot0.kP = kTurnP;
-        turnConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
-        turnConfig.Feedback.RotorToSensorRatio = kTurnPRatio;
-        turnConfig.Feedback.SensorToMechanismRatio = 1.0;
-        turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
-        turnConfig.Audio.AllowMusicDurDisable = true;
-        turnConfig.MotorOutput.Inverted = true;
-
-        turnConfig.Feedback.FeedbackRemoteSensorID = kBackLeftEncoderPort;
-        backLeftTheta.GetConfigurator().Apply(turnConfig);
-        turnConfig.Feedback.FeedbackRemoteSensorID = kFrontLeftEncoderPort;
-        frontLeftTheta.GetConfigurator().Apply(turnConfig);
-        turnConfig.Feedback.FeedbackRemoteSensorID = kBackRightEncoderPort;
-        backRightTheta.GetConfigurator().Apply(turnConfig);
-        turnConfig.Feedback.FeedbackRemoteSensorID = kFrontRightEncoderPort;
-        frontRightTheta.GetConfigurator().Apply(turnConfig);
-
-        configs::CANcoderConfiguration encoderConfig{};
-        encoderConfig.MagnetSensor.AbsoluteSensorRange = signals::AbsoluteSensorRangeValue::Signed_PlusMinusHalf;
-        encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::Clockwise_Positive;
-
-        encoderConfig.MagnetSensor.MagnetOffset = kBLeftMagPos;
-        blCANCoder.GetConfigurator().Apply(encoderConfig);
-        encoderConfig.MagnetSensor.MagnetOffset = kFLeftMagPos;
-        flCANCoder.GetConfigurator().Apply(encoderConfig);
-        encoderConfig.MagnetSensor.MagnetOffset = kBRightMagPos;
-        brCANCoder.GetConfigurator().Apply(encoderConfig);
-        encoderConfig.MagnetSensor.MagnetOffset = kFRightMagPos;
-        frCANCoder.GetConfigurator().Apply(encoderConfig);
-
-        AutoBuilder::configureHolonomic(
-          [this](){ return GetPose(); }, // Robot pose supplier
-          [this](frc::Pose2d pose){ ResetOdometry(pose); }, // THIS SHIT WILL CHANGE Method to reset odometry (will be called if your auto has a starting pose)
-          [this](){ return kDriveKinematics.ToChassisSpeeds(GetModuleStates()); }, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-          [this](frc::ChassisSpeeds speeds){ Drive(speeds);}, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-          HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-              PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-              PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
-              AutoConstants::kMaxSpeed, // Max module speed, in m/s
-              DriveConstants::kDriveBaseRadius, // Drive base radius in meters. Distance from robot center to furthest module.
-              ReplanningConfig() // Default path replanning config. See the API for the options here
-          ),
-          []() {
-              // Boolean supplier that controls when the path will be mirrored for the red alliance
-              // This will flip the path being followed to the red side of the field.
-              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-              auto alliance = DriverStation::GetAlliance();
-              if (alliance) {
-                  return alliance.value() == DriverStation::Alliance::kRed;
-              }
-              return false;
-          },
-          this // Reference to this subsystem to set requirements
-        );
+        // backLeftTheta.SetInverted(true);
+        // frontLeftTheta.SetInverted(true);
+        // backRightTheta.SetInverted(true);
+        // frontRightTheta.SetInverted(true);
         
         SmartDashboard::PutNumber("Theta Target", 0.0);
         SmartDashboard::PutNumber("Angle Target", 0.0);
 
-        SmartDashboard::PutBoolean("Limelight Targeting", targetUsingLimelight);
-        SmartDashboard::PutNumber("offP", kPVelTurnOffset);
-        SmartDashboard::PutNumber("offD", kPVelDistOffset);
+        SmartDashboard::PutNumber("offP", kPVelOffset);
         SmartDashboard::PutNumber("turnP", kTxAdjust);
 
 
         // ResetEncoders();
         // ResetOdometry(frc::Pose2d{{0.0_m, 0.0_m}, {180_deg}});
         // ResetOdometry(frc::Pose2d{{0.0_m, 0.0_m}, {90_deg}});
+
+      // Configure the AutoBuilder last
+    AutoBuilder::configureHolonomic(
+        [this](){ return GetPose(); }, // Robot pose supplier
+        [this](frc::Pose2d pose){ ResetOdometry(pose); }, // THIS SHIT WILL CHANGE Method to reset odometry (will be called if your auto has a starting pose)
+        [this](){ return kDriveKinematics.ToChassisSpeeds(GetModuleStates()); }, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        [this](frc::ChassisSpeeds speeds){ Drive(speeds);}, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+        HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+            PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+            PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
+            AutoConstants::kMaxSpeed, // Max module speed, in m/s
+            DriveConstants::kDriveBaseRadius, // Drive base radius in meters. Distance from robot center to furthest module.
+            ReplanningConfig() // Default path replanning config. See the API for the options here
+        ),
+        []() {
+            // Boolean supplier that controls when the path will be mirrored for the red alliance
+            // This will flip the path being followed to the red side of the field.
+            // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+            auto alliance = DriverStation::GetAlliance();
+            if (alliance) {
+                return alliance.value() == DriverStation::Alliance::kRed;
+            }
+            return false;
+        },
+        this // Reference to this subsystem to set requirements
+    );
+
+
+        std::cout << "Drive Constructor End\n";
       }
 
 void DriveSubsystem::Periodic() {
   // Encoder Vals
-  // SmartDashboard::PutNumber("BL Abs", backLeftEncoder.GetAbsolutePosition());
-  // SmartDashboard::PutNumber("FL Abs", frontLeftEncoder.GetAbsolutePosition());
-  // SmartDashboard::PutNumber("BR Abs", backRightEncoder.GetAbsolutePosition());
-  // SmartDashboard::PutNumber("FR Abs", frontRightEncoder.GetAbsolutePosition());
-
+  SmartDashboard::PutNumber("BL Abs", backLeftEncoder.GetAbsolutePosition());
+  SmartDashboard::PutNumber("FL Abs", frontLeftEncoder.GetAbsolutePosition());
+  SmartDashboard::PutNumber("BR Abs", backRightEncoder.GetAbsolutePosition());
+  SmartDashboard::PutNumber("FR Abs", frontRightEncoder.GetAbsolutePosition());
+  trapRelease = SmartDashboard::GetBoolean("TrapThingy", trapRelease);
+  // trapOpener.Set(trapRelease);
+  trapRelease ? trapOpener.Set(1.0) : trapOpener.Set(0.0);
   // SmartDashboard::PutNumber("BL Pos", (double)s_backLeft.GetTurnEncoderAngle());
   // SmartDashboard::PutNumber("FL Pos", (double)s_frontLeft.GetTurnEncoderAngle());
   // SmartDashboard::PutNumber("BR Pos", (double)s_backRight.GetTurnEncoderAngle());
   // SmartDashboard::PutNumber("FR Pos", (double)s_frontRight.GetTurnEncoderAngle());
 
   // SetThetaToHold({units::angle::degree_t{SmartDashboard::GetNumber("Theta Target", 0.0)}});
-  SmartDashboard::PutBoolean("Omega Override State", omegaOverride);
-  targetUsingLimelight = SmartDashboard::GetBoolean("Limelight Targeting", targetUsingLimelight);
+  // SmartDashboard::PutBoolean("Omega Override State", omegaOverride);
 
   odometry.Update(GetRotation(),
                   {s_frontLeft.GetPosition(), s_frontRight.GetPosition(),
@@ -175,116 +146,52 @@ void DriveSubsystem::Periodic() {
   SmartDashboard::PutNumber("poseX", (double)pose.X());
   SmartDashboard::PutNumber("poseY", (double)pose.Y());
   SmartDashboard::PutNumber("poseAngle", (double)pose.Rotation().Degrees());
-  SmartDashboard::PutBoolean("isAtTarget", isAtTarget);
   // SmartDashboard::PutNumber("frontLeftVel", (double)s_frontLeft.GetState().speed);
   // SmartDashboard::PutNumber("frontRightVel", (double)s_frontRight.GetState().speed);
-  HandleTargeting();
+  // HandleTargeting();
 
 }
 
 void DriveSubsystem::HandleTargeting() {
   auto pose = odometry.GetPose();
-  bool tempTargetMet = false;
 
-  if(*thetaTarget == GlobalConstants::kArbitrary) {
-    limelight->SetPipeline(0);
-    double angle = pose.Rotation().Degrees().value();
-    angle = SwerveModule::PlaceInAppropriate0To360Scope(360.0, angle);
-    double target = SwerveModule::PlaceInAppropriate0To360Scope(angle, thetaHoldController.GetSetpoint());
-    SmartDashboard::PutNumber("curr angle", angle);
-    SmartDashboard::PutNumber("curr setpoint", target);
-    SmartDashboard::PutNumber("diff", target);
-    tempTargetMet = abs(angle - target) < kThetaDeadzone;
-  } else {
-    double distX = 0.0;
-    double distY = 0.0;
-    double theta = 0.0;
-    bool useGeometry = false || !targetUsingLimelight;  // fuck you Bobby (geometry if limelight out of range)
-    if(targetUsingLimelight) {
-      int selection = *thetaTarget;
-      if(selection == GlobalConstants::kNote) selection = GlobalConstants::kArbitrary;
-      if(limelight->GetPipeline() != selection) limelight->SetPipeline(selection);
-      if(limelight->IsTarget()) {
-        targetPos = limelight->GetTargetPos();
-        double temp = limelight->GetXOffset();
-        if(temp == tx) return;
-        else tx = temp;
-      } else {
-        useGeometry = true;
-      }
-      if(*thetaTarget == GlobalConstants::kStage) {
-        theta = pose.Rotation().RotateBy(units::degree_t{targetPos[4] * kAlignP}).Degrees().value();
-      } else {
-        double turnP = SmartDashboard::GetNumber("turnP", kTxAdjust);
-        theta = pose.Rotation().RotateBy(units::degree_t{-tx * turnP}).Degrees().value();
-        double thetaRadians = theta * (M_PI/180.0);
-        auto currentSpeeds = kDriveKinematics.ToChassisSpeeds(GetModuleStates());
-        double offS = SmartDashboard::GetNumber("offP", kPVelTurnOffset);
-        auto turnVx = currentSpeeds.vx * sin(thetaRadians);
-        auto turnVy = currentSpeeds.vy * cos(thetaRadians);
-        double counterOffset = (turnVx.value() + turnVy.value()) * offS;
-        counterOffset *= (kDistMultiplier / distFromTarget.value());
-        theta -= counterOffset;
-        double offD = SmartDashboard::GetNumber("offD", kPVelDistOffset);
-        distFromTarget = units::length::meter_t{targetPos[2] - 1.0};
-        auto driveVx = currentSpeeds.vx * cos(thetaRadians);
-        auto driveVy = currentSpeeds.vy * sin(thetaRadians);
-        distFromTarget += units::length::meter_t{(driveVx.value() + driveVy.value()) * offD};
-        tempTargetMet = abs(tx) < kThetaDeadzone;
-      }
-    } 
-    if(useGeometry) {
-      tempTargetMet = false;
-      // handle coordinate-system targeting
-      auto alliance = frc::DriverStation::GetAlliance();
-      frc::Translation2d targPose;
-      bool isBlue = alliance == frc::DriverStation::Alliance::kBlue;
-      switch(*thetaTarget) {
-        case GlobalConstants::kSpeaker:
-          targPose = isBlue ? 
-          GlobalConstants::kBlueSpeakerPose : GlobalConstants::kRedSpeakerPose;
-          distFromTarget = pose.Translation().Distance(targPose);
-          distX = targPose.X().value() - pose.Translation().X().value(); // targX - robotX
-          distY = targPose.Y().value() - pose.Translation().Y().value(); // targY - robotY
-          break;
-        case GlobalConstants::kAmp:
-          targPose = isBlue ? 
-          GlobalConstants::kBlueAmpPose : GlobalConstants::kRedAmpPose;
-          distFromTarget = pose.Translation().Distance(targPose);
-          distX = targPose.X().value() - pose.Translation().X().value();
-          distY = targPose.Y().value() - pose.Translation().Y().value();
-          break;
-        case GlobalConstants::kSource:
-          targPose = isBlue ? 
-          GlobalConstants::kBlueSourcePose : GlobalConstants::kRedSourcePose;
-          distFromTarget = pose.Translation().Distance(targPose);
-          distX = targPose.X().value() - pose.Translation().X().value();
-          distY = targPose.Y().value() - pose.Translation().Y().value();
-          break;
-      }
-      if(*thetaTarget != GlobalConstants::kArbitrary) {
-        theta = atan(distY/distX);
-        theta *= (180.0/M_PI); // target is valid if vector is in quadrant 1
-        if(distY > 0.0 && distX < 0.0) {
-          theta = 180.0 + theta;  // transform for quadrant 2
-        } else if(distY < 0.0 && distX < 0.0) {
-          theta = 180.0 + theta;  // transform for quadrant 3
-        } else if(distY < 0.0 && distX > 0.0) {
-          theta = 360.0 + theta;  // transform for quadrant 4
-        }
-        // if(DriverStation::GetAlliance() == DriverStation::Alliance::kBlue) {
-          // frc::Rotation2d rot{units::degree_t{theta}};
-          // theta = rot.RotateBy(180_deg).Degrees().value();
-        // }
-        SmartDashboard::PutNumber("TargetD", theta);
-      }
-    }
-    SmartDashboard::PutNumber("thetaTarget", theta);
-    SmartDashboard::PutNumber("Targ Distance", distFromTarget.value());
-    SetThetaToHold({units::degree_t{theta}});
+  SmartDashboard::PutNumber("Targ Distance", distFromTarget.value());
+  double distX = 0.0;
+  double distY = 0.0;
+  // handle coordinate-system targeting
+  switch(*thetaTarget) {
+    case GlobalConstants::kSpeaker:
+      distFromTarget = pose.Translation().Distance(GlobalConstants::kSpeakerPose);
+      distX = 0.0 - pose.Translation().X().value(); // targX - robotX
+      distY = 5.5 - pose.Translation().Y().value(); // targY - robotY
+      break;
+    case GlobalConstants::kAmp:
+      distFromTarget = pose.Translation().Distance(GlobalConstants::kAmpPose);
+
+      distX = 1.9 - pose.Translation().X().value();
+      distY = 8.15 - pose.Translation().Y().value();
+      break;
+    case GlobalConstants::kSource:
+      distFromTarget = pose.Translation().Distance(GlobalConstants::kSourcePose);
+      distX = 15.65 - pose.Translation().X().value();
+      distY = 0.54 - pose.Translation().Y().value();
+      break;
   }
-
-  isAtTarget = tempTargetMet;
+  double theta = 0.0;
+  if(*thetaTarget != GlobalConstants::kArbitrary) {
+    theta = atan(distY/distX);
+    theta *= (180.0/M_PI); // target is valid if vector is in quadrant 1
+    if(distY > 0.0 && distX < 0.0) {
+      theta = 180.0 + theta;  // transform for quadrant 2
+    } else if(distY < 0.0 && distX < 0.0) {
+      theta = 180.0 + theta;  // transform for quadrant 3
+    } else if(distY < 0.0 && distX > 0.0) {
+      theta = 360.0 + theta;  // transform for quadrant 4
+    }
+    SmartDashboard::PutNumber("TargetD", theta);
+  }
+  SmartDashboard::PutNumber("thetaTarget", theta);
+  SetThetaToHold({units::degree_t{theta}});
 }
 
 void DriveSubsystem::Drive(frc::ChassisSpeeds speeds,
@@ -293,28 +200,10 @@ void DriveSubsystem::Drive(frc::ChassisSpeeds speeds,
   units::meters_per_second_t y = speeds.vy;
   units::angular_velocity::radians_per_second_t rot = speeds.omega;
   if(omegaOverride) {
-    if(*thetaTarget == GlobalConstants::kNote) {
-      if(jetson->IsTarget()) {
-        double tx = jetson->GetXOffset();
-        rot -= units::angular_velocity::degrees_per_second_t{tx * kPNote};
-      } else {
-        rot -= 0_deg_per_s;
-      }
-    }
-    else {
-      double angle = GetPose().Rotation().Degrees().value();
-      double target = SwerveModule::PlaceInAppropriate0To360Scope(thetaHoldController.GetSetpoint(), angle);
-      double val = thetaHoldController.Calculate(target);
-      rot = units::angular_velocity::radians_per_second_t{val};
-    }
-  }
-  if(yOverride) {
-    if(limelight->IsTarget()) {
-      double tx = limelight->GetXOffset();
-      x -= units::meters_per_second_t{tx * kPYTrans};
-    } else {
-      x *= 0.0;
-    }
+    double angle = GetPose().Rotation().Degrees().value();
+    double target = SwerveModule::PlaceInAppropriate0To360Scope(thetaHoldController.GetSetpoint(), angle);
+    double val = thetaHoldController.Calculate(target);
+    rot = units::angular_velocity::radians_per_second_t{val};
   }
   // arbitrary speed component adjustments
   x *= 1.0;
@@ -338,8 +227,7 @@ void DriveSubsystem::Drive(frc::ChassisSpeeds speeds,
   SmartDashboard::PutBoolean("fieldCentric", fieldRelative);
   auto states = kDriveKinematics.ToSwerveModuleStates(
     fieldRelative ? frc::ChassisSpeeds::FromFieldRelativeSpeeds(
-        x, y, rot, GetPose().Rotation()
-        .RotateBy(DriverStation::GetAlliance() == DriverStation::Alliance::kRed ? 180_deg : 0_deg))
+        x, y, rot, GetPose().Rotation())
       : frc::ChassisSpeeds{x, y, rot});
 
   if(!applyLimits) kDriveKinematics.DesaturateWheelSpeeds(&states, kDriveTranslationLimit);
@@ -350,15 +238,16 @@ void DriveSubsystem::Drive(frc::ChassisSpeeds speeds,
 void DriveSubsystem::SetModuleStates(
   wpi::array<frc::SwerveModuleState, 4> desiredStates, bool desaturate) {
   if(desaturate) kDriveKinematics.DesaturateWheelSpeeds(&desiredStates, kDriveTranslationLimit);
-  // SmartDashboard::PutNumber("FL Target Angle", (double)desiredStates[0].angle.Degrees());
+  SmartDashboard::PutNumber("FL Target Angle", (double)desiredStates[0].angle.Degrees());
     s_frontLeft.SetDesiredState(desiredStates[0]);
-  // SmartDashboard::PutNumber("FR Target Angle", (double)desiredStates[1].angle.Degrees());
+  SmartDashboard::PutNumber("FR Target Angle", (double)desiredStates[1].angle.Degrees());
     s_frontRight.SetDesiredState(desiredStates[1]);
-  // SmartDashboard::PutNumber("BL Target Angle", (double)desiredStates[2].angle.Degrees());
+  SmartDashboard::PutNumber("BL Target Angle", (double)desiredStates[2].angle.Degrees());
     s_backLeft.SetDesiredState(desiredStates[2]);
-  // SmartDashboard::PutNumber("BR Target Angle", (double)desiredStates[2].angle.Degrees());
+  SmartDashboard::PutNumber("BR Target Angle", (double)desiredStates[2].angle.Degrees());
     s_backRight.SetDesiredState(desiredStates[3]);
 }
+
 
 wpi::array<SwerveModuleState, 4> DriveSubsystem::GetModuleStates() const {
   return {s_frontLeft.GetState(), s_frontRight.GetState(), s_backLeft.GetState(), s_backRight.GetState()};
@@ -409,6 +298,21 @@ void DriveSubsystem::SetTurnPower(double power) {
   s_backRight.SetTurnPower(power);
 }
 
+void DriveSubsystem::ZeroSwervePosition() {
+  DutyCycleEncoder *absEncoders[4] = {&backLeftEncoder, &frontLeftEncoder, &backRightEncoder, &frontRightEncoder}; // mag encoder TalonSRX ref arr
+  hardware::TalonFX *turnMotors[4] = {&backLeftTheta, &frontLeftTheta, &backRightTheta, &frontRightTheta}; // motor ref arr
+  double poses[4] = {kBLeftMagPos, kFLeftMagPos, kBRightMagPos, kFRightMagPos}; // arr of correct swerve mag poses
+  // iterate through each swerve module and offset theta motors so that they match the absolute mag encoder positions
+  for(int i = 0; i < 4; i++) {
+    double pos = 0.0;
+    for(int j = 0; j < 200000; j++) {
+      pos = absEncoders[i]->GetAbsolutePosition();
+      if(pos != 0.0) break;
+    }
+    turnMotors[i]->SetPosition(units::angle::turn_t{poses[i] - pos});
+  }
+}
+
 void DriveSubsystem::ResetEncoders() {
   s_frontLeft.ResetEncoders();
   s_backLeft.ResetEncoders();
@@ -449,7 +353,7 @@ void DriveSubsystem::ResetOdometry(frc::Pose2d pose) {
   // s_backRight.ResetEncoders();
   // s_frontRight.ResetEncoders();
   odometry.ResetPosition(
-    GetRotation(),
+    GetPose().Rotation(),
     {s_frontLeft.GetPosition(), s_frontRight.GetPosition(),
     s_backLeft.GetPosition(), s_backRight.GetPosition()},
     pose);
@@ -460,15 +364,15 @@ void DriveSubsystem::SetLimiting(bool state) {
 }
 
 void DriveSubsystem::SetBrakeMode(bool state) {
-  signals::NeutralModeValue mode;
+  ctre::phoenix6::signals::NeutralModeValue mode;
   
   if(state) {
-    mode = signals::NeutralModeValue::Brake;
+    mode = ctre::phoenix6::signals::NeutralModeValue::Brake;
   }
   else {
-    mode = signals::NeutralModeValue::Coast;
+    mode = ctre::phoenix6::signals::NeutralModeValue::Coast;
   }
-  configs::MotorOutputConfigs updated;
+  ctre::phoenix6::configs::MotorOutputConfigs updated;
   updated.WithNeutralMode(mode);
 
   backLeft.GetConfigurator().Apply(updated, 50_ms);
@@ -494,14 +398,31 @@ frc::Pose2d DriveSubsystem::GetPoseToHold() {
   return poseToHold;
 }
 
-void DriveSubsystem::ResetFromLimelight() {
-  std::vector<double> pose = limelight->GetBotPos();
-  if(pose[0] == 0.0 && pose[1] == 0.0 && pose[5] == 0.0) return;
-  ResetOdometry({units::meter_t{pose[0]}, units::meter_t{pose[1]}, odometry.GetPose().Rotation()});
+void DriveSubsystem::StartHolding() {
+  // reset PID controllers
+  xHoldController.Reset();
+  yHoldController.Reset();
+  thetaHoldController.Reset();
+
+  // set PID setpoints to target components
+  xHoldController.SetSetpoint((double)poseToHold.X());
+  yHoldController.SetSetpoint((double)poseToHold.Y());
+  thetaHoldController.SetSetpoint((double)poseToHold.Rotation().Degrees());
+}
+
+frc::ChassisSpeeds DriveSubsystem::CalculateHolding() {
+  auto current = odometry.GetPose();  // current robot pose
+  double angle = (double)current.Rotation().Degrees();  // current robot angle
+  double currentAngle = SwerveModule::PlaceInAppropriate0To360Scope(thetaHoldController.GetSetpoint(), angle);  // angle with corrected range
+  // SmartDashboard::PutNumber("angleTarget", thetaHoldController.GetSetpoint());
+  // SmartDashboard::PutNumber("currentHoldAngle", currentAngle);
+  // return ChassisSpeeds needed to hold position correctly
+  return frc::ChassisSpeeds{units::meters_per_second_t{xHoldController.Calculate((double)current.X())}, 
+  units::meters_per_second_t{yHoldController.Calculate((double)current.Y())}, 
+  units::radians_per_second_t{thetaHoldController.Calculate(currentAngle)}};
 }
 
 void DriveSubsystem::SetThetaToHold(frc::Rotation2d target) {
-  isAtTarget = false;
   targetTheta = target;
   thetaHoldController.SetSetpoint(targetTheta.Degrees().value());
 }
@@ -512,23 +433,6 @@ bool DriveSubsystem::GetOmegaOverride(){
 
 void DriveSubsystem::SetOmegaOverride(bool state){
   omegaOverride = state;
-}
-
-bool DriveSubsystem::GetYOverride(){
-  return yOverride;
-}
-
-void DriveSubsystem::SetYOverride(bool state){
-  yOverride = state;
-}
-
-bool DriveSubsystem::IsAtTarget() {
-  // double angle = GetPose().Rotation().Degrees().value();
-  // double target = SwerveModule::PlaceInAppropriate0To360Scope(thetaHoldController.GetSetpoint(), angle);
-  // return angle > target - kThetaDeadzone / 2 && angle < target + kThetaDeadzone / 2;
-  // if(lastTarget != *thetaTarget) isAtTarget = false;
-  // lastTarget = *thetaTarget;
-  return isAtTarget;
 }
 
 units::length::meter_t DriveSubsystem::GetDistToTarget() {

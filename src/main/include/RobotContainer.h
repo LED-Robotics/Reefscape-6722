@@ -17,38 +17,22 @@
 #include <frc2/command/InstantCommand.h>
 #include <frc2/command/PIDCommand.h>
 #include <frc2/command/ParallelRaceGroup.h>
-#include <frc2/command/ParallelDeadlineGroup.h>
 #include <frc2/command/ParallelCommandGroup.h>
 #include <frc2/command/RunCommand.h>
 #include "units/angle.h"
 
 #include "Constants.h"
 #include "subsystems/DriveSubsystem.h"
-#include "subsystems/ShooterSubsystem.h"
-#include "subsystems/IntakeSubsystem.h"
-#include "subsystems/ArmSubsystem.h"
-#include "subsystems/ClimbSubsystem.h"
-#include "subsystems/TrapSubsystem.h"
-#include "subsystems/LimelightSubsystem.h"
-#include "subsystems/LEDSubsystem.h"
-#include "commands/IndexerSet.h"
-#include "commands/ArmSet.h"
-#include "commands/ClimbSet.h"
-#include "commands/TrapSet.h"
-#include "commands/AlignNote.h"
-#include "commands/HuntNote.h"
-#include "commands/TargetSpeaker.h"
-#include "commands/RotateToAngle.h"
-#include "commands/IntakeNote.h"
-#include "commands/TurnToNote.h"
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/WaitCommand.h>
-#include "iostream"
+#include <iostream>
+#include <stdlib.h>
+#include <cstring>
 #include "frc/motorcontrol/Spark.h"
-#include <pathplanner/lib/commands/PathPlannerAuto.h>
-#include <ctre/Phoenix.h>
 
 #include <pathplanner/lib/commands/FollowPathHolonomic.h>
+
+#include <pathplanner/lib/commands/PathPlannerAuto.h>
 
 
 /**
@@ -63,15 +47,12 @@ class RobotContainer {
  public:
   RobotContainer();
 
-  frc2::CommandPtr GetAutonomousCommand();
+  frc2::Command* GetAutonomousCommand();
+
   /**
    * Set the brake mode of most robot motors.
    */  
   void SetDriveBrakes(bool state);
-
-  void DisableTagTracking();
-
-  void EnableTagTracking();
   /**
    * Zero swerve drive.
    */  
@@ -85,11 +66,6 @@ class RobotContainer {
    */  
   void SetSlew(bool state);
 
-  void SetRecording(bool state);
-
-  void SetAutoIndex(bool state);
-
-
  private:
 
   // The driver's controller
@@ -97,40 +73,36 @@ class RobotContainer {
   // The partner controller
   frc2::CommandXboxController controller2{OIConstants::kCoDriverControllerPort};
 
+  //Blinkin LED controller
+  Spark blinkinLeftChassis{BlinkinConstants::kBlinkinLeftChassisPort};
+  Spark blinkinRightChassis{BlinkinConstants::kBlinkinRightChassisPort};
+  Spark blinkinLeftShooter{BlinkinConstants::kBlinkinLeftShooterPort};
+  Spark blinkinRightShooter{BlinkinConstants::kBlinkinRightShooterPort};
+
   int TrackingTarget = GlobalConstants::kArbitrary;
 
   // The robot's subsystems
 
   ctre::phoenix6::Orchestra orchestra;
 
-  ctre::phoenix::motorcontrol::can::WPI_VictorSPX trapOpener{21};
+  DriveSubsystem m_drive{&TrackingTarget, &orchestra};
 
-  LimelightSubsystem limelight{"limelight"};
-  
-  JetsonSubsystem jetson{};
+  // DriveSubsystem m_drive{&TrackingTarget};
 
-  DriveSubsystem m_drive{&limelight, &jetson, &TrackingTarget, &orchestra};
-
-  std::function<units::length::meter_t()> distToTarget{[this]() { 
-      return m_drive.GetDistToTarget();
-  }};
+  // std::function<units::length::meter_t()> distToTarget{[this]() { 
+  //     return m_drive.GetDistToTarget();
+  // }};
     
-  ShooterSubsystem shooter{distToTarget, &TrackingTarget, &orchestra};
+  // ShooterSubsystem shooter{distToTarget, &TrackingTarget, &orchestra};
 
-  ArmSubsystem arm{distToTarget, &TrackingTarget, &orchestra};
+  // ArmSubsystem arm{distToTarget, &TrackingTarget, &orchestra};
 
-  ClimbSubsystem climber{&orchestra};
+  // ClimbSubsystem climber{&arm, distToTarget, &TrackingTarget, &orchestra};
 
-  IntakeSubsystem intake{&shooter, &orchestra};
-
-  TrapSubsystem claw{&arm, &orchestra};
-
-  LEDSubsystem led{};
+  // IntakeSubsystem intake{&orchestra};
 
   // needs a ref to the arm so it can determine its angle relative to the floor
   // IntakeSubsystem intake{&arm};
-
-  // LimelightSubsystem armLimelight{"limelight-arm"};
 
   // robot offset relative to the field as it started
   // used for AprilTag odom updates
@@ -141,166 +113,48 @@ class RobotContainer {
 
   bool omegaOverride = false;
 
-  bool yOverride = false;
-
   bool validTag = false;
 
   bool tagOverrideDisable = false;
 
-  bool autoHuntEnabled = false;
-
-  bool autoIntakeEnabled = false;
-
-  bool climbed = false;
+  bool resetting = false;
 
   int currentTarget = 0;
 
-  int omegaTempDisabled = 0;
-
-  // update odom based on Limelight's AprilTag megabotpose estimation
-  frc2::SequentialCommandGroup updateOdometry{
+  frc2::SequentialCommandGroup zeroSwerve{frc2::SequentialCommandGroup(
     frc2::InstantCommand([this] {
-      if(!tagOverrideDisable) {
-        m_drive.ResetFromLimelight();
-      }
+      m_drive.ZeroSwervePosition();
     }, {}),
-    frc2::WaitCommand(5.0_s)
-  };
+    frc2::WaitCommand(0.125_s)
+  )};
 
-  frc2::InstantCommand climbPrepare{[this] {
-    TrackingTarget = GlobalConstants::kArbitrary;//April Tag stuff to target the stage
-    SmartDashboard::PutNumber("Arm Position", 30.0);
-    // SmartDashboard::PutNumber("Claw Position", 30.0);
-    SmartDashboard::PutNumber("Climb Position", ClimbConstants::kPreparePos);
-    arm.SetTargetAngle(30.0);
-    climber.SetTargetPosition(ClimbConstants::kPreparePos);
-    // claw.SetTargetAngle(30.0);
-    // claw.SetState(TrapConstants::kAngleMode);
-  }, {}};
 
-  frc2::InstantCommand climb{[this] {
-    TrackingTarget = GlobalConstants::kArbitrary;//April Tag stuff to target the stage
-    SmartDashboard::PutNumber("Arm Position", 30.0);
-    // SmartDashboard::PutNumber("Claw Position", 30.0);
-    SmartDashboard::PutNumber("Climb Position", ClimbConstants::kClimbedPos);
-    arm.SetTargetAngle(30.0);
-    climber.SetTargetPosition(ClimbConstants::kClimbedPos);
-    // claw.SetTargetAngle(30.0);
-    // claw.SetState(TrapConstants::kAngleMode);
-  }, {}};
 
-  // frc2::InstantCommand climbPrepare{[this] {
-  //   TrackingTarget = GlobalConstants::kArbitrary;//April Tag stuff to target the stage
-  //   SmartDashboard::PutNumber("Arm Position", 70.0);
-  //   SmartDashboard::PutNumber("Climb Position", 27.0);
-  //   // SmartDashboard::PutNumber("Claw Position", 30.0);
-  //   arm.SetTargetAngle(70.0);
-  //   climber.SetTargetPosition(27.0);
-  //   // claw.SetTargetAngle(30.0);
-  //   // claw.SetState(TrapConstants::kAngleMode);
+
+  // frc2::InstantCommand zeroSwerve{[this] {
+  //   m_drive.ZeroSwervePosition();
   // }, {}};
 
-  // Climb Command                                                                                                                                                                PINEAPPLE
-  // frc2::CommandPtr climb{frc2::SequentialCommandGroup(
-  //   frc2::InstantCommand([this] { 
-  //       TrackingTarget = GlobalConstants::kArbitrary;
-  //       // claw.SetState(TrapConstants::kAngleMode);
-  //     }, {}
-  //   ),
-  //   frc2::ParallelCommandGroup(
-  //     ClimbSet(158.0, &climber),
-  //     ArmSet(30.0, &arm)
-  //   ),
-  //   frc2::WaitCommand(0.5_s),
-  //   ArmSet(1.0, &arm),
-  //   frc2::WaitCommand(1.0_s),
-  //   ClimbSet(230.0, &climber),
-  //   frc2::WaitCommand(0.5_s),
-  //   ClimbSet(100.0, &climber)
-  //   // frc2::WaitCommand(1_s),
-  //   // frc2::ParallelCommandGroup(
-  //   //   ClimbSet(40.0, &climber),
-  //   //   ArmSet(78.0, &arm)
-  //   // )
-  //   ).ToPtr()//Fuck you tristan
-  // };
+  // frc2::InstantCommand climb{[this] {
+  //   TrackingTarget = GlobalConstants::kArbitrary;
+  //   SmartDashboard::PutNumber("Arm Position", 5.0);
+  //   SmartDashboard::PutNumber("Climb Position", 160.0);
+  //   arm.SetTargetAngle(5.0);
+  //   climber.SetTargetAngle(160.0);
+  // }, {}};
 
-  frc2::CommandPtr trapScore{frc2::SequentialCommandGroup(
-      frc2::InstantCommand([this] { 
-        trapOpener.Set(1.0);
-      }, {}),
-      frc2::WaitCommand(2.0_s),
-      frc2::InstantCommand([this] { 
-          trapOpener.Set(0.0);
-        }, {})
-    ).ToPtr()
-  };
-
-  frc2::CommandPtr autonOdomSet{frc2::InstantCommand ([this]{
-      m_drive.ResetOdometry(AutoConstants::kDefaultStartingPose);
-    },{&m_drive}
-  ).ToPtr()};
-
-  frc2::InstantCommand odomReset{[this]{
-      m_drive.ResetOdometry({7.5_m, 4.3_m, 180_deg});
-    },{}};
+  // Climb Command
 
 
 
-  // AutoNote Command
-  frc2::CommandPtr hunt{frc2::SequentialCommandGroup(
-      frc2::InstantCommand([this] { 
-          intake.SetState(IntakeConstants::kAutoMode);
-        }, {&intake}),
-      AlignNote(&m_drive, &jetson),
-      HuntNote(&m_drive, &intake, &jetson),
-      frc2::ParallelDeadlineGroup(
-        frc2::WaitCommand(0.7_s),
-        IntakeNote(&intake, &shooter)
-      )
-    ).ToPtr()
-  };
-
-  // TurnToNote noteFindLeft{220_deg_per_s, &m_drive, &jetson};
-  // TurnToNote noteFindRight{-220_deg_per_s, &m_drive, &jetson};
-
-  // I am a lazy hack
-  // AutoNote Command
-  frc2::CommandPtr autoHunt{frc2::SequentialCommandGroup(
-      frc2::InstantCommand([this] { 
-          intake.SetState(IntakeConstants::kAutoMode);
-        }, {&intake}),
-      AlignNote(&m_drive, &jetson),
-      HuntNote(&m_drive, &intake, &jetson)
-    ).ToPtr()
-  };
-
-  frc2::CommandPtr ensureIndexed{IntakeNote(&intake, &shooter)};
+  frc2::RepeatCommand reZeroSwerve{std::move(zeroSwerve)};
 
   // Command to repetitively call odom update
-  frc2::RepeatCommand repeatOdom{std::move(updateOdometry)};
   // frc2::RepeatCommand zeroSwerve{reZeroSwerve.toPtr()};
 
   // Trigger odom update on flag
-  frc2::Trigger odomTrigger{[this]() { return validTag && !tagOverrideDisable; }};
-
-  frc2::Trigger huntTrigger{[this]() { 
-      double x = abs(controller.GetLeftY());
-      double y = abs(controller.GetLeftX());
-      double theta = abs(controller.GetRightX());
-      bool driveInactive = x < DriveConstants::kDriveDeadzone;
-      driveInactive &=  y < DriveConstants::kDriveDeadzone;
-      driveInactive &=  theta < DriveConstants::kTurnDeadzone;
-      return autoHuntEnabled && jetson.IsTarget() && driveInactive && !shooter.IsNoteIndexed();
-      // hunt note is auto-hunting is enabled, we see a note, 
-      // the driver is not driving, and a note isn't in the shooter already
-    }
-  };
-
-  frc2::Trigger noteDetected{[this]() { 
-      return !shooter.IsNoteIndexed() && jetson.IsTarget() && jetson.GetTargetSize() > 0.03;
-    }
-  };
+  frc2::Trigger odomTrigger{[this]() { return validTag; }};
+  frc2::Trigger zeroTrigger{[this]() { return resetting; }};
 
   frc2::InstantCommand toggleOmegaOverride{[this] { 
       omegaOverride = !omegaOverride;
@@ -308,44 +162,26 @@ class RobotContainer {
     }, {}
   };
 
-  frc2::InstantCommand enableClimbOverride{[this] { 
-      m_drive.SetOmegaOverride(true);
-      m_drive.SetYOverride(true);
-    }, {}
-  };
+  frc2::CommandPtr autonOdomSet{frc2::InstantCommand ([this]{
+      m_drive.ResetOdometry(AutonConstants::kDefaultStartingPose);
+    },{}
+  ).ToPtr()};
 
-  frc2::InstantCommand disableClimbOverride{[this] { 
-      m_drive.SetOmegaOverride(omegaOverride);
-      m_drive.SetYOverride(yOverride);
-    }, {}
-  };
-
-  frc2::Trigger driverTurning{[this]() {
-      return abs(controller.GetRightX()) > DriveConstants::kTurnDeadzone && !controller2.GetAButton();
-    }
-  };
-
-  frc2::InstantCommand tempDisableOmega{[this] { 
-      omegaTempDisabled++;
-      m_drive.SetOmegaOverride(false);
-    }, {}
-  };
-
-  frc2::InstantCommand restoreOmega{[this] { 
-      omegaTempDisabled--;
-      if(omegaTempDisabled <= 0) {
-        omegaTempDisabled = 0;
-        m_drive.SetOmegaOverride(omegaOverride);
-      }
-    }, {}
-  };
+  frc2::CommandPtr testInstantCommand{frc2::SequentialCommandGroup(
+    frc2::InstantCommand([this]{
+        controller.SetRumble(GenericHID::RumbleType::kBothRumble, 1.0);
+      }, {}), 
+      frc2::WaitCommand(0.375_s),
+      frc2::InstantCommand([this]{
+        controller.SetRumble(GenericHID::RumbleType::kBothRumble, 0.0);
+      }, {})
+    ).ToPtr()};
 
   frc2::InstantCommand targetArbitrary{[this] { 
       TrackingTarget = GlobalConstants::kArbitrary;
     }, {}
   };
 
-  //Regular pointer shit
   frc2::InstantCommand targetSpeaker{[this] { 
       TrackingTarget = GlobalConstants::kSpeaker;
     }, {}
@@ -361,56 +197,138 @@ class RobotContainer {
     }, {}
   };
 
-  frc2::InstantCommand targetNote{[this] { 
-      TrackingTarget = GlobalConstants::kNote;
-    }, {}
-  };
-
-  frc2::InstantCommand targetStage{[this] { 
-      TrackingTarget = GlobalConstants::kStage;
-    }, {}
-  };
-
-  frc2::CommandPtr rotateTo180{RotateToAngle(&TrackingTarget, {180_deg}, &m_drive)};
-  frc2::CommandPtr rotateTo90{RotateToAngle(&TrackingTarget, {90_deg}, &m_drive)};
-  frc2::CommandPtr rotateToNeg90{RotateToAngle(&TrackingTarget, {-90_deg}, &m_drive)};
-  frc2::CommandPtr rotateToNeg70{RotateToAngle(&TrackingTarget, {-70_deg}, &m_drive)};
-  frc2::CommandPtr driveRotateToNeg70{RotateToAngle(&TrackingTarget, {-70_deg}, &m_drive)};
-  frc2::CommandPtr rotateTo82{RotateToAngle(&TrackingTarget, {82_deg}, &m_drive)};
-  frc2::CommandPtr rotateToNeg130{RotateToAngle(&TrackingTarget, {-130_deg}, &m_drive)};
-
-  //Unique pointer shit
-  frc2::CommandPtr autonSpeakerTarget{frc2::InstantCommand([this] { 
-        TrackingTarget = GlobalConstants::kSpeaker;
-        m_drive.SetOmegaOverride(true);
-      }, {}
-    ).ToPtr()
-  };
-
-  frc2::CommandPtr driveOff{frc2::InstantCommand([this] { 
-        m_drive.Drive({0_mps, 0_mps, 0_deg_per_s});
-      }, {&m_drive}
-    ).ToPtr()
-  };
-
-  frc2::CommandPtr autonTrackingDisable{frc2::InstantCommand([this] { 
-        TrackingTarget = GlobalConstants::kArbitrary;
-        m_drive.SetOmegaOverride(false);
-      }, {&m_drive}
-    ).ToPtr()
-  };
-
-  frc2::CommandPtr lineupSpeaker{TargetSpeaker(&TrackingTarget, &m_drive, &arm, &shooter, &limelight).ToPtr()};
-
-  frc::SendableChooser<const char*> musicalSelector;
-  
+  frc::SendableChooser<int> musicalSelector;
   frc2::InstantCommand orcaSelectNow{[this] {
-    orchestra.LoadMusic(musicalSelector.GetSelected());
+      int music_selected = musicalSelector.GetSelected();
+      switch (music_selected) {
+        case 1:
+          orchestra.LoadMusic("Maestro_Musical/cantina.chrp");
+          break;
+        case 2:
+          orchestra.LoadMusic("Maestro_Musical/CynthiaTheme3492922.chrp");
+          break;
+        case 3:
+          orchestra.LoadMusic("Maestro_Musical/Echo1547606.chrp");
+          break;
+        case 4:
+          orchestra.LoadMusic("Maestro_Musical/FNAF6_3735567.chrp");
+          break;
+        case 5:
+          orchestra.LoadMusic("Maestro_Musical/GustyGardenVGMUSIC.chrp");
+          break;
+        case 6:
+          orchestra.LoadMusic("Maestro_Musical/ImperialMarch2178760.chrp");
+          break;
+        case 7:
+          orchestra.LoadMusic("Maestro_Musical/Jevil3661983.chrp");
+          break;
+        case 8:
+          orchestra.LoadMusic("Maestro_Musical/MarbleHillVGMusic.chrp");
+          break;
+        case 9:
+          orchestra.LoadMusic("Maestro_Musical/OMORI86_3174948.chrp");
+          break;
+        case 10:
+          orchestra.LoadMusic("Maestro_Musical/ReconstructingScience2809779.chrp");
+          break;
+        case 11:
+          orchestra.LoadMusic("Maestro_Musical/TADC3699908.chrp");
+          break;
+        case 12:
+          orchestra.LoadMusic("Maestro_Musical/Viva1717136.chrp");
+          break;
+        case 13:
+          orchestra.LoadMusic("Maestro_Musical/BohemianRhapsodyFREEMIDI.chrp");
+          break;
+        case 14:
+          orchestra.LoadMusic("Maestro_Musical/BadApple3820096.chrp");
+          break;
+        case 15:
+          orchestra.LoadMusic("Maestro_Musical/FlyMoon3600404.chrp");
+          break;
+        case 16:
+          orchestra.LoadMusic("Maestro_Musical/DisassemblyRequired3252559.chrp");
+          break;
+        case 17:
+          orchestra.LoadMusic("Maestro_Musical/GreenHill3698170.chrp");
+          break;
+        case 18:
+          orchestra.LoadMusic("Maestro_Musical/KillerQueen3777783.chrp");
+          break;
+        case 19:
+          orchestra.LoadMusic("Maestro_Musical/Macarena2880456.chrp");
+          break;
+        case 20:
+          orchestra.LoadMusic("Maestro_Musical/MasterKohga3463326.chrp");
+          break;
+        case 21:
+          orchestra.LoadMusic("Maestro_Musical/Megalotrousle2155665.chrp");
+          break;
+        case 22:
+          orchestra.LoadMusic("Maestro_Musical/SlippingThroughMyFingersFREEMIDI.chrp");
+          break;
+        case 23:
+          orchestra.LoadMusic("Maestro_Musical/SMB3AirshipVGMusic.chrp");
+          break;
+        case 24:
+          orchestra.LoadMusic("Maestro_Musical/SongOfStorms3780744.chrp");
+          break;
+        case 25:
+          orchestra.LoadMusic("Maestro_Musical/StillStanding3696063.chrp");
+          break;
+        case 26:
+          orchestra.LoadMusic("Maestro_Musical/WaitOfWorld3312229.chrp");
+          break;
+        case 27:
+          orchestra.LoadMusic("Maestro_Musical/Asgore1633865.chrp");
+          break;
+        case 28:
+          orchestra.LoadMusic("Maestro_Musical/OMORI125_3448462.chrp");
+          break;
+        case 29:
+          orchestra.LoadMusic("Maestro_Musical/BeatIt3563264.chrp");
+          break;
+        case 30:
+          orchestra.LoadMusic("Maestro_Musical/BuddyHolly2294759.chrp");
+          break;
+        case 31:
+          orchestra.LoadMusic("Maestro_Musical/UNDERTALE85_3359661.chrp");
+          break;
+        case 32:
+          orchestra.LoadMusic("Maestro_Musical/LivinOnAPrayer2528149.chrp");
+          break;
+        case 33:
+          orchestra.LoadMusic("Maestro_Musical/LostWoods782496.chrp");
+          break;
+        case 34:
+          orchestra.LoadMusic("Maestro_Musical/Caribbean3586082.chrp");
+          break;
+        case 35:
+          orchestra.LoadMusic("Maestro_Musical/PokemonTrainerBattle3557578.chrp");
+          break;
+        case 36:
+          orchestra.LoadMusic("Maestro_Musical/Scary2774320.chrp");
+          break;
+        case 37:
+          orchestra.LoadMusic("Maestro_Musical/SM64_3585783.chrp");
+          break;
+        case 38:
+          orchestra.LoadMusic("Maestro_Musical/NeverGonna59740.chrp");
+          break;
+        case 39:
+          orchestra.LoadMusic("Maestro_Musical/RushEFanchen.chrp");
+          break;
+        case 40:
+          orchestra.LoadMusic("Maestro_Musical/StickBug.chrp");
+          break;
+        default:
+          orchestra.LoadMusic("Maestro_Musical/cantina.chrp");
+      }
     }, {}
   };
 
   bool orcaState = false;
-  frc2::InstantCommand orcaToggle{[this] { 
+  frc2::InstantCommand orcaToggle{[this] {
       orcaState = !orcaState;
       if(orcaState) {
         orchestra.Play();
@@ -425,33 +343,14 @@ class RobotContainer {
   //   IndexerSet(ShooterConstants::kIndexerKicking, &shooter),
   //   frc2::WaitCommand(0.5_s),
   //   frc2::InstantCommand([this] { 
-  //     shooter.OffsetIndexer(((int)ShooterConstants::kIndexerKicking));
+  //     shooter.OffsetIndexer(-3.0);
   //   }, {}),
   //   IndexerSet(ShooterConstants::kIndexerHolding, &shooter)
   //   ).ToPtr()
   // };
 
-  frc2::SequentialCommandGroup shootNote{
-    IndexerSet(ShooterConstants::kIndexerKicking, &shooter),
-    frc2::WaitCommand(0.5_s),
-    frc2::InstantCommand([this] { 
-      shooter.OffsetIndexer(((int)ShooterConstants::kIndexerKicking));
-    }, {}),
-    IndexerSet(ShooterConstants::kIndexerHolding, &shooter)
-  };
-
-  frc2::CommandPtr autonShoot{frc2::SequentialCommandGroup(
-    IndexerSet(ShooterConstants::kIndexerKicking, &shooter),
-    frc2::WaitCommand(0.5_s),
-    frc2::InstantCommand([this] { 
-      shooter.OffsetIndexer(((int)ShooterConstants::kIndexerKicking));
-    }, {}),
-    IndexerSet(ShooterConstants::kIndexerHolding, &shooter)
-    ).ToPtr()
-  };
-
-  frc2::CommandPtr indexResting{IndexerSet(ShooterConstants::kIndexerResting, &shooter).ToPtr()};
-  frc2::CommandPtr indexPrimed{IndexerSet(ShooterConstants::kIndexerPrimed, &shooter).ToPtr()};
+  // frc2::CommandPtr indexResting{IndexerSet(ShooterConstants::kIndexerResting, &shooter).ToPtr()};
+  // frc2::CommandPtr indexPrimed{IndexerSet(ShooterConstants::kIndexerPrimed, &shooter).ToPtr()};
 
   // Triggers for main and partner D-PAD positions
 
@@ -477,6 +376,20 @@ class RobotContainer {
 
   frc2::InstantCommand rumbleSecondaryOff{[this] { controller2.SetRumble(GenericHID::kBothRumble, 0.0); },
                                         {}};
+  
+
+  // LED control Commands
+  frc2::InstantCommand SetBlinkinAButton{[this] {
+    blinkinLeftChassis.Set(.41); /*End to End; Color 1 (Purple) and Color 2 (Yellow)*/ },
+                                        {}};
+
+  frc2::InstantCommand SetBlinkinLeftBumper{[this] {
+    blinkinLeftChassis.Set(.07); /*Fast Heartbeat; Color 1 (Purple)*/ },
+                                        {}};
+
+  frc2::InstantCommand SetBlinkinRightBumper{[this] {
+    blinkinLeftChassis.Set(.27); /*Fast Heartbeat; Color 2 (Yellow)*/; },
+                                        {}};
   /**
    * Find whether the robot is on the blue or red alliance as set by the FMS/DriverStation.
    *
@@ -496,11 +409,10 @@ class RobotContainer {
    */
   frc2::Command* GetEmptyCommand();
 
-  // frc2::CommandPtr testAuto{pathplanner::PathPlannerAuto("TestAuto").ToPtr()};
-  // frc2::CommandPtr threeNoteAuto{pathplanner::PathPlannerAuto("ThreeNoteAuto").ToPtr()};
-
   // The chooser for the autonomous routines
-  frc::SendableChooser<std::string> autonChooser;
-  // frc::SendableChooser<frc2::Command*> autonChooser;
-  frc2::Command* currentAuton;
+
+  frc2::CommandPtr testAuto{pathplanner::PathPlannerAuto("ActualAuto")};
+
+  frc::SendableChooser<frc2::Command*> autonChooser;
+
 };

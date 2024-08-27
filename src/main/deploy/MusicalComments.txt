@@ -1,40 +1,41 @@
-"|01) Cantina",                      "Maestro_Musical/cantina.chrp"
-"|02) Cynthia's Theme",              "Maestro_Musical/CynthiaTheme3492922.chrp"
-"|03) Echo",                         "Maestro_Musical/Echo1547606.chrp"
-"|04) FNAF6 Broken Windows",         "Maestro_Musical/FNAF6_3735567.chrp"
-"|05) Gusty Garden",                 "Maestro_Musical/GustyGardenVGMUSIC.chrp"
-"|06) Imperial March",               "Maestro_Musical/ImperialMarch2178760.chrp"
-"|07) The World Revolving",          "Maestro_Musical/Jevil3661983.chrp"
-"|08) Marble Hill Zone",             "Maestro_Musical/MarbleHillVGMusic.chrp"
-"|09) World's End Valentine",        "Maestro_Musical/OMORI86_3174948.chrp"
-"|10) Reconstructing Science",       "Maestro_Musical/ReconstructingScience2809779.chrp"
-"|11) The Amazing Digital Circus",   "Maestro_Musical/TADC3699908.chrp"
-"|12) Viva La Vida",                 "Maestro_Musical/Viva1717136.chrp"
-"|13) BohemianRhapsodyFREEMIDI",     "Maestro_Musical/BohemianRhapsodyFREEMIDI.chrp"
-"|14) Bad Apple",                    "Maestro_Musical/BadApple3820096.chrp"
-"|15) Fly Me to the Moon",           "Maestro_Musical/FlyMoon3600404.chrp"
-"|16) DisassemblyRequired3252559",   "Maestro_Musical/DisassemblyRequired3252559.chrp"
-"|17) Green Hill Zone",              "Maestro_Musical/GreenHill3698170.chrp"
-"|18) Attack of the Killer Queen",   "Maestro_Musical/KillerQueen3777783.chrp"
-"|19) Macarena",                     "Maestro_Musical/Macarena2880456.chrp"
-"|20) Master Kohga",                 "Maestro_Musical/MasterKohga3463326.chrp"
-"|21) Megalotrousle",                "Maestro_Musical/Megalotrousle2155665.chrp"
-"|22) Slipping Through My Fingers",  "Maestro_Musical/SlippingThroughMyFingersFREEMIDI.chrp"
-"|23) Airship Battle Theme",         "Maestro_Musical/SMB3AirshipVGMusic.chrp"
-"|24) Song of Storms",               "Maestro_Musical/SongOfStorms3780744.chrp"
-"|25) I'm Still Standing",           "Maestro_Musical/StillStanding3696063.chrp"
-"|26) Wait of the World",            "Maestro_Musical/WaitOfWorld3312229.chrp"
-"|27) Asgore",                       "Maestro_Musical/Asgore1633865.chrp"
-"|28) Bready Steady Go",             "Maestro_Musical/OMORI125_3448462.chrp"
-"|29) Beat It",                      "Maestro_Musical/BeatIt3563264.chrp"
-"|30) Buddy Holly",                  "Maestro_Musical/BuddyHolly2294759.chrp"
-"|31) Fallen Down",                  "Maestro_Musical/UNDERTALE85_3359661.chrp"
-"|32) Livin' On A Prayer",           "Maestro_Musical/LivinOnAPrayer2528149.chrp"
-"|33) Lost Woods",                   "Maestro_Musical/LostWoods782496.chrp"
-"|34) Pirates of the Carribean",     "Maestro_Musical/Caribbean3586082.chrp"
-"|35) Pokemon Trainer Battle",       "Maestro_Musical/PokemonTrainerBattle3557578.chrp"
-"|36) Scary Option",                 "Maestro_Musical/Scary2774320.chrp"
-"|37) Super Mario 64",               "Maestro_Musical/SM64_3585783.chrp"
-"|38) Roll",                         "Maestro_Musical/NeverGonna59740.chrp"
-"|39) Rush E",                       "Maestro_Musical/RushEFanchen.chrp"
-"|40) Bugger",                       "Maestro_Musical/StickBug.chrp"
+          orchestra.LoadMusic("Maestro_Musical/cantina.chrp");
+          orchestra.LoadMusic("Maestro_Musical/CynthiaTheme3492922.chrp");
+          orchestra.LoadMusic("Maestro_Musical/Echo1547606.chrp");
+          orchestra.LoadMusic("Maestro_Musical/FNAF6_3735567.chrp");
+          orchestra.LoadMusic("Maestro_Musical/GustyGardenVGMUSIC.chrp");
+          orchestra.LoadMusic("Maestro_Musical/ImperialMarch2178760.chrp");
+          orchestra.LoadMusic("Maestro_Musical/Jevil3661983.chrp");
+          orchestra.LoadMusic("Maestro_Musical/MarbleHillVGMusic.chrp");
+          orchestra.LoadMusic("Maestro_Musical/OMORI86_3174948.chrp");
+          orchestra.LoadMusic("Maestro_Musical/ReconstructingScience2809779.chrp");
+          orchestra.LoadMusic("Maestro_Musical/TADC3699908.chrp");
+          orchestra.LoadMusic("Maestro_Musical/Viva1717136.chrp");
+          orchestra.LoadMusic("Maestro_Musical/BohemianRhapsodyFREEMIDI.chrp");
+          orchestra.LoadMusic("Maestro_Musical/BadApple3820096.chrp");
+          orchestra.LoadMusic("Maestro_Musical/FlyMoon3600404.chrp");
+          orchestra.LoadMusic("Maestro_Musical/DisassemblyRequired3252559.chrp");
+          orchestra.LoadMusic("Maestro_Musical/GreenHill3698170.chrp");
+          orchestra.LoadMusic("Maestro_Musical/KillerQueen3777783.chrp");
+          orchestra.LoadMusic("Maestro_Musical/Macarena2880456.chrp");
+          orchestra.LoadMusic("Maestro_Musical/MasterKohga3463326.chrp");
+          orchestra.LoadMusic("Maestro_Musical/Megalotrousle2155665.chrp");
+          orchestra.LoadMusic("Maestro_Musical/SlippingThroughMyFingersFREEMIDI.chrp");
+          orchestra.LoadMusic("Maestro_Musical/SMB3AirshipVGMusic.chrp");
+          orchestra.LoadMusic("Maestro_Musical/SongOfStorms3780744.chrp");
+          orchestra.LoadMusic("Maestro_Musical/StillStanding3696063.chrp");
+          orchestra.LoadMusic("Maestro_Musical/WaitOfWorld3312229.chrp");
+          orchestra.LoadMusic("Maestro_Musical/Asgore1633865.chrp");
+          orchestra.LoadMusic("Maestro_Musical/OMORI125_3448462.chrp");
+          orchestra.LoadMusic("Maestro_Musical/BeatIt3563264.chrp");
+          orchestra.LoadMusic("Maestro_Musical/BuddyHolly2294759.chrp");
+          orchestra.LoadMusic("Maestro_Musical/UNDERTALE85_3359661.chrp");
+          orchestra.LoadMusic("Maestro_Musical/LivinOnAPrayer2528149.chrp");
+          orchestra.LoadMusic("Maestro_Musical/LostWoods782496.chrp");
+          orchestra.LoadMusic("Maestro_Musical/Caribbean3586082.chrp");
+          orchestra.LoadMusic("Maestro_Musical/PokemonTrainerBattle3557578.chrp");
+          orchestra.LoadMusic("Maestro_Musical/Scary2774320.chrp");
+          orchestra.LoadMusic("Maestro_Musical/SM64_3585783.chrp");
+          orchestra.LoadMusic("Maestro_Musical/NeverGonna59740.chrp");
+          orchestra.LoadMusic("Maestro_Musical/RushEFanchen.chrp");
+          orchestra.LoadMusic("Maestro_Musical/StickBug.chrp");
+          orchestra.LoadMusic("Maestro_Musical/DisassemblyRequired2801260.chrp");

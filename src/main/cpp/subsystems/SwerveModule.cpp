@@ -9,18 +9,9 @@
 
 #include <frc/geometry/Rotation2d.h>
 
-SwerveModule::SwerveModule(hardware::TalonFX *drivingMotor,
-                            hardware::TalonFX *turningMotor) {
+SwerveModule::SwerveModule(hardware::TalonFX *drivingMotor, hardware::TalonFX *turningMotor) {
     driveMotor = drivingMotor;
     falconTurn = turningMotor;
-}
-
-SwerveModule::SwerveModule(hardware::TalonFX *drivingMotor, rev::CANSparkMax *turningMotor, 
-        DutyCycleEncoder *thetaEncoder) {
-    usingFalcon = false;
-    driveMotor = drivingMotor;
-    neoTurn = turningMotor;
-    neoEncoder = thetaEncoder;
 }
 
 double SwerveModule::GetFalconTurnPosition() const {
@@ -28,16 +19,8 @@ double SwerveModule::GetFalconTurnPosition() const {
     return (-falconTurn->GetPosition().GetValueAsDouble()) * 360.0;
 }
 
-double SwerveModule::GetNeoTurnPosition() const {
-    return (double)neoEncoder->Get() * DriveConstants::kTurnEncoderDegreesPerPulse;
-}
-
 void SwerveModule::SetFalconTurnPower(double power) {
     falconTurn->Set(power);
-}
-
-void SwerveModule::SetNeoTurnPower(double power) {
-    neoTurn->Set(power);
 }
 
 units::meter_t SwerveModule::GetDriveEncoderDistance() const {
@@ -45,7 +28,7 @@ units::meter_t SwerveModule::GetDriveEncoderDistance() const {
 }
 
 units::degree_t SwerveModule::GetTurnEncoderAngle() const {
-    return units::degree_t{usingFalcon ? GetFalconTurnPosition() : GetNeoTurnPosition()};
+    return units::degree_t{GetFalconTurnPosition()};
 }
 
 units::meters_per_second_t SwerveModule::GetDriveEncoderRate() const {
@@ -106,31 +89,15 @@ void SwerveModule::SetDesiredState(
     // Optimize the reference state to avoid spinning further than 90 degrees*
     const auto state = Optimize(referenceState, {GetTurnEncoderAngle()});
     
-    if(usingFalcon) {
 
-        // double target = ((double)state.angle.Degrees() / kTurnEncoderDegreesPerPulse) / kTurnRatio;
-        double target = ((double)state.angle.Degrees() / kTurnEncoderDegreesPerPulse);
-        frc::SmartDashboard::PutNumber("Target", target);
-        falconTurn->SetControl(rotation
-        .WithPosition(units::angle::turn_t{-target})
+    // double target = ((double)state.angle.Degrees() / kTurnEncoderDegreesPerPulse) / kTurnRatio;
+    double target = ((double)state.angle.Degrees() / kTurnEncoderDegreesPerPulse);
+    frc::SmartDashboard::PutNumber("Target", target);
+    falconTurn->SetControl(rotation.WithPosition(units::angle::turn_t{-target}));
+
+    driveMotor->SetControl(velocity.WithVelocity(
+        units::angular_velocity::turns_per_second_t{((double)state.speed) / kDriveDistancePerRev})
         .WithEnableFOC(true));
-    } else {
-        neoController.SetSetpoint((double)state.angle.Degrees());
-    }
-
-    driveMotor->SetControl(velocity
-    .WithVelocity(units::angular_velocity::turns_per_second_t{((double)state.speed) / kDriveDistancePerRev})
-    .WithEnableFOC(true));
-}
-
-void SwerveModule::RunPID() {
-    if(usingFalcon) return;
-    double angle = (double)GetTurnEncoderAngle();
-    double power = neoController.Calculate(angle);
-    // frc::SmartDashboard::PutNumber("FL Angle", angle);
-    // frc::SmartDashboard::PutNumber("FL Power", power);
-
-    neoTurn->Set(power);
 }
 
 // debug
@@ -139,12 +106,10 @@ void SwerveModule::SetDrivePower(double power) {
 }
 
 void SwerveModule::SetTurnPower(double power) {
-    if(usingFalcon) SetFalconTurnPower(power);
-    else SetNeoTurnPower(power);
+    SetFalconTurnPower(power);
 }
 
 void SwerveModule::ResetEncoders() {
-    driveMotor->SetPosition(units::angle::turn_t{0.0});
-    if(usingFalcon) falconTurn->SetPosition(units::angle::turn_t{0.0});
-    else neoEncoder->Reset();
+    // driveMotor->SetPosition(units::angle::turn_t{0.0});
+    // falconTurn->SetPosition(units::angle::turn_t{0.0});
 }

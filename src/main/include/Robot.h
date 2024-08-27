@@ -24,7 +24,10 @@ class Robot : public frc::TimedRobot {
   void TestPeriodic() override;
 
  private:
-  std::optional<frc2::CommandPtr> m_autonomousCommand;
+  // Have it null by default so that if testing teleop it
+  // doesn't have undefined behavior and potentially crash.
 
   RobotContainer m_container;
+  frc2::Command* m_autonomousCommand;
+
 };

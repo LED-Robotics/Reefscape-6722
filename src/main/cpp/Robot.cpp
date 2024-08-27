@@ -36,54 +36,43 @@ void Robot::DisabledInit() {
   m_container.SetDriveBrakes(false);
 }
 
-void Robot::DisabledPeriodic() {
-  m_container.SetRecording(false);
-}
+void Robot::DisabledPeriodic() {}
 
 /**
  * This autonomous runs the autonomous command selected by your
  * RobotContainer class.
  */
 void Robot::AutonomousInit() {
-  m_container.DisableTagTracking();   // auton uses odom relative to start, not based on AprilTags
   m_autonomousCommand = m_container.GetAutonomousCommand();
-  m_container.SetDriveBrakes(true);
-  m_container.SetSlew(false);
-  m_container.SetAutoIndex(true);
-  if(DriverStation::IsFMSAttached()) {
-    m_container.SetRecording(true);
-  }
-  if(m_autonomousCommand) {
+  
+  if(m_autonomousCommand != nullptr) {
+    m_container.SetDriveBrakes(true);
+    m_container.SetSlew(false);
     m_autonomousCommand->Schedule();
   }
-  // frc2::CommandScheduler::GetInstance().Schedule(m_autonomousCommand);
-  // frc2::CommandScheduler::GetInstance().Schedule(m_autonomousCommand.get());
-  // m_autonomousCommand->Schedule();
 }
 
-void Robot::AutonomousPeriodic() {}
+void Robot::AutonomousPeriodic() {
+  // if(tristan==stupid){
+  //   tristan=bababooey;
+  // }
+}
 
 void Robot::TeleopInit() {
-  m_container.EnableTagTracking();  // station auto-align uses AprilTag tracking 
   m_container.SetDriveBrakes(true);
   m_container.SetSlew(true);
-  m_container.SetAutoIndex(true);
-  if(DriverStation::IsFMSAttached()) {
-    m_container.SetRecording(true);
-  }
   // This makes sure that the autonomous stops running when
   // teleop starts running.
-  if (m_autonomousCommand) {
-    m_autonomousCommand->Cancel();
-  }
+  // if (m_autonomousCommand != nullptr) {
+  //   m_autonomousCommand->Cancel();
+  //   m_autonomousCommand = nullptr;
+  // }
 }
 
 /**
  * This function is called periodically during operator control.
  */
-void Robot::TeleopPeriodic() {
-  // std::cout << "Pulse" << '\n';
-}
+void Robot::TeleopPeriodic() {}
 
 /**
  * This function is called periodically during test mode.

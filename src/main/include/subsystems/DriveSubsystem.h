@@ -18,16 +18,13 @@
 #include <frc/filter/SlewRateLimiter.h>
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/Pigeon2.hpp>
-#include <ctre/phoenix6/CANcoder.hpp>
-
+#include <ctre/Phoenix.h>
 
 #include <frc/DriverStation.h>
 #include <pathplanner/lib/commands/FollowPathHolonomic.h>
 
 #include "Constants.h"
 #include "SwerveModule.h"
-#include "subsystems/LimelightSubsystem.h"
-#include "subsystems/JetsonSubsystem.h"
 
 using namespace frc;
 using namespace ctre::phoenix6;
@@ -36,7 +33,7 @@ using namespace DriveConstants;
 
 class DriveSubsystem : public frc2::SubsystemBase {
  public:
-  DriveSubsystem(LimelightSubsystem *reference, JetsonSubsystem *jetRef, int *targetRef, Orchestra *orcRef);
+  DriveSubsystem(int *targetRef, ctre::phoenix6::Orchestra *orcRef);
 
     /**
    * Will be called periodically whenever the CommandScheduler runs.
@@ -93,10 +90,20 @@ class DriveSubsystem : public frc2::SubsystemBase {
    */
   void SetDrivePower(double power);
 
+    /**
+   * Sets the solenoid MotorControllers to a power from 0 to 1.
+   */
+  void SetTrapOpenPower(double power);
+
   /**
    * Sets the theta MotorControllers to a power from -1 to 1.
    */
   void SetTurnPower(double power);
+
+  /**
+   * Reset theta motor encoders to match the respective mag encoder value.
+   */
+  void ZeroSwervePosition();
 
   /**
    * Returns the degrees of the robot.
@@ -176,7 +183,10 @@ class DriveSubsystem : public frc2::SubsystemBase {
    */
   frc::Pose2d GetPoseToHold();
 
-  void ResetFromLimelight();
+  /**
+   * Configure DriveSubsystem to hold at the current target Pose2d.
+   */
+  void StartHolding();
 
   // for vision
   
@@ -195,19 +205,9 @@ class DriveSubsystem : public frc2::SubsystemBase {
    */
   void SetOmegaOverride(bool state);
 
-  /**
-   * Get whether Y override is enabled.
-   */
-  bool GetYOverride();
-  
-  /**
-   * Set whether Y override is enabled.
-   */
-  void SetYOverride(bool state);
-
-  bool IsAtTarget();
-
   units::length::meter_t GetDistToTarget();
+
+  frc::ChassisSpeeds CalculateHolding();
 
   // Positions of the SwerveModules relative to the center of the robot.
   // X+ is towards the front of the bot, Y+ is towards the left of the robot.
@@ -226,8 +226,6 @@ class DriveSubsystem : public frc2::SubsystemBase {
 
   //shooter hack
   bool shooting = false;
-  LimelightSubsystem *limelight;
-  JetsonSubsystem *jetson;
   double targetAngle;
   double difference;
   double angle;
@@ -236,17 +234,15 @@ class DriveSubsystem : public frc2::SubsystemBase {
   int *thetaTarget;
 
   bool omegaOverride = false;
-  bool yOverride = false;
-  bool targetUsingLimelight = true;
-  bool isAtTarget = false;
   frc::Rotation2d targetTheta{0.0_deg};
   std::vector<double> targetPos{6};
   double tx = 0.0;
  
   frc::Pose2d poseToHold{}; // var to contain target pose
-  // PID controllers for turn holding
-  frc::PIDController thetaHoldController{0.13, 0.0, 0.0};
-  int lastTarget = GlobalConstants::kArbitrary;
+  // PID controllers for position holding
+  frc::PIDController xHoldController{2.5, 0.0, 0.0};
+  frc::PIDController yHoldController{2.5, 0.0, 0.0};
+  frc::PIDController thetaHoldController{0.07, 0.0, 0.0};
 
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
@@ -258,17 +254,19 @@ class DriveSubsystem : public frc2::SubsystemBase {
   hardware::TalonFX backRight;
   hardware::TalonFX frontRight;
 
+  ctre::phoenix::motorcontrol::can::WPI_VictorSPX trapOpener;
+
   //Degree of wheel motors
   hardware::TalonFX backLeftTheta;
   hardware::TalonFX frontLeftTheta;
   hardware::TalonFX backRightTheta;
   hardware::TalonFX frontRightTheta;
 
-  //Degree of wheel motors
-  hardware::CANcoder blCANCoder;
-  hardware::CANcoder flCANCoder;
-  hardware::CANcoder brCANCoder;
-  hardware::CANcoder frCANCoder;
+  //Mag encoder absolute signal
+  DutyCycleEncoder backLeftEncoder;
+  DutyCycleEncoder frontLeftEncoder;
+  DutyCycleEncoder backRightEncoder;
+  DutyCycleEncoder frontRightEncoder;
 
   //Swerve motor groups
   SwerveModule s_backLeft;
@@ -289,9 +287,8 @@ class DriveSubsystem : public frc2::SubsystemBase {
   SlewRateLimiter<units::meters_per_second> yDecel;
   double lastX = 0.0;
   double lastY = 0.0;
+  bool trapRelease = false;
 
-  int distSample = 0;
-  double distArray[kDistSamples];
   units::length::meter_t distFromTarget{0.0_m};
-  Orchestra *orca;
+  ctre::phoenix6::Orchestra *orca;
 };

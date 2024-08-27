@@ -94,6 +94,5 @@
     "variant": "cpp",
     "xiosbase": "cpp"
   },
-  "C_Cpp.errorSquiggles": "disabled",
-  "wpilib.autoStartRioLog": false
+  "C_Cpp.errorSquiggles": "disabled"
 }

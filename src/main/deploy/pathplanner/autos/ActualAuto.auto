@@ -1,0 +1,55 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Odom Reset"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "StageNote"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "TestInstantCommand"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Source-To-Mid Note"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "TestInstantCommand"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "MId-To-Stage Note"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "TestInstantCommand"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

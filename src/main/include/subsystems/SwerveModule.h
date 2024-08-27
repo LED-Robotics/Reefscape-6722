@@ -11,7 +11,6 @@
 #include <frc/kinematics/SwerveModulePosition.h>
 #include <frc/kinematics/SwerveModuleState.h>
 #include <frc/DutyCycleEncoder.h>
-#include <rev/CANSparkMax.h>
 #include <units/angular_velocity.h>
 #include <units/acceleration.h>
 #include <units/angle.h>
@@ -24,15 +23,10 @@
 
 using namespace frc;
 using namespace ctre::phoenix6;
-using namespace rev;
 using namespace DriveConstants;
-
 class SwerveModule {
     public:
         SwerveModule(hardware::TalonFX *drivingMotor, hardware::TalonFX *turningMotor);
-        
-        SwerveModule(hardware::TalonFX *drivingMotor, CANSparkMax *turningMotor, 
-        DutyCycleEncoder *thetaEncoder);
         /**
          * Gets the distance of the drive encoder.
          *
@@ -82,10 +76,6 @@ class SwerveModule {
          */
         void SetDesiredState(const frc::SwerveModuleState& state);
         /**
-         * Run one cycle of theta PID Controller. This should be run repeatedly while operational.
-         */
-        void RunPID();
-        /**
          * Debug function to set swerve drive motor using power.
          */
         void SetDrivePower(double power);
@@ -101,20 +91,15 @@ class SwerveModule {
     private:
 
         double GetFalconTurnPosition() const; 
-        double GetNeoTurnPosition() const; 
 
         void SetFalconTurnPower(double power); 
-        void SetNeoTurnPower(double power); 
 
         // motor references
-        bool usingFalcon = true;
         hardware::TalonFX *driveMotor;
         hardware::TalonFX *falconTurn;
         controls::VelocityVoltage velocity{0_tps};
         controls::PositionVoltage rotation{0_tr};
 
-        CANSparkMax *neoTurn;
-        DutyCycleEncoder *neoEncoder;
         // frc2::PIDController neoController{0.005, 0.0, 0.0}; off floor
         frc::PIDController neoController{0.007, 0.0, 0.0};
 };
