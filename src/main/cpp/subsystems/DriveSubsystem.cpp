@@ -15,7 +15,7 @@ using namespace frc;
 using namespace rev;
 using namespace pathplanner;
 
-DriveSubsystem::DriveSubsystem(int *targetRef, ctre::phoenix6::Orchestra *orcRef)
+DriveSubsystem::DriveSubsystem()
       //Wheel motors
     : backLeft{kBackLeftPort},
       frontLeft{kFrontLeftPort},
@@ -53,22 +53,10 @@ DriveSubsystem::DriveSubsystem(int *targetRef, ctre::phoenix6::Orchestra *orcRef
       yAccel{kDriveAccelerationLimit},
       xDecel{kDriveDecelerationLimit},
       yDecel{kDriveDecelerationLimit} {
-        orca = orcRef;
-        orca->AddInstrument(backLeft);
-        orca->AddInstrument(frontLeft);
-        orca->AddInstrument(backRight);
-        orca->AddInstrument(frontRight);
-        orca->AddInstrument(backLeftTheta);
-        orca->AddInstrument(frontLeftTheta);
-        orca->AddInstrument(backRightTheta);
-        orca->AddInstrument(frontRightTheta);
         std::cout << "Drive Constructor\n";
         ResetEncoders();
         ZeroSwervePosition();
         SmartDashboard::PutBoolean("TrapThingy", trapRelease);
-        
-
-        thetaTarget = targetRef;
 
         // backLeft.SetInverted(true);
         // frontLeft.SetInverted(true);

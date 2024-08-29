@@ -43,51 +43,7 @@ RobotContainer::RobotContainer() {
 
   autonChooser.AddOption("Test1", testAuto.get());
 
-
   frc::SmartDashboard::PutBoolean("detectorOverride", tagOverrideDisable); // flashes green to tell drivers odom has been updated
-
-  musicalSelector.SetDefaultOption("|01) Cantina",1);
-  musicalSelector.AddOption("|01) Cantina",1);
-  musicalSelector.AddOption("|02) Cynthia's Theme",2);
-  musicalSelector.AddOption("|03) Echo",3);
-  musicalSelector.AddOption("|04) FNAF6 Broken Windows",4);
-  musicalSelector.AddOption("|05) Gusty Garden",5);
-  musicalSelector.AddOption("|06) Imperial March",6);
-  musicalSelector.AddOption("|07) The World Revolving",7);
-  musicalSelector.AddOption("|08) Marble Hill Zone",8);
-  musicalSelector.AddOption("|09) World's End Valentine",9);
-  musicalSelector.AddOption("|10) Reconstructing Science",10);
-  musicalSelector.AddOption("|11) The Amazing Digital Circus",11);
-  musicalSelector.AddOption("|12) Viva La Vida",12);
-  musicalSelector.AddOption("|13) BohemianRhapsodyFREEMIDI",13);
-  musicalSelector.AddOption("|14) Bad Apple",14);
-  musicalSelector.AddOption("|15) Fly Me to the Moon",15);
-  musicalSelector.AddOption("|16) DisassemblyRequired3252559",16);
-  musicalSelector.AddOption("|17) Green Hill Zone",17);
-  musicalSelector.AddOption("|18) Attack of the Killer Queen",18);
-  musicalSelector.AddOption("|19) Macarena",19);
-  musicalSelector.AddOption("|20) Master Kohga",20);
-  musicalSelector.AddOption("|21) Megalotrousle",21);
-  musicalSelector.AddOption("|22) Slipping Through My Fingers",22);
-  musicalSelector.AddOption("|23) Airship Battle Theme",23);
-  musicalSelector.AddOption("|24) Song of Storms",24);
-  musicalSelector.AddOption("|25) I'm Still Standing",25);
-  musicalSelector.AddOption("|26) Wait of the World",26);
-  musicalSelector.AddOption("|27) Asgore",27);
-  musicalSelector.AddOption("|28) Bready Steady Go",28);
-  musicalSelector.AddOption("|29) Beat It",29);
-  musicalSelector.AddOption("|30) Buddy Holly",30);
-  musicalSelector.AddOption("|31) Fallen Down",31);
-  musicalSelector.AddOption("|32) Livin' On A Prayer",32);
-  musicalSelector.AddOption("|33) Lost Woods",33);
-  musicalSelector.AddOption("|34) Pirates of the Carribean",34);
-  musicalSelector.AddOption("|35) Pokemon Trainer Battle",35);
-  musicalSelector.AddOption("|36) Scary Option",36);
-  musicalSelector.AddOption("|37) Super Mario 64",37);
-  musicalSelector.AddOption("|38) Roll",38);
-  musicalSelector.AddOption("|39) Rush E",39);
-  musicalSelector.AddOption("|40) Bugger",40);
-  frc::SmartDashboard::PutData("Chosen Song", &musicalSelector);
 
   // Autonomous selector configuration
   // SmartDashboard::PutData(&musicalSelector); // musical selector to shuffleboard
@@ -113,8 +69,6 @@ RobotContainer::RobotContainer() {
   // controller.Start().OnTrue(std::move(indexPrimed));
 
   mainDpadLeft.OnTrue(&targetArbitrary);
-  controller.LeftStick().OnTrue(&orcaSelectNow);
-  controller.RightStick().OnTrue(&orcaToggle);
   // mainDpadUp.OnTrue(&targetSpeaker);
   // mainDpadRight.OnTrue(&targetAmp);
   // mainDpadDown.OnTrue(&targetSource);
