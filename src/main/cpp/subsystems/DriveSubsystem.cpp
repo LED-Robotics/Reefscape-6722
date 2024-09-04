@@ -47,7 +47,7 @@ DriveSubsystem::DriveSubsystem()
 
       //Odometry
       odometry{kDriveKinematics, {GetRotation()}, {s_frontLeft.GetPosition(), s_frontRight.GetPosition(), s_backLeft.GetPosition(),
-      s_backRight.GetPosition()}, frc::Pose2d{{1.3_m, 5.5_m}, {180_deg}}},
+      s_backRight.GetPosition()}, frc::Pose2d{{4.964_m, 6.402_m}, {0_deg}}},
       
       xAccel{kDriveAccelerationLimit},
       yAccel{kDriveAccelerationLimit},
@@ -57,6 +57,7 @@ DriveSubsystem::DriveSubsystem()
         ResetEncoders();
         ZeroSwervePosition();
         SmartDashboard::PutBoolean("TrapThingy", trapRelease);
+
 
         // backLeft.SetInverted(true);
         // frontLeft.SetInverted(true);
@@ -76,6 +77,7 @@ DriveSubsystem::DriveSubsystem()
 
 
         // ResetEncoders();
+        ResetOdometry(frc::Pose2d{{2.93455_m, 6.99768_m}, {0_deg}});
         // ResetOdometry(frc::Pose2d{{0.0_m, 0.0_m}, {180_deg}});
         // ResetOdometry(frc::Pose2d{{0.0_m, 0.0_m}, {90_deg}});
 

@@ -17,6 +17,12 @@
 #include <frc2/command/button/JoystickButton.h>
 
 #include "pathplanner/lib/auto/NamedCommands.h"
+#include <pathplanner/lib/path/PathPlannerPath.h>
+
+using namespace pathplanner;
+
+// Load a Choreo trajectory as a PathPlannerPath
+// PathPlannerPath exampleChoreoTraj = PathPlannerPath::fromChoreoTrajectory("Example Choreo Traj");
 
 #include "Constants.h"
 
@@ -40,8 +46,10 @@ frc2::Command* RobotContainer::GetEmptyCommand() {
 }
 
 RobotContainer::RobotContainer() {
-
   autonChooser.AddOption("Test1", testAuto.get());
+  
+// Load a Choreo trajectory as a PathPlannerPath
+  // auto exampleChoreoTraj = PathPlannerPath::fromChoreoTrajectory("Slur");
 
   frc::SmartDashboard::PutBoolean("detectorOverride", tagOverrideDisable); // flashes green to tell drivers odom has been updated
 
@@ -63,7 +71,7 @@ RobotContainer::RobotContainer() {
   // controller.B().ToggleOnTrue(m_drive.FollowPathCommand(pathplanner::PathPlannerPath::fromPathFile("testPath2Rawr")));
   // controller.A().ToggleOnTrue(m_drive.FollowPathCommand(pathplanner::PathPlannerPath::fromPathFile("testPath2Rawr")));
   // controller.X().ToggleOnTrue(m_drive.FollowPathCommand(pathplanner::PathPlannerPath::fromPathFile("turn")));
-  // controller.X().ToggleOnTrue(m_drive.FollowPathCommand(pathplanner::PathPlannerPath::fromPathFile("coolPath")));
+  controller.X().ToggleOnTrue(m_drive.FollowPathCommand(PathPlannerPath::fromChoreoTrajectory("Slur")));
 
 
   // controller.Start().OnTrue(std::move(indexPrimed));
