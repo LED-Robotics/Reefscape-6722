@@ -52,7 +52,7 @@ RobotContainer::RobotContainer() {
   // auto exampleChoreoTraj = PathPlannerPath::fromChoreoTrajectory("Slur");
 
   frc::SmartDashboard::PutBoolean("detectorOverride", tagOverrideDisable); // flashes green to tell drivers odom has been updated
-
+  // frc::SmartDashboard::PutData("Field", &m_field);
   // Autonomous selector configuration
   // SmartDashboard::PutData(&musicalSelector); // musical selector to shuffleboard
 
@@ -72,8 +72,7 @@ RobotContainer::RobotContainer() {
   // controller.A().ToggleOnTrue(m_drive.FollowPathCommand(pathplanner::PathPlannerPath::fromPathFile("testPath2Rawr")));
   // controller.X().ToggleOnTrue(m_drive.FollowPathCommand(pathplanner::PathPlannerPath::fromPathFile("turn")));
   controller.X().ToggleOnTrue(m_drive.FollowPathCommand(PathPlannerPath::fromChoreoTrajectory("Slur")));
-
-
+  // controller.A().ToggleOnTrue(m_drive.PathFindingCommand("Slur", constraints));
   // controller.Start().OnTrue(std::move(indexPrimed));
 
   mainDpadLeft.OnTrue(&targetArbitrary);

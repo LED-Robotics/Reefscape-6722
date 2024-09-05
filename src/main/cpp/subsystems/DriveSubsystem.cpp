@@ -9,7 +9,6 @@
 #include <frc/geometry/Rotation2d.h>
 #include <frc/smartdashboard/Field2d.h>
 #include <frc/smartdashboard/SmartDashboard.h>
-#include <pathplanner/lib/auto/AutoBuilder.h>
 
 using namespace frc;
 using namespace rev;
@@ -107,8 +106,6 @@ DriveSubsystem::DriveSubsystem()
         },
         this // Reference to this subsystem to set requirements
     );
-
-
         std::cout << "Drive Constructor End\n";
       }
 
@@ -272,6 +269,18 @@ frc2::CommandPtr  DriveSubsystem::FollowPathCommand(std::shared_ptr<pathplanner:
     ).ToPtr();
 }
 
+frc2::CommandPtr DriveSubsystem::PathFindingCommand(std::string pathName, pathplanner::PathConstraints PFConstraints) {
+  auto pathSmartPtr = pathplanner::PathPlannerPath::fromChoreoTrajectory(pathName);
+  auto pathPtr = pathSmartPtr.get();
+  auto path = *pathPtr;
+  std::vector<frc::Pose2d> pathPoints = path.getPathPoses();
+  auto targetPose = pathPoints[(pathPoints.size() - 1)];
+  return AutoBuilder::pathfindToPose(
+    targetPose,
+    PFConstraints
+  );
+}
+
 void DriveSubsystem::SetDrivePower(double power) {
   // std::cout << "Power: " << power << '\n';
   // std::cout << "Velocity: " << backLeft.GetSelectedSensorVelocity() << '\n';
@@ -287,6 +296,8 @@ void DriveSubsystem::SetTurnPower(double power) {
   s_backLeft.SetTurnPower(power);
   s_backRight.SetTurnPower(power);
 }
+
+
 
 void DriveSubsystem::ZeroSwervePosition() {
   DutyCycleEncoder *absEncoders[4] = {&backLeftEncoder, &frontLeftEncoder, &backRightEncoder, &frontRightEncoder}; // mag encoder TalonSRX ref arr

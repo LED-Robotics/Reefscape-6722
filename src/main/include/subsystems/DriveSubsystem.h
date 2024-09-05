@@ -22,6 +22,8 @@
 
 #include <frc/DriverStation.h>
 #include <pathplanner/lib/commands/FollowPathHolonomic.h>
+#include <pathplanner/lib/auto/AutoBuilder.h>
+#include <pathplanner/lib/path/PathConstraints.h>
 
 #include "Constants.h"
 #include "SwerveModule.h"
@@ -83,7 +85,16 @@ class DriveSubsystem : public frc2::SubsystemBase {
    * Generates a command to follow the path passed in.
    */
   frc2::CommandPtr FollowPathCommand(std::shared_ptr<pathplanner::PathPlannerPath> path);
+  
+  /**
+   * Old
+   */
   frc2::CommandPtr Aimbot();
+
+  /**
+   * Generates a command to generate a path to the endpoint of the path passed in.
+   */
+  frc2::CommandPtr PathFindingCommand(std::string pathName, pathplanner::PathConstraints PFConstraints);
 
   /**
    * Sets the drive MotorControllers to a power from -1 to 1.
@@ -243,6 +254,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
   frc::PIDController xHoldController{2.5, 0.0, 0.0};
   frc::PIDController yHoldController{2.5, 0.0, 0.0};
   frc::PIDController thetaHoldController{0.07, 0.0, 0.0};
+
 
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.

@@ -7,9 +7,10 @@
 #include <frc/XboxController.h>
 #include <frc2/command/button/CommandXboxController.h>
 #include <frc/controller/PIDController.h>
+#include <frc/smartdashboard/Field2d.h>
+#include <frc/smartdashboard/FieldObject2d.h>
 #include <frc/DriverStation.h>
 #include <frc2/command/button/Trigger.h>
-#include <frc/smartdashboard/Field2d.h>
 #include <frc/smartdashboard/SendableChooser.h>
 #include <frc2/command/Commands.h>
 #include <frc2/command/Command.h>
@@ -31,8 +32,9 @@
 #include "frc/motorcontrol/Spark.h"
 
 #include <pathplanner/lib/commands/FollowPathHolonomic.h>
-
 #include <pathplanner/lib/commands/PathPlannerAuto.h>
+#include "pathplanner/lib/auto/NamedCommands.h"
+#include <pathplanner/lib/path/PathPlannerPath.h>
 
 
 /**
@@ -233,6 +235,12 @@ class RobotContainer {
   // The chooser for the autonomous routines
 
   frc2::CommandPtr testAuto{pathplanner::PathPlannerAuto("ActualAuto")};
+
+  frc::Field2d m_field;
+
+  // pathplanner::PathConstraints constraints = pathplanner::PathConstraints(
+  //     3.0_mps, 4.0_mps_sq,
+  //     540_deg_per_s, 720_deg_per_s);
 
   frc::SendableChooser<frc2::Command*> autonChooser;
 
