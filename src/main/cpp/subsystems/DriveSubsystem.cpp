@@ -20,7 +20,6 @@ DriveSubsystem::DriveSubsystem()
       frontLeft{kFrontLeftPort},
       backRight{kBackRightPort},
       frontRight{kFrontRightPort},
-      trapOpener{21},
 
       //Degree of wheel motors
       backLeftTheta{kBackLeftThetaPort},
@@ -76,6 +75,7 @@ DriveSubsystem::DriveSubsystem()
 
 
         // ResetEncoders();
+        ZeroHeading();
         ResetOdometry(frc::Pose2d{{2.93455_m, 6.99768_m}, {0_deg}});
         // ResetOdometry(frc::Pose2d{{0.0_m, 0.0_m}, {180_deg}});
         // ResetOdometry(frc::Pose2d{{0.0_m, 0.0_m}, {90_deg}});
@@ -115,9 +115,6 @@ void DriveSubsystem::Periodic() {
   SmartDashboard::PutNumber("FL Abs", frontLeftEncoder.GetAbsolutePosition());
   SmartDashboard::PutNumber("BR Abs", backRightEncoder.GetAbsolutePosition());
   SmartDashboard::PutNumber("FR Abs", frontRightEncoder.GetAbsolutePosition());
-  trapRelease = SmartDashboard::GetBoolean("TrapThingy", trapRelease);
-  // trapOpener.Set(trapRelease);
-  trapRelease ? trapOpener.Set(1.0) : trapOpener.Set(0.0);
   // SmartDashboard::PutNumber("BL Pos", (double)s_backLeft.GetTurnEncoderAngle());
   // SmartDashboard::PutNumber("FL Pos", (double)s_frontLeft.GetTurnEncoderAngle());
   // SmartDashboard::PutNumber("BR Pos", (double)s_backRight.GetTurnEncoderAngle());
@@ -269,7 +266,7 @@ frc2::CommandPtr  DriveSubsystem::FollowPathCommand(std::shared_ptr<pathplanner:
     ).ToPtr();
 }
 
-frc2::CommandPtr DriveSubsystem::PathFindingCommand(std::string pathName, pathplanner::PathConstraints PFConstraints) {
+frc2::CommandPtr DriveSubsystem::PathFindingCommand(std::string pathName) {
   auto pathSmartPtr = pathplanner::PathPlannerPath::fromChoreoTrajectory(pathName);
   auto pathPtr = pathSmartPtr.get();
   auto path = *pathPtr;

@@ -94,7 +94,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
   /**
    * Generates a command to generate a path to the endpoint of the path passed in.
    */
-  frc2::CommandPtr PathFindingCommand(std::string pathName, pathplanner::PathConstraints PFConstraints);
+  frc2::CommandPtr PathFindingCommand(std::string pathName);
 
   /**
    * Sets the drive MotorControllers to a power from -1 to 1.
@@ -255,6 +255,10 @@ class DriveSubsystem : public frc2::SubsystemBase {
   frc::PIDController yHoldController{2.5, 0.0, 0.0};
   frc::PIDController thetaHoldController{0.07, 0.0, 0.0};
 
+  pathplanner::PathConstraints PFConstraints = pathplanner::PathConstraints(AutoConstants::kMaxSpeed, 
+  AutoConstants::kMaxAcceleration, 
+  AutoConstants::kAngularSpeed, 
+  AutoConstants::kMaxAngularAcceleration);
 
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
@@ -265,8 +269,6 @@ class DriveSubsystem : public frc2::SubsystemBase {
   hardware::TalonFX frontLeft;
   hardware::TalonFX backRight;
   hardware::TalonFX frontRight;
-
-  ctre::phoenix::motorcontrol::can::WPI_VictorSPX trapOpener;
 
   //Degree of wheel motors
   hardware::TalonFX backLeftTheta;
@@ -303,4 +305,5 @@ class DriveSubsystem : public frc2::SubsystemBase {
 
   units::length::meter_t distFromTarget{0.0_m};
   ctre::phoenix6::Orchestra *orca;
+  
 };

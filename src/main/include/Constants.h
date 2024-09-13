@@ -19,6 +19,7 @@
 #include <frc2/command/ProfiledPIDSubsystem.h>
 #include <ctre/phoenix6/Orchestra.hpp>
 #include <units/angle.h>
+#include <pathplanner/lib/path/PathConstraints.h>
 
 
 #pragma once
@@ -31,6 +32,8 @@
  * command-specific namespaces within this header, which can then be used where
  * they are needed.
  */
+
+
 
 namespace GlobalConstants {
     // Subsystem Target States
@@ -77,7 +80,7 @@ namespace DriveConstants {
     
     // info for odometry
     constexpr int kEncoderResolution = 4096;
-    constexpr double kWheelRadius = .0508;
+    constexpr double kWheelRadius = .0495;
     constexpr double kDriveReduction = 0.9075;
     constexpr double kDriveRatio = 1 / 4.125 * kDriveReduction;
     constexpr double kTurnRatio = 1 / 13.37141;
@@ -113,14 +116,15 @@ namespace DriveConstants {
 
 namespace AutoConstants {
         // for PID/pathfinding
-        constexpr auto kMaxSpeed = 4.5_mps;
-        constexpr auto kMaxAcceleration = 2_mps_sq;
-        constexpr auto kAngularSpeed = 180_deg_per_s;
-        constexpr auto kMaxAngularAcceleration = 180_deg_per_s_sq;
+        constexpr auto kMaxSpeed = 5.457_mps;
+        constexpr auto kMaxAcceleration = 11.191_mps_sq;
+        constexpr auto kAngularSpeed = 688_deg_per_s;
+        constexpr auto kMaxAngularAcceleration = 1198.51_deg_per_s_sq;
 
         constexpr double kPXController = 0.4;
         constexpr double kPYController = 0.4;
         constexpr double kPThetaController = 0.0;
+	
 } 
 
 namespace OIConstants {
