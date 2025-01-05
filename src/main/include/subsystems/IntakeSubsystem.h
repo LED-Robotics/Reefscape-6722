@@ -7,7 +7,11 @@
 #include <frc/motorcontrol/PWMSparkMax.h>
 #include <frc2/command/SubsystemBase.h>
 #include <ctre/phoenix6/TalonFX.hpp>
+<<<<<<< Updated upstream
 #include <rev/CANSparkMax.h>
+=======
+#include <rev/SparkMax.h>
+>>>>>>> Stashed changes
 #include <iostream>
 
 #include "subsystems/ShooterSubsystem.h"

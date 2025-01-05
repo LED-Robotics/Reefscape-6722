@@ -6,7 +6,13 @@
 
 #include <frc2/command/SubsystemBase.h>
 #include <ctre/phoenix6/TalonFX.hpp>
+<<<<<<< Updated upstream
 #include <rev/CANSparkMax.h>
+=======
+#include <rev/SparkMax.h>
+#include <rev/SparkLowLevel.h>
+#include <rev/config/SparkMaxConfig.h>
+>>>>>>> Stashed changes
 #include "ColorSensor.h"
 #include <frc/I2C.h>
 #include <frc/DigitalInput.h>
@@ -16,7 +22,11 @@
 
 using namespace frc;
 using namespace ctre::phoenix6;
+<<<<<<< Updated upstream
 using namespace rev;
+=======
+using namespace rev::spark;
+>>>>>>> Stashed changes
 
 class ShooterSubsystem : public frc2::SubsystemBase {
  public:
@@ -133,18 +143,25 @@ class ShooterSubsystem : public frc2::SubsystemBase {
   // declared private and exposed only through public methods.
 
   // The motor controllers
+<<<<<<< Updated upstream
   // WPI_TalonSRX left;
   hardware::TalonFX left;
   // WPI_TalonSRX right;
   hardware::TalonFX right;
 
   // hardware::TalonFX indexer;
+=======
+  hardware::TalonFX left;
+  hardware::TalonFX right;
+  SparkMax indexer;
+>>>>>>> Stashed changes
 
   std::function<units::length::meter_t()> getTargetDistance;
 
   int lastColorVal = 5000;
   int lastIndexedAt = 5000;
   bool isNoteIndexed = false;
+<<<<<<< Updated upstream
 
   CANSparkMax indexer;
   SparkPIDController indexerController;
@@ -152,6 +169,14 @@ class ShooterSubsystem : public frc2::SubsystemBase {
 
   controls::VelocityVoltage ctreVelocity{0_tps};
   // controls::PositionVoltage ctrePosition{0_tr};
+=======
+  
+  SparkMaxConfig indexerConfig{};
+  // SparkClosedLoopController indexerController;
+  // SparkRelativeEncoder indexerEncoder;
+
+  controls::VelocityVoltage ctreVelocity{0_tps};
+>>>>>>> Stashed changes
 
   ColorSensor color;
   DigitalInput shooterBeamBreakReceiver;

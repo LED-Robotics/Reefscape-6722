@@ -1,7 +1,11 @@
 #pragma once
 
 #include "Constants.h"
+<<<<<<< Updated upstream
 #include <frc2/command/CommandBase.h>
+=======
+#include <frc2/command/Command.h>
+>>>>>>> Stashed changes
 #include <frc2/command/CommandHelper.h>
 
 #include "subsystems/ClimbSubsystem.h"

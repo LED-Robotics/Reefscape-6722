@@ -1,25 +1,38 @@
 {
-    "fileName": "REVLib.json",
+    "fileName": "REVLib-2025.0.0-beta-3.json",
     "name": "REVLib",
+<<<<<<< Updated upstream:vendordeps/REVLib.json
     "version": "2024.2.0",
     "frcYear": "2024",
+=======
+    "version": "2025.0.0-beta-3",
+    "frcYear": "2025",
+>>>>>>> Stashed changes:vendordeps/REVLib-2025.0.0-beta-3.json
     "uuid": "3f48eb8c-50fe-43a6-9cb7-44c86353c4cb",
     "mavenUrls": [
         "https://maven.revrobotics.com/"
     ],
-    "jsonUrl": "https://software-metadata.revrobotics.com/REVLib-2024.json",
+    "jsonUrl": "https://software-metadata.revrobotics.com/REVLib-2025.json",
     "javaDependencies": [
         {
             "groupId": "com.revrobotics.frc",
             "artifactId": "REVLib-java",
+<<<<<<< Updated upstream:vendordeps/REVLib.json
             "version": "2024.2.0"
+=======
+            "version": "2025.0.0-beta-3"
+>>>>>>> Stashed changes:vendordeps/REVLib-2025.0.0-beta-3.json
         }
     ],
     "jniDependencies": [
         {
             "groupId": "com.revrobotics.frc",
             "artifactId": "REVLib-driver",
+<<<<<<< Updated upstream:vendordeps/REVLib.json
             "version": "2024.2.0",
+=======
+            "version": "2025.0.0-beta-3",
+>>>>>>> Stashed changes:vendordeps/REVLib-2025.0.0-beta-3.json
             "skipInvalidPlatforms": true,
             "isJar": false,
             "validPlatforms": [
@@ -37,7 +50,11 @@
         {
             "groupId": "com.revrobotics.frc",
             "artifactId": "REVLib-cpp",
+<<<<<<< Updated upstream:vendordeps/REVLib.json
             "version": "2024.2.0",
+=======
+            "version": "2025.0.0-beta-3",
+>>>>>>> Stashed changes:vendordeps/REVLib-2025.0.0-beta-3.json
             "libName": "REVLib",
             "headerClassifier": "headers",
             "sharedLibrary": false,
@@ -55,7 +72,11 @@
         {
             "groupId": "com.revrobotics.frc",
             "artifactId": "REVLib-driver",
+<<<<<<< Updated upstream:vendordeps/REVLib.json
             "version": "2024.2.0",
+=======
+            "version": "2025.0.0-beta-3",
+>>>>>>> Stashed changes:vendordeps/REVLib-2025.0.0-beta-3.json
             "libName": "REVLibDriver",
             "headerClassifier": "headers",
             "sharedLibrary": false,

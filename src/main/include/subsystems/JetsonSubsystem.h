@@ -4,6 +4,10 @@
 
 #pragma once
 
+<<<<<<< Updated upstream
+=======
+#include <vector>
+>>>>>>> Stashed changes
 #include <frc2/command/SubsystemBase.h>
 #include "networktables/NetworkTable.h"
 #include "networktables/NetworkTableInstance.h"
@@ -52,8 +56,17 @@ class JetsonSubsystem : public frc2::SubsystemBase {
    */
   double GetTargetSize();
 
+<<<<<<< Updated upstream
   void SetRecording(bool state);
     
+=======
+  std::vector<uint8_t> GetRawData();
+
+  void SetRecording(bool state);
+
+
+
+>>>>>>> Stashed changes
  private:
   double targetXOffset;
   double targetYOffset;

@@ -17,9 +17,13 @@ ShooterSubsystem::ShooterSubsystem(std::function<units::length::meter_t()> getDi
     right{kRightMotorPort},
     // indexer{kIndexerPort},
     getTargetDistance{getDistFunc},
+<<<<<<< Updated upstream
     indexer{kIndexerPort, CANSparkLowLevel::MotorType::kBrushless},
     indexerController{indexer.GetPIDController()},
     indexerEncoder{indexer.GetEncoder(SparkRelativeEncoder::Type::kHallSensor, 42)},
+=======
+    indexer{kIndexerPort, SparkMax::MotorType::kBrushless},
+>>>>>>> Stashed changes
     color{frc::I2C::Port::kMXP, 0x39},
     shooterBeamBreakReceiver{kShooterBeamBreakReceiverPort} {
       orca = orcRef;
@@ -29,10 +33,26 @@ ShooterSubsystem::ShooterSubsystem(std::function<units::length::meter_t()> getDi
       target = targetRef;
       color.setGain(60);
       // left.SetInverted(true);
+<<<<<<< Updated upstream
       indexerController.SetP(kPIndexer);
       indexerEncoder.SetPosition(kIndexerOffset / kIndexerReduction);
       indexerController.SetOutputRange(-1.0, 1.0);
       // indexer.SetPosition(units::angle::turn_t{kIndexerOffset / kIndexerReduction});
+=======
+      indexerConfig
+        .SetIdleMode(SparkMaxConfig::IdleMode::kBrake);
+      indexerConfig.closedLoop
+        .SetFeedbackSensor(ClosedLoopConfig::FeedbackSensor::kPrimaryEncoder)
+        .OutputRange(-1.0, 1.0)
+        .Pid(kPIndexer, 0.0, 0.0);
+      /** Old 2024 Code
+       * indexerController.SetP(kPIndexer);
+       * indexerEncoder.SetPosition(kIndexerOffset / kIndexerReduction);
+       * indexerController.SetOutputRange(-1.0, 1.0); 
+       */
+      indexer.Configure(indexerConfig, SparkMax::ResetMode::kResetSafeParameters, SparkMax::PersistMode::kPersistParameters);
+      indexer.GetEncoder().SetPosition(kIndexerOffset / kIndexerReduction);
+>>>>>>> Stashed changes
       SmartDashboard::PutNumber("Shooter RPM", 0.0);
       SmartDashboard::PutNumber("Top Offset", 1.0);
       SmartDashboard::PutNumber("Bottom Offset", 0.85);
@@ -110,7 +130,14 @@ void ShooterSubsystem::Periodic() {
   }
 
   // Indexer Control
+<<<<<<< Updated upstream
   indexerController.SetReference(indexerPosition / kIndexerReduction, CANSparkLowLevel::ControlType::kPosition);
+=======
+  /** Old 2024 Code
+   * indexerController.SetReference(indexerPosition / kIndexerReduction, SparkLowLevel::ControlType::kPosition); 
+  */ 
+  indexer.GetClosedLoopController().SetReference(indexerPosition / kIndexerReduction, SparkLowLevel::ControlType::kPosition);
+>>>>>>> Stashed changes
   // indexer.SetControl(ctrePosition
   //   .WithPosition(units::angle::turn_t{indexerPosition / kIndexerReduction}));
 }
@@ -206,7 +233,11 @@ void ShooterSubsystem::RpmFromDistance(units::length::meter_t distance) {
 }
 
 void ShooterSubsystem::OffsetIndexer(double offset) {
+<<<<<<< Updated upstream
   indexerEncoder.SetPosition(indexerEncoder.GetPosition() - (offset / kIndexerReduction));
+=======
+  indexer.GetEncoder().SetPosition(indexer.GetEncoder().GetPosition() - (offset / kIndexerReduction));
+>>>>>>> Stashed changes
   // indexer.SetPosition(units::angle::turn_t{indexer.GetPosition().GetValueAsDouble() - (offset / kIndexerReduction)});
 }
 
@@ -215,7 +246,11 @@ void ShooterSubsystem::SetIndexerPosition(double newPos) {
 }
 
 bool ShooterSubsystem::IndexerIsAtTarget() {
+<<<<<<< Updated upstream
   double current = indexerEncoder.GetPosition() * kIndexerReduction;
+=======
+  double current = indexer.GetEncoder().GetPosition() * kIndexerReduction;
+>>>>>>> Stashed changes
   // double current = indexer.GetPosition().GetValueAsDouble() * kIndexerReduction;
   return  current > indexerPosition - kIndexerDeadzone / 2 &&
   current < indexerPosition + kIndexerDeadzone / 2;

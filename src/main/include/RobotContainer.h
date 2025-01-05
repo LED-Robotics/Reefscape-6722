@@ -45,10 +45,17 @@
 #include <frc2/command/WaitCommand.h>
 #include "iostream"
 #include "frc/motorcontrol/Spark.h"
+<<<<<<< Updated upstream
 #include <pathplanner/lib/commands/PathPlannerAuto.h>
 #include <ctre/Phoenix.h>
 
 #include <pathplanner/lib/commands/FollowPathHolonomic.h>
+=======
+// #include <pathplanner/lib/commands/PathPlannerAuto.h>
+// #include <ctre/Phoenix.h>
+
+// #include <pathplanner/lib/commands/FollowPathHolonomic.h>
+>>>>>>> Stashed changes
 
 
 /**
@@ -103,7 +110,11 @@ class RobotContainer {
 
   ctre::phoenix6::Orchestra orchestra;
 
+<<<<<<< Updated upstream
   ctre::phoenix::motorcontrol::can::WPI_VictorSPX trapOpener{21};
+=======
+  // ctre::phoenix::motorcontrol::can::WPI_VictorSPX trapOpener{21};
+>>>>>>> Stashed changes
 
   LimelightSubsystem limelight{"limelight"};
   
@@ -225,6 +236,7 @@ class RobotContainer {
   //   ).ToPtr()//Fuck you tristan
   // };
 
+<<<<<<< Updated upstream
   frc2::CommandPtr trapScore{frc2::SequentialCommandGroup(
       frc2::InstantCommand([this] { 
         trapOpener.Set(1.0);
@@ -235,6 +247,18 @@ class RobotContainer {
         }, {})
     ).ToPtr()
   };
+=======
+  // frc2::CommandPtr trapScore{frc2::SequentialCommandGroup(
+  //     frc2::InstantCommand([this] { 
+  //       trapOpener.Set(1.0);
+  //     }, {}),
+  //     frc2::WaitCommand(2.0_s),
+  //     frc2::InstantCommand([this] { 
+  //         trapOpener.Set(0.0);
+  //       }, {})
+  //   ).ToPtr()
+  // };
+>>>>>>> Stashed changes
 
   frc2::CommandPtr autonOdomSet{frc2::InstantCommand ([this]{
       m_drive.ResetOdometry(AutoConstants::kDefaultStartingPose);
@@ -321,10 +345,17 @@ class RobotContainer {
   };
 
   frc2::Trigger driverTurning{[this]() {
+<<<<<<< Updated upstream
       return abs(controller.GetRightX()) > DriveConstants::kTurnDeadzone && !controller2.GetAButton();
     }
   };
 
+=======
+      return abs(controller.GetRightX()) > DriveConstants::kTurnDeadzone && !controller2.A().Get();
+    }
+  };
+  
+>>>>>>> Stashed changes
   frc2::InstantCommand tempDisableOmega{[this] { 
       omegaTempDisabled++;
       m_drive.SetOmegaOverride(false);
@@ -409,15 +440,38 @@ class RobotContainer {
     }, {}
   };
 
+<<<<<<< Updated upstream
   bool orcaState = false;
   frc2::InstantCommand orcaToggle{[this] { 
+=======
+  // frc2::InstantCommand orcaToggle{[this] { 
+  //     orcaState = !orcaState;
+  //     if(orcaState) {
+  //       orchestra.Play();
+  //     } else {
+  //       orchestra.Stop();
+  //     }
+  //   }, {}
+  // };
+  
+  bool orcaState = false;
+  frc2::SequentialCommandGroup orcaToggle{
+    frc2::InstantCommand([this] {
+      orchestra.LoadMusic(musicalSelector.GetSelected());
+    }, {}),
+    frc2::InstantCommand([this] {
+>>>>>>> Stashed changes
       orcaState = !orcaState;
       if(orcaState) {
         orchestra.Play();
       } else {
         orchestra.Stop();
       }
+<<<<<<< Updated upstream
     }, {}
+=======
+    })
+>>>>>>> Stashed changes
   };
 
   // Index Command
@@ -454,16 +508,17 @@ class RobotContainer {
   frc2::CommandPtr indexPrimed{IndexerSet(ShooterConstants::kIndexerPrimed, &shooter).ToPtr()};
 
   // Triggers for main and partner D-PAD positions
+  // For 2025, add trigger for all buttons because of WPILib controller changes
 
-  frc2::Trigger mainDpadUp{[this]() { return controller.GetPOV() == 0; }};
-  frc2::Trigger mainDpadRight{[this]() { return controller.GetPOV() == 90; }};
-  frc2::Trigger mainDpadDown{[this]() { return controller.GetPOV() == 180; }};
-  frc2::Trigger mainDpadLeft{[this]() { return controller.GetPOV() == 270; }};
+  // frc2::Trigger mainDpadUp{[this]() { return controller.GetPOV() == 0; }};
+  // frc2::Trigger mainDpadRight{[this]() { return controller.GetPOV() == 90; }};
+  // frc2::Trigger mainDpadDown{[this]() { return controller.GetPOV() == 180; }};
+  // frc2::Trigger mainDpadLeft{[this]() { return controller.GetPOV() == 270; }};
 
-  frc2::Trigger partnerDpadUp{[this]() { return controller2.GetPOV() == 0; }};
-  frc2::Trigger partnerDpadRight{[this]() { return controller2.GetPOV() == 90; }};
-  frc2::Trigger partnerDpadDown{[this]() { return controller2.GetPOV() == 180; }};
-  frc2::Trigger partnerDpadLeft{[this]() { return controller2.GetPOV() == 270; }};
+  // frc2::Trigger partnerDpadUp{[this]() { return controller2.GetPOV() == 0; }};
+  // frc2::Trigger partnerDpadRight{[this]() { return controller2.GetPOV() == 90; }};
+  // frc2::Trigger partnerDpadDown{[this]() { return controller2.GetPOV() == 180; }};
+  // frc2::Trigger partnerDpadLeft{[this]() { return controller2.GetPOV() == 270; }};
 
   // funny rumble Commands
   frc2::InstantCommand rumblePrimaryOn{[this] { controller.SetRumble(GenericHID::kBothRumble, 1.0); },

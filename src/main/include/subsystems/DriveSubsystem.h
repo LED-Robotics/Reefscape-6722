@@ -12,17 +12,22 @@
 #include <frc/trajectory/constraint/SwerveDriveKinematicsConstraint.h>
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <frc/DutyCycleEncoder.h>
-#include <rev/CANSparkMax.h>
+#include <rev/SparkMax.h>
 #include <rev/SparkMaxAlternateEncoder.h>
 #include <frc2/command/SubsystemBase.h>
 #include <frc/filter/SlewRateLimiter.h>
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/Pigeon2.hpp>
 #include <ctre/phoenix6/CANcoder.hpp>
+<<<<<<< Updated upstream
 
 
 #include <frc/DriverStation.h>
 #include <pathplanner/lib/commands/FollowPathHolonomic.h>
+=======
+
+#include <frc/DriverStation.h>
+>>>>>>> Stashed changes
 
 #include "Constants.h"
 #include "SwerveModule.h"
@@ -85,7 +90,11 @@ class DriveSubsystem : public frc2::SubsystemBase {
   /**
    * Generates a command to follow the path passed in.
    */
+<<<<<<< Updated upstream
   frc2::CommandPtr FollowPathCommand(std::shared_ptr<pathplanner::PathPlannerPath> path);
+=======
+  // frc2::CommandPtr FollowPathCommand(std::shared_ptr<pathplanner::PathPlannerPath> path);
+>>>>>>> Stashed changes
   frc2::CommandPtr Aimbot();
 
   /**
