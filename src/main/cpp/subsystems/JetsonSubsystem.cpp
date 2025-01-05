@@ -14,19 +14,6 @@ JetsonSubsystem::JetsonSubsystem() {
   table = nt::NetworkTableInstance::GetDefault().GetTable("jetson");
 }
 
-<<<<<<< Updated upstream
-=======
-/**
- * Reframe to handle both tags and game pieces
- * 
- * Input buffer of tag data
- * Still need to send target tags
- * 
- * 
-*/ 
-
-
->>>>>>> Stashed changes
 void JetsonSubsystem::Periodic() {
   targetFound = table->GetBoolean("tv", false);
   if(targetFound) {
@@ -52,14 +39,6 @@ double JetsonSubsystem::GetTargetSize() {
   return targetSize;
 }
 
-<<<<<<< Updated upstream
-=======
-std::vector<uint8_t> JetsonSubsystem::GetRawData() {
-  return table->GetRaw("Jetson Data Stream", {});
-}
-
-
->>>>>>> Stashed changes
 void JetsonSubsystem::SetRecording(bool state) {
   table->PutBoolean("recordState", state);
 }

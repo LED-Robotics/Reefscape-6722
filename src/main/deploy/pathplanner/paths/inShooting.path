@@ -3,7 +3,6 @@
   "waypoints": [
     {
       "anchor": {
-<<<<<<<< Updated upstream:src/main/deploy/pathplanner/paths/inShooting.path
         "x": 1.3180507946482447,
         "y": 4.166111717855144
       },
@@ -11,36 +10,18 @@
       "nextControl": {
         "x": 1.8234174205755511,
         "y": 4.179770275312639
-========
-        "x": 2.0,
-        "y": 7.0
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 3.0,
-        "y": 7.0
->>>>>>>> Stashed changes:src/main/deploy/pathplanner/paths/New Path.path
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-<<<<<<<< Updated upstream:src/main/deploy/pathplanner/paths/inShooting.path
         "x": 1.9873201100654885,
         "y": 4.166111717855144
       },
       "prevControl": {
         "x": 2.4858574572640446,
         "y": 4.166111717855144
-========
-        "x": 4.0,
-        "y": 6.0
-      },
-      "prevControl": {
-        "x": 3.8904036723907955,
-        "y": 6.90939356201109
->>>>>>>> Stashed changes:src/main/deploy/pathplanner/paths/New Path.path
       },
       "nextControl": null,
       "isLocked": false,

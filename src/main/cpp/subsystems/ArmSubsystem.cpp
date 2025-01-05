@@ -44,16 +44,11 @@ ArmSubsystem::ArmSubsystem(std::function<units::length::meter_t()> getDistFunc, 
       armConfig.Audio.AllowMusicDurDisable = true;
 
       armConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
-<<<<<<< Updated upstream
-=======
-      
->>>>>>> Stashed changes
       left.GetConfigurator().Apply(armConfig);
       armConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
       right.GetConfigurator().Apply(armConfig);
 
       configs::CANcoderConfiguration encoderConfig{};
-<<<<<<< Updated upstream
       encoderConfig.MagnetSensor.AbsoluteSensorRange = signals::AbsoluteSensorRangeValue::Signed_PlusMinusHalf;
       encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Positive;
       encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
@@ -61,13 +56,6 @@ ArmSubsystem::ArmSubsystem(std::function<units::length::meter_t()> getDistFunc, 
       encoder.GetConfigurator().Apply(encoderConfig);
 
 
-=======
-      encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
-      encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Positive;
-      encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
-      encoder.GetConfigurator().Apply(encoderConfig);
-
->>>>>>> Stashed changes
 }
 
 void ArmSubsystem::Periodic() {

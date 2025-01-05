@@ -31,13 +31,8 @@ class SwerveModule {
     public:
         SwerveModule(hardware::TalonFX *drivingMotor, hardware::TalonFX *turningMotor);
         
-<<<<<<< Updated upstream
         SwerveModule(hardware::TalonFX *drivingMotor, CANSparkMax *turningMotor, 
         DutyCycleEncoder *thetaEncoder);
-=======
-        // SwerveModule(hardware::TalonFX *drivingMotor, CANSparkMax *turningMotor, 
-        // DutyCycleEncoder *thetaEncoder);
->>>>>>> Stashed changes
         /**
          * Gets the distance of the drive encoder.
          *
@@ -106,17 +101,10 @@ class SwerveModule {
     private:
 
         double GetFalconTurnPosition() const; 
-<<<<<<< Updated upstream
         double GetNeoTurnPosition() const; 
 
         void SetFalconTurnPower(double power); 
         void SetNeoTurnPower(double power); 
-=======
-        // double GetNeoTurnPosition() const; 
-
-        void SetFalconTurnPower(double power); 
-        // void SetNeoTurnPower(double power); 
->>>>>>> Stashed changes
 
         // motor references
         bool usingFalcon = true;
@@ -125,13 +113,8 @@ class SwerveModule {
         controls::VelocityVoltage velocity{0_tps};
         controls::PositionVoltage rotation{0_tr};
 
-<<<<<<< Updated upstream
         CANSparkMax *neoTurn;
         DutyCycleEncoder *neoEncoder;
-=======
-        // CANSparkMax *neoTurn;
-        // DutyCycleEncoder *neoEncoder;
->>>>>>> Stashed changes
         // frc2::PIDController neoController{0.005, 0.0, 0.0}; off floor
-        // frc::PIDController neoController{0.007, 0.0, 0.0};
+        frc::PIDController neoController{0.007, 0.0, 0.0};
 };

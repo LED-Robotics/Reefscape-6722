@@ -9,17 +9,11 @@
 #include <frc/geometry/Rotation2d.h>
 #include <frc/smartdashboard/Field2d.h>
 #include <frc/smartdashboard/SmartDashboard.h>
-<<<<<<< Updated upstream
 #include <pathplanner/lib/auto/AutoBuilder.h>
-=======
-// #include <pathplanner/lib/auto/AutoBuilder.h>
-// #include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
-// #include "pathplanner/lib/commands/FollowPathCommand.h"
->>>>>>> Stashed changes
 
 using namespace frc;
 using namespace rev;
-// using namespace pathplanner;
+using namespace pathplanner;
 
 DriveSubsystem::DriveSubsystem(LimelightSubsystem *reference, JetsonSubsystem *jetRef, int *targetRef, Orchestra *orcRef)
       //Wheel motors
@@ -69,61 +63,9 @@ DriveSubsystem::DriveSubsystem(LimelightSubsystem *reference, JetsonSubsystem *j
         orca->AddInstrument(frontRightTheta);
         limelight = reference;
         jetson = jetRef;
-<<<<<<< Updated upstream
-=======
 
         thetaTarget = targetRef;
 
-        configs::TalonFXConfiguration driveConfig{};
-        driveConfig.MotorOutput.Inverted = signals::InvertedValue::Clockwise_Positive;
-        driveConfig.Slot0.kP = kDriveP;
-        driveConfig.Slot0.kV = kDriveV;
-        driveConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kDriveRamp;
-        driveConfig.CurrentLimits.SupplyCurrentLimit = kDriveCurrentLimit;
-        driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        driveConfig.Audio.AllowMusicDurDisable = true;
-        
-        backLeft.GetConfigurator().Apply(driveConfig);
-        frontLeft.GetConfigurator().Apply(driveConfig);
-        backRight.GetConfigurator().Apply(driveConfig);
-        frontRight.GetConfigurator().Apply(driveConfig);
-
-        configs::TalonFXConfiguration turnConfig{};
-        turnConfig.MotorOutput.Inverted = signals::InvertedValue::Clockwise_Positive;
-        turnConfig.Slot0.kP = kTurnP;
-        turnConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
-        turnConfig.Feedback.RotorToSensorRatio = kTurnPRatio;
-        turnConfig.Feedback.SensorToMechanismRatio = 1.0;
-        turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
-        turnConfig.Audio.AllowMusicDurDisable = true;
-        turnConfig.MotorOutput.Inverted = true;
-
-        turnConfig.Feedback.FeedbackRemoteSensorID = kBackLeftEncoderPort;
-        backLeftTheta.GetConfigurator().Apply(turnConfig);
-        turnConfig.Feedback.FeedbackRemoteSensorID = kFrontLeftEncoderPort;
-        frontLeftTheta.GetConfigurator().Apply(turnConfig);
-        turnConfig.Feedback.FeedbackRemoteSensorID = kBackRightEncoderPort;
-        backRightTheta.GetConfigurator().Apply(turnConfig);
-        turnConfig.Feedback.FeedbackRemoteSensorID = kFrontRightEncoderPort;
-        frontRightTheta.GetConfigurator().Apply(turnConfig);
-
-        configs::CANcoderConfiguration encoderConfig{};
-        encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
-        encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::Clockwise_Positive;
-        
-        encoderConfig.MagnetSensor.MagnetOffset = kBLeftMagPos;
-        blCANCoder.GetConfigurator().Apply(encoderConfig);
-        encoderConfig.MagnetSensor.MagnetOffset = kFLeftMagPos;
-        flCANCoder.GetConfigurator().Apply(encoderConfig);
-        encoderConfig.MagnetSensor.MagnetOffset = kBRightMagPos;
-        brCANCoder.GetConfigurator().Apply(encoderConfig);
-        encoderConfig.MagnetSensor.MagnetOffset = kFRightMagPos;
-        frCANCoder.GetConfigurator().Apply(encoderConfig);
->>>>>>> Stashed changes
-
-        thetaTarget = targetRef;
-
-<<<<<<< Updated upstream
         configs::TalonFXConfiguration driveConfig{};
         driveConfig.MotorOutput.Inverted = signals::InvertedValue::Clockwise_Positive;
         driveConfig.Slot0.kP = kDriveP;
@@ -195,8 +137,6 @@ DriveSubsystem::DriveSubsystem(LimelightSubsystem *reference, JetsonSubsystem *j
           },
           this // Reference to this subsystem to set requirements
         );
-=======
->>>>>>> Stashed changes
         
         SmartDashboard::PutNumber("Theta Target", 0.0);
         SmartDashboard::PutNumber("Angle Target", 0.0);
@@ -424,10 +364,25 @@ wpi::array<SwerveModuleState, 4> DriveSubsystem::GetModuleStates() const {
   return {s_frontLeft.GetState(), s_frontRight.GetState(), s_backLeft.GetState(), s_backRight.GetState()};
 }
 
-// frc2::CommandPtr  DriveSubsystem::FollowPathCommand(std::shared_ptr<pathplanner::PathPlannerPath> path){
+frc2::CommandPtr  DriveSubsystem::FollowPathCommand(std::shared_ptr<pathplanner::PathPlannerPath> path){
 
+    return FollowPathHolonomic(
+        path,
+        [this](){ return GetPose(); }, // Robot pose supplier
+        [this](){ return kDriveKinematics.ToChassisSpeeds(GetModuleStates()); }, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        [this](frc::ChassisSpeeds speeds){ Drive(speeds); }, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+        HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+            PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+            PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
+            AutoConstants::kMaxSpeed, // Max module speed, in m/s
+            DriveConstants::kDriveBaseRadius, // Drive base radius in meters. Distance from robot center to furthest module.
+            ReplanningConfig() // Default path replanning config. See the API for the options here
+        ),
+        []() {
+            // Boolean supplier that controls when the path will be mirrored for the red alliance
+            // This will flip the path being followed to the red side of the field.
+            // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
-<<<<<<< Updated upstream
             auto alliance = DriverStation::GetAlliance();
             if (alliance) {
                 return alliance.value() == DriverStation::Alliance::kRed;
@@ -437,9 +392,6 @@ wpi::array<SwerveModuleState, 4> DriveSubsystem::GetModuleStates() const {
         { this } // Reference to this subsystem to set requirements
     ).ToPtr();
 }
-=======
-// }
->>>>>>> Stashed changes
 
 void DriveSubsystem::SetDrivePower(double power) {
   // std::cout << "Power: " << power << '\n';

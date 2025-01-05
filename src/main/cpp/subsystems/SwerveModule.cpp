@@ -15,7 +15,6 @@ SwerveModule::SwerveModule(hardware::TalonFX *drivingMotor,
     falconTurn = turningMotor;
 }
 
-<<<<<<< Updated upstream
 SwerveModule::SwerveModule(hardware::TalonFX *drivingMotor, rev::CANSparkMax *turningMotor, 
         DutyCycleEncoder *thetaEncoder) {
     usingFalcon = false;
@@ -23,56 +22,30 @@ SwerveModule::SwerveModule(hardware::TalonFX *drivingMotor, rev::CANSparkMax *tu
     neoTurn = turningMotor;
     neoEncoder = thetaEncoder;
 }
-=======
-// SwerveModule::SwerveModule(hardware::TalonFX *drivingMotor, rev::CANSparkMax *turningMotor, 
-//         DutyCycleEncoder *thetaEncoder) {
-//     usingFalcon = false;
-//     driveMotor = drivingMotor;
-//     neoTurn = turningMotor;
-//     neoEncoder = thetaEncoder;
-// }
->>>>>>> Stashed changes
 
 double SwerveModule::GetFalconTurnPosition() const {
     // return (-falconTurn->GetPosition().GetValueAsDouble()) * 360.0 * kTurnRatio;
     return (-falconTurn->GetPosition().GetValueAsDouble()) * 360.0;
 }
 
-<<<<<<< Updated upstream
 double SwerveModule::GetNeoTurnPosition() const {
     return (double)neoEncoder->Get() * DriveConstants::kTurnEncoderDegreesPerPulse;
 }
-=======
-// double SwerveModule::GetNeoTurnPosition() const {
-//     return (double)neoEncoder->Get() * DriveConstants::kTurnEncoderDegreesPerPulse;
-// }
->>>>>>> Stashed changes
 
 void SwerveModule::SetFalconTurnPower(double power) {
     falconTurn->Set(power);
 }
 
-<<<<<<< Updated upstream
 void SwerveModule::SetNeoTurnPower(double power) {
     neoTurn->Set(power);
 }
-=======
-// void SwerveModule::SetNeoTurnPower(double power) {
-//     neoTurn->Set(power);
-// }
->>>>>>> Stashed changes
 
 units::meter_t SwerveModule::GetDriveEncoderDistance() const {
     return units::meter_t{driveMotor->GetPosition().GetValueAsDouble() * DriveConstants::kDriveDistancePerRev};
 }
 
 units::degree_t SwerveModule::GetTurnEncoderAngle() const {
-<<<<<<< Updated upstream
     return units::degree_t{usingFalcon ? GetFalconTurnPosition() : GetNeoTurnPosition()};
-=======
-    return units::degree_t{GetFalconTurnPosition()};
-    // return units::degree_t{usingFalcon ? GetFalconTurnPosition() : GetNeoTurnPosition()};
->>>>>>> Stashed changes
 }
 
 units::meters_per_second_t SwerveModule::GetDriveEncoderRate() const {
@@ -141,16 +114,9 @@ void SwerveModule::SetDesiredState(
         falconTurn->SetControl(rotation
         .WithPosition(units::angle::turn_t{-target})
         .WithEnableFOC(true));
-<<<<<<< Updated upstream
     } else {
         neoController.SetSetpoint((double)state.angle.Degrees());
     }
-=======
-    } 
-    // else {
-    //     neoController.SetSetpoint((double)state.angle.Degrees());
-    // }
->>>>>>> Stashed changes
 
     driveMotor->SetControl(velocity
     .WithVelocity(units::angular_velocity::turns_per_second_t{((double)state.speed) / kDriveDistancePerRev})
@@ -160,19 +126,11 @@ void SwerveModule::SetDesiredState(
 void SwerveModule::RunPID() {
     if(usingFalcon) return;
     double angle = (double)GetTurnEncoderAngle();
-<<<<<<< Updated upstream
     double power = neoController.Calculate(angle);
     // frc::SmartDashboard::PutNumber("FL Angle", angle);
     // frc::SmartDashboard::PutNumber("FL Power", power);
 
     neoTurn->Set(power);
-=======
-    // double power = neoController.Calculate(angle);
-    // frc::SmartDashboard::PutNumber("FL Angle", angle);
-    // frc::SmartDashboard::PutNumber("FL Power", power);
-
-    // neoTurn->Set(power);
->>>>>>> Stashed changes
 }
 
 // debug
@@ -182,19 +140,11 @@ void SwerveModule::SetDrivePower(double power) {
 
 void SwerveModule::SetTurnPower(double power) {
     if(usingFalcon) SetFalconTurnPower(power);
-<<<<<<< Updated upstream
     else SetNeoTurnPower(power);
-=======
-    // else SetNeoTurnPower(power);
->>>>>>> Stashed changes
 }
 
 void SwerveModule::ResetEncoders() {
     driveMotor->SetPosition(units::angle::turn_t{0.0});
     if(usingFalcon) falconTurn->SetPosition(units::angle::turn_t{0.0});
-<<<<<<< Updated upstream
     else neoEncoder->Reset();
-=======
-    // else neoEncoder->Reset();
->>>>>>> Stashed changes
 }

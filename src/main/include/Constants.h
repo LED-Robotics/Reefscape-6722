@@ -7,8 +7,6 @@
 #include <units/angular_acceleration.h>
 #include <units/angular_velocity.h>
 #include <units/length.h>
-#include <units/mass.h>
-#include <units/moment_of_inertia.h>
 #include <units/time.h>
 #include <units/velocity.h>
 #include <units/voltage.h>
@@ -19,11 +17,7 @@
 #include <frc/motorcontrol/PWMSparkMax.h>
 #include <frc2/command/ProfiledPIDSubsystem.h>
 #include <ctre/phoenix6/Orchestra.hpp>
-<<<<<<< Updated upstream
 #include <units/angle.h>
-=======
-
->>>>>>> Stashed changes
 
 #pragma once
 
@@ -72,17 +66,10 @@ namespace DriveConstants {
     constexpr int kBackRightEncoderPort = 6;
     constexpr int kFrontRightEncoderPort = 7;
     
-<<<<<<< Updated upstream
     constexpr double kBLeftMagPos = 0.07177734375;
     constexpr double kFLeftMagPos = -0.31103515625;
     constexpr double kBRightMagPos = -0.228759765625;
     constexpr double kFRightMagPos = -0.439697265625;
-=======
-    constexpr units::angle::turn_t kBLeftMagPos = 0.100830078125_tr;
-    constexpr units::angle::turn_t kFLeftMagPos = -0.2998046875_tr;
-    constexpr units::angle::turn_t kBRightMagPos = -0.223388671875_tr;
-    constexpr units::angle::turn_t kFRightMagPos = -0.439697265625_tr;
->>>>>>> Stashed changes
     
     // info for odometry
     constexpr int kEncoderResolution = 4096;
@@ -105,13 +92,8 @@ namespace DriveConstants {
     // TalonFX config
     constexpr double kDriveP = 0.2402345985174179;
     constexpr double kDriveV = 0.1345313787460327;
-<<<<<<< Updated upstream
     constexpr double kDriveRamp = 0.0;
     constexpr double kDriveCurrentLimit = 30.0;
-=======
-    constexpr units::time::second_t kDriveRamp = 0.0_s;
-    constexpr units::current::ampere_t kDriveCurrentLimit = 30.0_A;
->>>>>>> Stashed changes
     constexpr double kTurnP = 80.0;
     constexpr double kTurnPRatio = 10.279000282287598;
 
@@ -133,13 +115,6 @@ namespace DriveConstants {
     constexpr double kPNote = 0.3;
     constexpr double kPYTrans = 0.1;
     constexpr double kThetaDeadzone = 2.0;
-<<<<<<< Updated upstream
-=======
-
-    constexpr units::kilogram_t kRobotWeight = 54.43_kg;
-    constexpr auto kMOI = 60;
-
->>>>>>> Stashed changes
 }  // namespace DriveConstants
 
 namespace ArmConstants {
@@ -148,17 +123,9 @@ namespace ArmConstants {
     constexpr int kRightMotorPort = 13;
     constexpr int kEncoderPort = 12;
 
-<<<<<<< Updated upstream
     constexpr double kEncoderOffset = -0.447509765625;
 
     constexpr double kRampSeconds = 0.5;
-=======
-    constexpr units::angle::turn_t kEncoderOffset = -0.46044921875_tr;
-
-    
-
-    constexpr units::time::second_t kRampSeconds = 0.5_s;
->>>>>>> Stashed changes
 
     // states
     constexpr int kOff = 0;

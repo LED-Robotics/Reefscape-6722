@@ -15,11 +15,7 @@
 #include <frc2/command/SwerveControllerCommand.h>
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/button/JoystickButton.h>
-<<<<<<< Updated upstream
 #include "pathplanner/lib/auto/NamedCommands.h"
-=======
-// #include "pathplanner/lib/auto/NamedCommands.h"
->>>>>>> Stashed changes
 
 #include "Constants.h"
 
@@ -90,7 +86,6 @@ RobotContainer::RobotContainer() {
   frc::SmartDashboard::PutBoolean("autoHunt", autoHuntEnabled); // auto note hunting flag
   frc::SmartDashboard::PutBoolean("autoIntake", autoIntakeEnabled); // auto intake flag
 
-<<<<<<< Updated upstream
     //Pahtplanner Stuff
   pathplanner::NamedCommands::registerCommand("OdomReset", std::move(autonOdomSet));
   pathplanner::NamedCommands::registerCommand("HuntNote", std::move(autoHunt));
@@ -106,23 +101,6 @@ RobotContainer::RobotContainer() {
   pathplanner::NamedCommands::registerCommand("WaitIndexed", std::move(ensureIndexed));
   pathplanner::NamedCommands::registerCommand("OmegaDisable", std::move(autonTrackingDisable));
   pathplanner::NamedCommands::registerCommand("Shoot", std::move(autonShoot));
-=======
-  //Pahtplanner Stuff
-  // pathplanner::NamedCommands::registerCommand("OdomReset", std::move(autonOdomSet));
-  // pathplanner::NamedCommands::registerCommand("HuntNote", std::move(autoHunt));
-  // pathplanner::NamedCommands::registerCommand("TargetSpeaker", std::move(autonSpeakerTarget));
-  // pathplanner::NamedCommands::registerCommand("GoTo180", std::move(rotateTo180));
-  // pathplanner::NamedCommands::registerCommand("GoTo90", std::move(rotateTo90));
-  // pathplanner::NamedCommands::registerCommand("GoToNeg90", std::move(rotateToNeg90));
-  // pathplanner::NamedCommands::registerCommand("GoToNeg70", std::move(rotateToNeg70));
-  // pathplanner::NamedCommands::registerCommand("GoTo82", std::move(rotateTo82));
-  // pathplanner::NamedCommands::registerCommand("GoToNeg130", std::move(rotateToNeg130));
-  // pathplanner::NamedCommands::registerCommand("DriveOff", std::move(driveOff));
-  // pathplanner::NamedCommands::registerCommand("WaitAligned", std::move(lineupSpeaker));
-  // pathplanner::NamedCommands::registerCommand("WaitIndexed", std::move(ensureIndexed));
-  // pathplanner::NamedCommands::registerCommand("OmegaDisable", std::move(autonTrackingDisable));
-  // pathplanner::NamedCommands::registerCommand("Shoot", std::move(autonShoot));
->>>>>>> Stashed changes
 
   // SmartDashboard::PutNumber("noteXP", 0.0);
   // SmartDashboard::PutNumber("noteYP", 0.0);
@@ -150,21 +128,13 @@ RobotContainer::RobotContainer() {
   // controller.B().ToggleOnTrue(&goToSource);
   // controller2.A().ToggleOnTrue(m_drive.FollowPathCommand(pathplanner::PathPlannerPath::fromPathFile("toSource")));
   // controller2.X().ToggleOnTrue(m_drive.FollowPathCommand(pathplanner::PathPlannerPath::fromPathFile("turn")));
-<<<<<<< Updated upstream
   controller2.RightStick().OnTrue(&orcaToggle);
-=======
-  controller.RightStick().OnTrue(&orcaToggle);
->>>>>>> Stashed changes
   controller2.LeftStick().OnTrue(&orcaSelectNow);
   // controller.X().ToggleOnTrue(m_drive.FollowPathCommand(pathplanner::PathPlannerPath::fromPathFile("coolPath")));
 
   controller.RightBumper().OnTrue(&shootNote);
   // controller2.RightBumper().OnTrue(&shootNote);
-<<<<<<< Updated upstream
   controller2.RightBumper().OnTrue(std::move(indexPrimed));
-=======
-  // controller2.RightBumper().OnTrue(std::move(indexPrimed));
->>>>>>> Stashed changes
 
   // controller2.LeftBumper().ToggleOnTrue(&noteFindRight);
 
@@ -172,15 +142,9 @@ RobotContainer::RobotContainer() {
 
   controller2.X().OnTrue(&climbPrepare);
   controller2.Y().ToggleOnTrue(&climb);
-<<<<<<< Updated upstream
   controller.A().OnTrue(std::move(indexResting));
   controller.Start().ToggleOnTrue(std::move(hunt));
   controller. RightStick().ToggleOnTrue(std::move(driveRotateToNeg70));
-=======
-  controller.A().OnTrue(std::move(indexPrimed));
-  controller.Start().ToggleOnTrue(std::move(hunt));
-  // controller.RightStick().ToggleOnTrue(std::move(driveRotateToNeg70));
->>>>>>> Stashed changes
 
   // controller.X().OnTrue(&targetStage);
   // controller.B().OnTrue(&enableClimbOverride);
@@ -193,7 +157,6 @@ RobotContainer::RobotContainer() {
 
   // controller.Start().OnTrue(std::move(indexPrimed));
 
-<<<<<<< Updated upstream
   mainDpadLeft.OnTrue(&targetArbitrary);
   mainDpadUp.OnTrue(&targetSpeaker);
   mainDpadRight.OnTrue(&targetAmp);
@@ -213,27 +176,6 @@ RobotContainer::RobotContainer() {
   // controller2.A().OnTrue(std::move(trapScore));
   controller2.Back().OnTrue(&targetSource);
 
-=======
-  controller.POVLeft().OnTrue(&targetArbitrary);
-  controller.POVUp().OnTrue(&targetSpeaker);
-  controller.POVRight().OnTrue(&targetAmp);
-  controller.POVDown().OnTrue(&targetNote);
-
-  controller2.POVLeft().OnTrue(&targetArbitrary);
-  controller2.POVUp().OnTrue(&targetSpeaker);
-  controller2.POVRight().OnTrue(&targetAmp);
-  controller2.POVDown().OnTrue(&targetNote);
-  
-  //Turn lock toggles
-  controller.LeftStick().OnTrue(&toggleOmegaOverride);
-  // controller.RightStick().OnTrue(std::move(rotateTo180));
-  controller2.LeftBumper().OnTrue(&toggleOmegaOverride);
-  // controller2.B().OnTrue(&tempDisableOmega);
-  // controller2.B().OnFalse(&restoreOmega);
-  // controller2.A().OnTrue(std::move(trapScore));
-  controller2.Back().OnTrue(&targetSource);
-
->>>>>>> Stashed changes
   driverTurning.OnTrue(&tempDisableOmega);
   driverTurning.OnFalse(&restoreOmega);
 
@@ -253,31 +195,19 @@ RobotContainer::RobotContainer() {
 
       // lazy non-command implementation of a field-centric drive toggle
       // if(controller.GetYButtonPressed()) fieldCentric = !fieldCentric;
-<<<<<<< Updated upstream
       fieldCentric = !controller.GetYButton();
 
-=======
-      fieldCentric = !controller.Y().Get();
->>>>>>> Stashed changes
       // store control inputs for driving
       double x = -controller.GetLeftY();
       double y = -controller.GetLeftX();
       double turnX = controller.GetRightX();
-<<<<<<< Updated upstream
       if(controller.GetYButton()) {
-=======
-      if(controller.Y().Get()) {
->>>>>>> Stashed changes
         x *= -1.0;
         if(TrackingTarget == GlobalConstants::kNote) {
           y = 0.0;
         }
       }
-<<<<<<< Updated upstream
 
-=======
-      
->>>>>>> Stashed changes
       // zero out axes if they fall within deadzone
       if (x > -DriveConstants::kDriveDeadzone && x < DriveConstants::kDriveDeadzone)
           x = 0.0;
@@ -316,11 +246,7 @@ RobotContainer::RobotContainer() {
   // Shooter enable default command
   shooter.SetDefaultCommand(frc2::RunCommand(
     [this] {
-<<<<<<< Updated upstream
       if(controller.GetLeftBumper()) shooter.SetState(ShooterConstants::kRpmMode);
-=======
-      if(controller.LeftBumper().Get()) shooter.SetState(ShooterConstants::kRpmMode);
->>>>>>> Stashed changes
       else shooter.SetState(ShooterConstants::kOff);
     },
   {&shooter}));
@@ -363,12 +289,9 @@ RobotContainer::RobotContainer() {
 
   led.SetDefaultCommand(frc2::RunCommand(
     [this] {
-<<<<<<< Updated upstream
       if(controller2.GetBackButtonPressed()) {
         climbed = !climbed;
       }
-=======
->>>>>>> Stashed changes
       if(climbed) {
         led.SetPower(LEDConstants::kClimbedPreset);
       } else if(TrackingTarget == GlobalConstants::kNote){
@@ -438,9 +361,5 @@ void RobotContainer::SetAutoIndex(bool state) {
 frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
   auto string = autonChooser.GetSelected();
   // m_drive.ResetOdometry(pathplanner::PathPlannerAuto::getStartingPoseFromAutoFile(string));
-<<<<<<< Updated upstream
   return pathplanner::PathPlannerAuto(string).ToPtr();
-=======
-  // return pathplanner::PathPlannerAuto(string).ToPtr();
->>>>>>> Stashed changes
 }
