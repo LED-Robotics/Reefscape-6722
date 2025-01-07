@@ -33,7 +33,7 @@ using namespace DriveConstants;
 
 class DriveSubsystem : public frc2::SubsystemBase {
  public:
-  DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef, Orchestra *orcRef);
+  DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef);
 
     /**
    * Will be called periodically whenever the CommandScheduler runs.

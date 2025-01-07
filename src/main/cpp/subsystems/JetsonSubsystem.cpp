@@ -6,7 +6,6 @@
 
 #include <iostream>
 
-using namespace LimelightConstants;
 using namespace frc;
 
 JetsonSubsystem::JetsonSubsystem() {
@@ -22,7 +21,6 @@ JetsonSubsystem::JetsonSubsystem() {
  * 
  * 
 */ 
-
 
 void JetsonSubsystem::Periodic() {
   targetFound = table->GetBoolean("tv", false);

@@ -107,7 +107,7 @@ class SwerveModule {
         // motor references
         bool usingFalcon = true;
         hardware::TalonFX *driveMotor;
-        hardware::TalonFX *falconTurn;
+        hardware::TalonFX *turnMotor;
         controls::VelocityVoltage velocity{0_tps};
         controls::PositionVoltage rotation{0_tr};
 
