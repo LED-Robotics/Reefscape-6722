@@ -9,15 +9,15 @@
 #include <frc/geometry/Rotation2d.h>
 #include <frc/smartdashboard/Field2d.h>
 #include <frc/smartdashboard/SmartDashboard.h>
-// #include <pathplanner/lib/auto/AutoBuilder.h>
-// #include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
-// #include "pathplanner/lib/commands/FollowPathCommand.h"
+#include <pathplanner/lib/auto/AutoBuilder.h>
+#include <pathplanner/lib/config/RobotConfig.h>
+#include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
 
 using namespace frc;
 using namespace rev;
-// using namespace pathplanner;
+using namespace pathplanner;
 
-DriveSubsystem::DriveSubsystem(LimelightSubsystem *reference, JetsonSubsystem *jetRef, int *targetRef, Orchestra *orcRef)
+DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef, Orchestra *orcRef)
       //Wheel motors
     : backLeft{kBackLeftPort, "canCan"},
       frontLeft{kFrontLeftPort, "canCan"},
@@ -63,7 +63,6 @@ DriveSubsystem::DriveSubsystem(LimelightSubsystem *reference, JetsonSubsystem *j
         orca->AddInstrument(frontLeftTheta);
         orca->AddInstrument(backRightTheta);
         orca->AddInstrument(frontRightTheta);
-        limelight = reference;
         jetson = jetRef;
 
         thetaTarget = targetRef;
@@ -123,7 +122,32 @@ DriveSubsystem::DriveSubsystem(LimelightSubsystem *reference, JetsonSubsystem *j
         SmartDashboard::PutNumber("offP", kPVelTurnOffset);
         SmartDashboard::PutNumber("offD", kPVelDistOffset);
         SmartDashboard::PutNumber("turnP", kTxAdjust);
+        RobotConfig config = RobotConfig::fromGUISettings();
 
+        // Configure the AutoBuilder last
+        AutoBuilder::configure(
+            [this](){ return getPose(); }, // Robot pose supplier
+            [this](frc::Pose2d pose){ resetPose(pose); }, // Method to reset odometry (will be called if your auto has a starting pose)
+            [this](){ return getRobotRelativeSpeeds(); }, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            [this](auto speeds, auto feedforwards){ driveRobotRelative(speeds); }, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+            std::make_shared<PPHolonomicDriveController>( // PPHolonomicController is the built in path following controller for holonomic drive trains
+                PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+            ),
+            config, // The robot configuration
+            []() {
+                // Boolean supplier that controls when the path will be mirrored for the red alliance
+                // This will flip the path being followed to the red side of the field.
+                // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+                auto alliance = DriverStation::GetAlliance();
+                if (alliance) {
+                    return alliance.value() == DriverStation::Alliance::kRed;
+                }
+                return false;
+            },
+            this // Reference to this subsystem to set requirements
+        );
 
         // ResetEncoders();
         // ResetOdometry(frc::Pose2d{{0.0_m, 0.0_m}, {180_deg}});
@@ -161,108 +185,108 @@ void DriveSubsystem::Periodic() {
 }
 
 void DriveSubsystem::HandleTargeting() {
-  auto pose = odometry.GetPose();
-  bool tempTargetMet = false;
+  // auto pose = odometry.GetPose();
+  // bool tempTargetMet = false;
 
-  if(*thetaTarget == GlobalConstants::kArbitrary) {
-    limelight->SetPipeline(0);
-    double angle = pose.Rotation().Degrees().value();
-    angle = SwerveModule::PlaceInAppropriate0To360Scope(360.0, angle);
-    double target = SwerveModule::PlaceInAppropriate0To360Scope(angle, thetaHoldController.GetSetpoint());
-    SmartDashboard::PutNumber("curr angle", angle);
-    SmartDashboard::PutNumber("curr setpoint", target);
-    SmartDashboard::PutNumber("diff", target);
-    tempTargetMet = abs(angle - target) < kThetaDeadzone;
-  } else {
-    double distX = 0.0;
-    double distY = 0.0;
-    double theta = 0.0;
-    bool useGeometry = false || !targetUsingLimelight;  // fuck you Bobby (geometry if limelight out of range)
-    if(targetUsingLimelight) {
-      int selection = *thetaTarget;
-      if(selection == GlobalConstants::kNote) selection = GlobalConstants::kArbitrary;
-      if(limelight->GetPipeline() != selection) limelight->SetPipeline(selection);
-      if(limelight->IsTarget()) {
-        targetPos = limelight->GetTargetPos();
-        double temp = limelight->GetXOffset();
-        if(temp == tx) return;
-        else tx = temp;
-      } else {
-        useGeometry = true;
-      }
-      if(*thetaTarget == GlobalConstants::kStage) {
-        theta = pose.Rotation().RotateBy(units::degree_t{targetPos[4] * kAlignP}).Degrees().value();
-      } else {
-        double turnP = SmartDashboard::GetNumber("turnP", kTxAdjust);
-        theta = pose.Rotation().RotateBy(units::degree_t{-tx * turnP}).Degrees().value();
-        double thetaRadians = theta * (M_PI/180.0);
-        auto currentSpeeds = kDriveKinematics.ToChassisSpeeds(GetModuleStates());
-        double offS = SmartDashboard::GetNumber("offP", kPVelTurnOffset);
-        auto turnVx = currentSpeeds.vx * sin(thetaRadians);
-        auto turnVy = currentSpeeds.vy * cos(thetaRadians);
-        double counterOffset = (turnVx.value() + turnVy.value()) * offS;
-        counterOffset *= (kDistMultiplier / distFromTarget.value());
-        theta -= counterOffset;
-        double offD = SmartDashboard::GetNumber("offD", kPVelDistOffset);
-        distFromTarget = units::length::meter_t{targetPos[2] - 1.0};
-        auto driveVx = currentSpeeds.vx * cos(thetaRadians);
-        auto driveVy = currentSpeeds.vy * sin(thetaRadians);
-        distFromTarget += units::length::meter_t{(driveVx.value() + driveVy.value()) * offD};
-        tempTargetMet = abs(tx) < kThetaDeadzone;
-      }
-    } 
-    if(useGeometry) {
-      tempTargetMet = false;
-      // handle coordinate-system targeting
-      auto alliance = frc::DriverStation::GetAlliance();
-      frc::Translation2d targPose;
-      bool isBlue = alliance == frc::DriverStation::Alliance::kBlue;
-      switch(*thetaTarget) {
-        case GlobalConstants::kSpeaker:
-          targPose = isBlue ? 
-          GlobalConstants::kBlueSpeakerPose : GlobalConstants::kRedSpeakerPose;
-          distFromTarget = pose.Translation().Distance(targPose);
-          distX = targPose.X().value() - pose.Translation().X().value(); // targX - robotX
-          distY = targPose.Y().value() - pose.Translation().Y().value(); // targY - robotY
-          break;
-        case GlobalConstants::kAmp:
-          targPose = isBlue ? 
-          GlobalConstants::kBlueAmpPose : GlobalConstants::kRedAmpPose;
-          distFromTarget = pose.Translation().Distance(targPose);
-          distX = targPose.X().value() - pose.Translation().X().value();
-          distY = targPose.Y().value() - pose.Translation().Y().value();
-          break;
-        case GlobalConstants::kSource:
-          targPose = isBlue ? 
-          GlobalConstants::kBlueSourcePose : GlobalConstants::kRedSourcePose;
-          distFromTarget = pose.Translation().Distance(targPose);
-          distX = targPose.X().value() - pose.Translation().X().value();
-          distY = targPose.Y().value() - pose.Translation().Y().value();
-          break;
-      }
-      if(*thetaTarget != GlobalConstants::kArbitrary) {
-        theta = atan(distY/distX);
-        theta *= (180.0/M_PI); // target is valid if vector is in quadrant 1
-        if(distY > 0.0 && distX < 0.0) {
-          theta = 180.0 + theta;  // transform for quadrant 2
-        } else if(distY < 0.0 && distX < 0.0) {
-          theta = 180.0 + theta;  // transform for quadrant 3
-        } else if(distY < 0.0 && distX > 0.0) {
-          theta = 360.0 + theta;  // transform for quadrant 4
-        }
-        // if(DriverStation::GetAlliance() == DriverStation::Alliance::kBlue) {
-          // frc::Rotation2d rot{units::degree_t{theta}};
-          // theta = rot.RotateBy(180_deg).Degrees().value();
-        // }
-        SmartDashboard::PutNumber("TargetD", theta);
-      }
-    }
-    SmartDashboard::PutNumber("thetaTarget", theta);
-    SmartDashboard::PutNumber("Targ Distance", distFromTarget.value());
-    SetThetaToHold({units::degree_t{theta}});
-  }
+  // if(*thetaTarget == GlobalConstants::kArbitrary) {
+  //   // limelight->SetPipeline(0);
+  //   double angle = pose.Rotation().Degrees().value();
+  //   angle = SwerveModule::PlaceInAppropriate0To360Scope(360.0, angle);
+  //   double target = SwerveModule::PlaceInAppropriate0To360Scope(angle, thetaHoldController.GetSetpoint());
+  //   SmartDashboard::PutNumber("curr angle", angle);
+  //   SmartDashboard::PutNumber("curr setpoint", target);
+  //   SmartDashboard::PutNumber("diff", target);
+  //   tempTargetMet = abs(angle - target) < kThetaDeadzone;
+  // } else {
+  //   double distX = 0.0;
+  //   double distY = 0.0;
+  //   double theta = 0.0;
+  //   bool useGeometry = false || !targetUsingLimelight;  // fuck you Bobby (geometry if limelight out of range)
+  //   if(targetUsingLimelight) {
+  //     int selection = *thetaTarget;
+  //     if(selection == GlobalConstants::kNote) selection = GlobalConstants::kArbitrary;
+  //     // if(limelight->GetPipeline() != selection) limelight->SetPipeline(selection);
+  //     if(limelight->IsTarget()) {
+  //       targetPos = limelight->GetTargetPos();
+  //       double temp = limelight->GetXOffset();
+  //       if(temp == tx) return;
+  //       else tx = temp;
+  //     } else {
+  //       useGeometry = true;
+  //     }
+  //     if(*thetaTarget == GlobalConstants::kStage) {
+  //       theta = pose.Rotation().RotateBy(units::degree_t{targetPos[4] * kAlignP}).Degrees().value();
+  //     } else {
+  //       double turnP = SmartDashboard::GetNumber("turnP", kTxAdjust);
+  //       theta = pose.Rotation().RotateBy(units::degree_t{-tx * turnP}).Degrees().value();
+  //       double thetaRadians = theta * (M_PI/180.0);
+  //       auto currentSpeeds = kDriveKinematics.ToChassisSpeeds(GetModuleStates());
+  //       double offS = SmartDashboard::GetNumber("offP", kPVelTurnOffset);
+  //       auto turnVx = currentSpeeds.vx * sin(thetaRadians);
+  //       auto turnVy = currentSpeeds.vy * cos(thetaRadians);
+  //       double counterOffset = (turnVx.value() + turnVy.value()) * offS;
+  //       counterOffset *= (kDistMultiplier / distFromTarget.value());
+  //       theta -= counterOffset;
+  //       double offD = SmartDashboard::GetNumber("offD", kPVelDistOffset);
+  //       distFromTarget = units::length::meter_t{targetPos[2] - 1.0};
+  //       auto driveVx = currentSpeeds.vx * cos(thetaRadians);
+  //       auto driveVy = currentSpeeds.vy * sin(thetaRadians);
+  //       distFromTarget += units::length::meter_t{(driveVx.value() + driveVy.value()) * offD};
+  //       tempTargetMet = abs(tx) < kThetaDeadzone;
+  //     }
+  //   } 
+  //   if(useGeometry) {
+  //     tempTargetMet = false;
+  //     // handle coordinate-system targeting
+  //     auto alliance = frc::DriverStation::GetAlliance();
+  //     frc::Translation2d targPose;
+  //     bool isBlue = alliance == frc::DriverStation::Alliance::kBlue;
+  //     switch(*thetaTarget) {
+  //       case GlobalConstants::kSpeaker:
+  //         targPose = isBlue ? 
+  //         GlobalConstants::kBlueSpeakerPose : GlobalConstants::kRedSpeakerPose;
+  //         distFromTarget = pose.Translation().Distance(targPose);
+  //         distX = targPose.X().value() - pose.Translation().X().value(); // targX - robotX
+  //         distY = targPose.Y().value() - pose.Translation().Y().value(); // targY - robotY
+  //         break;
+  //       case GlobalConstants::kAmp:
+  //         targPose = isBlue ? 
+  //         GlobalConstants::kBlueAmpPose : GlobalConstants::kRedAmpPose;
+  //         distFromTarget = pose.Translation().Distance(targPose);
+  //         distX = targPose.X().value() - pose.Translation().X().value();
+  //         distY = targPose.Y().value() - pose.Translation().Y().value();
+  //         break;
+  //       case GlobalConstants::kSource:
+  //         targPose = isBlue ? 
+  //         GlobalConstants::kBlueSourcePose : GlobalConstants::kRedSourcePose;
+  //         distFromTarget = pose.Translation().Distance(targPose);
+  //         distX = targPose.X().value() - pose.Translation().X().value();
+  //         distY = targPose.Y().value() - pose.Translation().Y().value();
+  //         break;
+  //     }
+  //     if(*thetaTarget != GlobalConstants::kArbitrary) {
+  //       theta = atan(distY/distX);
+  //       theta *= (180.0/M_PI); // target is valid if vector is in quadrant 1
+  //       if(distY > 0.0 && distX < 0.0) {
+  //         theta = 180.0 + theta;  // transform for quadrant 2
+  //       } else if(distY < 0.0 && distX < 0.0) {
+  //         theta = 180.0 + theta;  // transform for quadrant 3
+  //       } else if(distY < 0.0 && distX > 0.0) {
+  //         theta = 360.0 + theta;  // transform for quadrant 4
+  //       }
+  //       // if(DriverStation::GetAlliance() == DriverStation::Alliance::kBlue) {
+  //         // frc::Rotation2d rot{units::degree_t{theta}};
+  //         // theta = rot.RotateBy(180_deg).Degrees().value();
+  //       // }
+  //       SmartDashboard::PutNumber("TargetD", theta);
+  //     }
+  //   }
+  //   SmartDashboard::PutNumber("thetaTarget", theta);
+  //   SmartDashboard::PutNumber("Targ Distance", distFromTarget.value());
+  //   SetThetaToHold({units::degree_t{theta}});
+  // }
 
-  isAtTarget = tempTargetMet;
+  // isAtTarget = tempTargetMet;
 }
 
 void DriveSubsystem::Drive(frc::ChassisSpeeds speeds,
@@ -286,14 +310,14 @@ void DriveSubsystem::Drive(frc::ChassisSpeeds speeds,
       rot = units::angular_velocity::radians_per_second_t{val};
     }
   }
-  if(yOverride) {
-    if(limelight->IsTarget()) {
-      double tx = limelight->GetXOffset();
-      x -= units::meters_per_second_t{tx * kPYTrans};
-    } else {
-      x *= 0.0;
-    }
-  }
+  // if(yOverride) {
+  //   if(limelight->IsTarget()) {
+  //     double tx = limelight->GetXOffset();
+  //     x -= units::meters_per_second_t{tx * kPYTrans};
+  //   } else {
+  //     x *= 0.0;
+  //   }
+  // }
   // arbitrary speed component adjustments
   x *= 1.0;
   y *= 1.0;
@@ -449,9 +473,9 @@ frc::Pose2d DriveSubsystem::GetPoseToHold() {
 }
 
 void DriveSubsystem::ResetFromLimelight() {
-  std::vector<double> pose = limelight->GetBotPos();
-  if(pose[0] == 0.0 && pose[1] == 0.0 && pose[5] == 0.0) return;
-  ResetOdometry({units::meter_t{pose[0]}, units::meter_t{pose[1]}, odometry.GetPose().Rotation()});
+  // std::vector<double> pose = limelight->GetBotPos();
+  // if(pose[0] == 0.0 && pose[1] == 0.0 && pose[5] == 0.0) return;
+  // ResetOdometry({units::meter_t{pose[0]}, units::meter_t{pose[1]}, odometry.GetPose().Rotation()});
 }
 
 void DriveSubsystem::SetThetaToHold(frc::Rotation2d target) {

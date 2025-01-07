@@ -45,17 +45,17 @@ void Robot::DisabledPeriodic() {
  * RobotContainer class.
  */
 void Robot::AutonomousInit() {
-  m_container.DisableTagTracking();   // auton uses odom relative to start, not based on AprilTags
-  m_autonomousCommand = m_container.GetAutonomousCommand();
-  m_container.SetDriveBrakes(true);
-  m_container.SetSlew(false);
-  m_container.SetAutoIndex(true);
-  if(DriverStation::IsFMSAttached()) {
-    m_container.SetRecording(true);
-  }
-  if(m_autonomousCommand) {
-    m_autonomousCommand->Schedule();
-  }
+  // m_container.DisableTagTracking();   // auton uses odom relative to start, not based on AprilTags
+  // m_autonomousCommand = m_container.GetAutonomousCommand();
+  // m_container.SetDriveBrakes(true);
+  // m_container.SetSlew(false);
+  // m_container.SetAutoIndex(true);
+  // if(DriverStation::IsFMSAttached()) {
+  //   m_container.SetRecording(true);
+  // }
+  // if(m_autonomousCommand) {
+  //   m_autonomousCommand->Schedule();
+  // }
   // frc2::CommandScheduler::GetInstance().Schedule(m_autonomousCommand);
   // frc2::CommandScheduler::GetInstance().Schedule(m_autonomousCommand.get());
   // m_autonomousCommand->Schedule();
@@ -64,18 +64,18 @@ void Robot::AutonomousInit() {
 void Robot::AutonomousPeriodic() {}
 
 void Robot::TeleopInit() {
-  m_container.EnableTagTracking();  // station auto-align uses AprilTag tracking 
-  m_container.SetDriveBrakes(true);
-  m_container.SetSlew(true);
-  m_container.SetAutoIndex(true);
-  if(DriverStation::IsFMSAttached()) {
-    m_container.SetRecording(true);
-  }
-  // This makes sure that the autonomous stops running when
-  // teleop starts running.
-  if (m_autonomousCommand) {
-    m_autonomousCommand->Cancel();
-  }
+  // m_container.EnableTagTracking();  // station auto-align uses AprilTag tracking 
+  // m_container.SetDriveBrakes(true);
+  // m_container.SetSlew(true);
+  // m_container.SetAutoIndex(true);
+  // if(DriverStation::IsFMSAttached()) {
+  //   m_container.SetRecording(true);
+  // }
+  // // This makes sure that the autonomous stops running when
+  // // teleop starts running.
+  // if (m_autonomousCommand) {
+  //   m_autonomousCommand->Cancel();
+  // }
 }
 
 /**

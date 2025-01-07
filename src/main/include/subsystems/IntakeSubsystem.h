@@ -10,7 +10,6 @@
 #include <rev/SparkMax.h>
 #include <iostream>
 
-#include "subsystems/ShooterSubsystem.h"
 
 #include "Constants.h"
 
@@ -20,7 +19,7 @@ using namespace rev;
 
 class IntakeSubsystem : public frc2::SubsystemBase {
  public:
-  IntakeSubsystem(ShooterSubsystem *shooterRef, Orchestra *orcRef);
+  IntakeSubsystem(Orchestra *orcRef);
 
   /**
    * Will be called periodically whenever the CommandScheduler runs.
@@ -82,8 +81,6 @@ class IntakeSubsystem : public frc2::SubsystemBase {
  private:
   int state = IntakeConstants::kPowerMode;
   double power = 0.0;
-
-  ShooterSubsystem *shooter;
 
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.

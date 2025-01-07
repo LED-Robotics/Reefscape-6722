@@ -11,9 +11,8 @@
 using namespace IntakeConstants;
 using namespace frc;
 
-IntakeSubsystem::IntakeSubsystem(ShooterSubsystem *shooterRef, Orchestra *orcRef)
+IntakeSubsystem::IntakeSubsystem(Orchestra *orcRef)
     : intakeMotor{kIntakePort, "canCan"} {
-      shooter = shooterRef;
       orca = orcRef;
     // : intakeMotor{kIntakePort, CANSparkLowLevel::MotorType::kBrushless} {
       intakeMotor.SetInverted(true);
@@ -30,8 +29,8 @@ void IntakeSubsystem::Periodic() {
     intakeMotor.Set(power);
     // else intakeMotor.Set(0.0);
   } else if(state == kAutoMode) {
-    if(!shooter->IsNoteIndexed()) intakeMotor.Set(-IntakeConstants::kIntakeSpeed);
-    else intakeMotor.Set(0.0);
+    // if(!shooter->IsNoteIndexed()) intakeMotor.Set(-IntakeConstants::kIntakeSpeed);
+    // else intakeMotor.Set(0.0);
   }
 }
 

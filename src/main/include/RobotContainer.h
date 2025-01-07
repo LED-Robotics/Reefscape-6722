@@ -24,23 +24,10 @@
 
 #include "Constants.h"
 #include "subsystems/DriveSubsystem.h"
-#include "subsystems/ShooterSubsystem.h"
 #include "subsystems/IntakeSubsystem.h"
 #include "subsystems/ArmSubsystem.h"
 #include "subsystems/ClimbSubsystem.h"
-#include "subsystems/TrapSubsystem.h"
-#include "subsystems/LimelightSubsystem.h"
 #include "subsystems/LEDSubsystem.h"
-#include "commands/IndexerSet.h"
-#include "commands/ArmSet.h"
-#include "commands/ClimbSet.h"
-#include "commands/TrapSet.h"
-#include "commands/AlignNote.h"
-#include "commands/HuntNote.h"
-#include "commands/TargetSpeaker.h"
-#include "commands/RotateToAngle.h"
-#include "commands/IntakeNote.h"
-#include "commands/TurnToNote.h"
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/WaitCommand.h>
 #include "iostream"
@@ -104,26 +91,20 @@ class RobotContainer {
   ctre::phoenix6::Orchestra orchestra;
 
   // ctre::phoenix::motorcontrol::can::WPI_VictorSPX trapOpener{21};
-
-  LimelightSubsystem limelight{"limelight"};
   
   JetsonSubsystem jetson{};
 
-  DriveSubsystem m_drive{&limelight, &jetson, &TrackingTarget, &orchestra};
+  DriveSubsystem m_drive{&jetson, &TrackingTarget, &orchestra};
 
   std::function<units::length::meter_t()> distToTarget{[this]() { 
       return m_drive.GetDistToTarget();
   }};
-    
-  ShooterSubsystem shooter{distToTarget, &TrackingTarget, &orchestra};
 
   ArmSubsystem arm{distToTarget, &TrackingTarget, &orchestra};
 
   ClimbSubsystem climber{&orchestra};
 
-  IntakeSubsystem intake{&shooter, &orchestra};
-
-  TrapSubsystem claw{&arm, &orchestra};
+  IntakeSubsystem intake{&orchestra};
 
   LEDSubsystem led{};
 
@@ -248,34 +229,34 @@ class RobotContainer {
 
 
   // AutoNote Command
-  frc2::CommandPtr hunt{frc2::SequentialCommandGroup(
-      frc2::InstantCommand([this] { 
-          intake.SetState(IntakeConstants::kAutoMode);
-        }, {&intake}),
-      AlignNote(&m_drive, &jetson),
-      HuntNote(&m_drive, &intake, &jetson),
-      frc2::ParallelDeadlineGroup(
-        frc2::WaitCommand(0.7_s),
-        IntakeNote(&intake, &shooter)
-      )
-    ).ToPtr()
-  };
+  // frc2::CommandPtr hunt{frc2::SequentialCommandGroup(
+  //     frc2::InstantCommand([this] { 
+  //         intake.SetState(IntakeConstants::kAutoMode);
+  //       }, {&intake}),
+  //     AlignNote(&m_drive, &jetson),
+  //     HuntNote(&m_drive, &intake, &jetson),
+  //     frc2::ParallelDeadlineGroup(
+  //       frc2::WaitCommand(0.7_s),
+  //       IntakeNote(&intake, &shooter)
+  //     )
+  //   ).ToPtr()
+  // };
 
   // TurnToNote noteFindLeft{220_deg_per_s, &m_drive, &jetson};
   // TurnToNote noteFindRight{-220_deg_per_s, &m_drive, &jetson};
 
   // I am a lazy hack
   // AutoNote Command
-  frc2::CommandPtr autoHunt{frc2::SequentialCommandGroup(
-      frc2::InstantCommand([this] { 
-          intake.SetState(IntakeConstants::kAutoMode);
-        }, {&intake}),
-      AlignNote(&m_drive, &jetson),
-      HuntNote(&m_drive, &intake, &jetson)
-    ).ToPtr()
-  };
+  // frc2::CommandPtr autoHunt{frc2::SequentialCommandGroup(
+  //     frc2::InstantCommand([this] { 
+  //         intake.SetState(IntakeConstants::kAutoMode);
+  //       }, {&intake}),
+  //     AlignNote(&m_drive, &jetson),
+  //     HuntNote(&m_drive, &intake, &jetson)
+  //   ).ToPtr()
+  // };
 
-  frc2::CommandPtr ensureIndexed{IntakeNote(&intake, &shooter)};
+  // frc2::CommandPtr ensureIndexed{IntakeNote(&intake, &shooter)};
 
   // Command to repetitively call odom update
   frc2::RepeatCommand repeatOdom{std::move(updateOdometry)};
@@ -284,23 +265,23 @@ class RobotContainer {
   // Trigger odom update on flag
   frc2::Trigger odomTrigger{[this]() { return validTag && !tagOverrideDisable; }};
 
-  frc2::Trigger huntTrigger{[this]() { 
-      double x = abs(controller.GetLeftY());
-      double y = abs(controller.GetLeftX());
-      double theta = abs(controller.GetRightX());
-      bool driveInactive = x < DriveConstants::kDriveDeadzone;
-      driveInactive &=  y < DriveConstants::kDriveDeadzone;
-      driveInactive &=  theta < DriveConstants::kTurnDeadzone;
-      return autoHuntEnabled && jetson.IsTarget() && driveInactive && !shooter.IsNoteIndexed();
-      // hunt note is auto-hunting is enabled, we see a note, 
-      // the driver is not driving, and a note isn't in the shooter already
-    }
-  };
+  // frc2::Trigger huntTrigger{[this]() { 
+  //     double x = abs(controller.GetLeftY());
+  //     double y = abs(controller.GetLeftX());
+  //     double theta = abs(controller.GetRightX());
+  //     bool driveInactive = x < DriveConstants::kDriveDeadzone;
+  //     driveInactive &=  y < DriveConstants::kDriveDeadzone;
+  //     driveInactive &=  theta < DriveConstants::kTurnDeadzone;
+  //     return autoHuntEnabled && jetson.IsTarget() && driveInactive && !shooter.IsNoteIndexed();
+  //     // hunt note is auto-hunting is enabled, we see a note, 
+  //     // the driver is not driving, and a note isn't in the shooter already
+  //   }
+  // };
 
-  frc2::Trigger noteDetected{[this]() { 
-      return !shooter.IsNoteIndexed() && jetson.IsTarget() && jetson.GetTargetSize() > 0.03;
-    }
-  };
+  // frc2::Trigger noteDetected{[this]() { 
+  //     return !shooter.IsNoteIndexed() && jetson.IsTarget() && jetson.GetTargetSize() > 0.03;
+  //   }
+  // };
 
   frc2::InstantCommand toggleOmegaOverride{[this] { 
       omegaOverride = !omegaOverride;
@@ -371,13 +352,13 @@ class RobotContainer {
     }, {}
   };
 
-  frc2::CommandPtr rotateTo180{RotateToAngle(&TrackingTarget, {180_deg}, &m_drive)};
-  frc2::CommandPtr rotateTo90{RotateToAngle(&TrackingTarget, {90_deg}, &m_drive)};
-  frc2::CommandPtr rotateToNeg90{RotateToAngle(&TrackingTarget, {-90_deg}, &m_drive)};
-  frc2::CommandPtr rotateToNeg70{RotateToAngle(&TrackingTarget, {-70_deg}, &m_drive)};
-  frc2::CommandPtr driveRotateToNeg70{RotateToAngle(&TrackingTarget, {-70_deg}, &m_drive)};
-  frc2::CommandPtr rotateTo82{RotateToAngle(&TrackingTarget, {82_deg}, &m_drive)};
-  frc2::CommandPtr rotateToNeg130{RotateToAngle(&TrackingTarget, {-130_deg}, &m_drive)};
+  // frc2::CommandPtr rotateTo180{RotateToAngle(&TrackingTarget, {180_deg}, &m_drive)};
+  // frc2::CommandPtr rotateTo90{RotateToAngle(&TrackingTarget, {90_deg}, &m_drive)};
+  // frc2::CommandPtr rotateToNeg90{RotateToAngle(&TrackingTarget, {-90_deg}, &m_drive)};
+  // frc2::CommandPtr rotateToNeg70{RotateToAngle(&TrackingTarget, {-70_deg}, &m_drive)};
+  // frc2::CommandPtr driveRotateToNeg70{RotateToAngle(&TrackingTarget, {-70_deg}, &m_drive)};
+  // frc2::CommandPtr rotateTo82{RotateToAngle(&TrackingTarget, {82_deg}, &m_drive)};
+  // frc2::CommandPtr rotateToNeg130{RotateToAngle(&TrackingTarget, {-130_deg}, &m_drive)};
 
   //Unique pointer shit
   frc2::CommandPtr autonSpeakerTarget{frc2::InstantCommand([this] { 
@@ -400,7 +381,7 @@ class RobotContainer {
     ).ToPtr()
   };
 
-  frc2::CommandPtr lineupSpeaker{TargetSpeaker(&TrackingTarget, &m_drive, &arm, &shooter, &limelight).ToPtr()};
+  // frc2::CommandPtr lineupSpeaker{TargetSpeaker(&TrackingTarget, &m_drive, &arm, &shooter, &limelight).ToPtr()};
 
   frc::SendableChooser<const char*> musicalSelector;
   
@@ -445,27 +426,27 @@ class RobotContainer {
   //   ).ToPtr()
   // };
 
-  frc2::SequentialCommandGroup shootNote{
-    IndexerSet(ShooterConstants::kIndexerKicking, &shooter),
-    frc2::WaitCommand(0.5_s),
-    frc2::InstantCommand([this] { 
-      shooter.OffsetIndexer(((int)ShooterConstants::kIndexerKicking));
-    }, {}),
-    IndexerSet(ShooterConstants::kIndexerHolding, &shooter)
-  };
+  // frc2::SequentialCommandGroup shootNote{
+  //   IndexerSet(ShooterConstants::kIndexerKicking, &shooter),
+  //   frc2::WaitCommand(0.5_s),
+  //   frc2::InstantCommand([this] { 
+  //     shooter.OffsetIndexer(((int)ShooterConstants::kIndexerKicking));
+  //   }, {}),
+  //   IndexerSet(ShooterConstants::kIndexerHolding, &shooter)
+  // };
 
-  frc2::CommandPtr autonShoot{frc2::SequentialCommandGroup(
-    IndexerSet(ShooterConstants::kIndexerKicking, &shooter),
-    frc2::WaitCommand(0.5_s),
-    frc2::InstantCommand([this] { 
-      shooter.OffsetIndexer(((int)ShooterConstants::kIndexerKicking));
-    }, {}),
-    IndexerSet(ShooterConstants::kIndexerHolding, &shooter)
-    ).ToPtr()
-  };
+  // frc2::CommandPtr autonShoot{frc2::SequentialCommandGroup(
+  //   IndexerSet(ShooterConstants::kIndexerKicking, &shooter),
+  //   frc2::WaitCommand(0.5_s),
+  //   frc2::InstantCommand([this] { 
+  //     shooter.OffsetIndexer(((int)ShooterConstants::kIndexerKicking));
+  //   }, {}),
+  //   IndexerSet(ShooterConstants::kIndexerHolding, &shooter)
+  //   ).ToPtr()
+  // };
 
-  frc2::CommandPtr indexResting{IndexerSet(ShooterConstants::kIndexerResting, &shooter).ToPtr()};
-  frc2::CommandPtr indexPrimed{IndexerSet(ShooterConstants::kIndexerPrimed, &shooter).ToPtr()};
+  // frc2::CommandPtr indexResting{IndexerSet(ShooterConstants::kIndexerResting, &shooter).ToPtr()};
+  // frc2::CommandPtr indexPrimed{IndexerSet(ShooterConstants::kIndexerPrimed, &shooter).ToPtr()};
 
   // Triggers for main and partner D-PAD positions
   // For 2025, add trigger for all buttons because of WPILib controller changes

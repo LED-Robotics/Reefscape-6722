@@ -131,7 +131,7 @@ RobotContainer::RobotContainer() {
   controller2.LeftStick().OnTrue(&orcaSelectNow);
   // controller.X().ToggleOnTrue(m_drive.FollowPathCommand(pathplanner::PathPlannerPath::fromPathFile("coolPath")));
 
-  controller.RightBumper().OnTrue(&shootNote);
+  // controller.RightBumper().OnTrue(&shootNote);
   // controller2.RightBumper().OnTrue(&shootNote);
   // controller2.RightBumper().OnTrue(std::move(indexPrimed));
 
@@ -141,8 +141,8 @@ RobotContainer::RobotContainer() {
 
   controller2.X().OnTrue(&climbPrepare);
   controller2.Y().ToggleOnTrue(&climb);
-  controller.A().OnTrue(std::move(indexPrimed));
-  controller.Start().ToggleOnTrue(std::move(hunt));
+  // controller.A().OnTrue(std::move(indexPrimed));
+  // controller.Start().ToggleOnTrue(std::move(hunt));
   // controller.RightStick().ToggleOnTrue(std::move(driveRotateToNeg70));
 
   // controller.X().OnTrue(&targetStage);
@@ -241,14 +241,6 @@ RobotContainer::RobotContainer() {
     },
   {&intake}));
 
-  // Shooter enable default command
-  shooter.SetDefaultCommand(frc2::RunCommand(
-    [this] {
-      if(controller.LeftBumper().Get()) shooter.SetState(ShooterConstants::kRpmMode);
-      else shooter.SetState(ShooterConstants::kOff);
-    },
-  {&shooter}));
-
   // Arm enable default command
   arm.SetDefaultCommand(frc2::RunCommand(
     [this] {
@@ -270,53 +262,10 @@ RobotContainer::RobotContainer() {
   {&climber}));
 
   // command to trigger odom updates from limelight AprilTag data
-  limelight.SetDefaultCommand(frc2::RunCommand(
-    [this] {
-      if(!limelight.IsTarget()) {
-        validTag = false; // if there is no tag detected or the tag is very small don't update odom!
-      } else {
-        if(limelight.GetTargetArea() > 0.0) {
-          validTag = true;  // positional data most likely good. Update odom! 
-        }
-      }
-        frc::SmartDashboard::PutBoolean("tagDetected", validTag); // flashes green to tell drivers odom has been updated
-        tagOverrideDisable = frc::SmartDashboard::GetBoolean("detectorOverride", false);
-
-    },
-  {&limelight}));
 
   led.SetDefaultCommand(frc2::RunCommand(
     [this] {
-      if(climbed) {
-        led.SetPower(LEDConstants::kClimbedPreset);
-      } else if(TrackingTarget == GlobalConstants::kNote){
-        if(shooter.IsNoteIndexed()){
-          led.SetPower(LEDConstants::kNoteIndexed);
-        }
-        else{
-        led.SetPower(LEDConstants::kNoteAutoAlign);
-        }
-      } else {
-        // Add logic for idle/shooter lighting presets
-        bool useShooterLighting = false;
-        auto coord = m_drive.GetPose().Translation();
-        if(coord.X() > GlobalConstants::kShootingBox[0].X() && coord.X() < GlobalConstants::kShootingBox[1].X()) {
-          if(coord.Y() > GlobalConstants::kShootingBox[0].Y() && coord.Y() < GlobalConstants::kShootingBox[1].Y()) {
-            useShooterLighting = true;
-          }
-        }
-        if(TrackingTarget == GlobalConstants::kSpeaker && useShooterLighting) {
-       
-          // Add shooter preset(s)
-          bool linedUp = m_drive.IsAtTarget() && arm.IsAtTarget() && shooter.IsAtTarget() && limelight.IsTarget();
-
-          if(linedUp) led.SetPower(LEDConstants::kShootReadyPreset);
-          else led.SetPower(LEDConstants::kShootNotReadyPreset);          
-        } else {
-          // Add idle preset
-          led.SetPower(LEDConstants::kIdlePreset);
-        }
-      }
+    
     },
   {&led}));
 
@@ -348,13 +297,13 @@ void RobotContainer::SetRecording(bool state) {
   jetson.SetRecording(state);
 }
 
-void RobotContainer::SetAutoIndex(bool state) {
-  shooter.SetIndexerAuto(state);
-}
+// void RobotContainer::SetAutoIndex(bool state) {
+//   shooter.SetIndexerAuto(state);
+// }
 
 // return selected auton routine from Shuffleboard
-frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
-  auto string = autonChooser.GetSelected();
+// frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
+//   auto string = autonChooser.GetSelected();
   // m_drive.ResetOdometry(pathplanner::PathPlannerAuto::getStartingPoseFromAutoFile(string));
   // return pathplanner::PathPlannerAuto(string).ToPtr();
-}
+// }
