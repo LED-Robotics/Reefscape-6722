@@ -62,13 +62,12 @@ RobotContainer::RobotContainer() {
   controller2.Start().WhileTrue(&rumblePrimaryOn);
   // controller.Start().OnFalse(&rumbleSecondaryOff);
   controller2.Start().OnFalse(&rumblePrimaryOff);
-
+  //Command toggle for field centric
+  controller.Y().OnTrue(&toggleFieldCentric);
   // Set up default drive command
   m_drive.SetDefaultCommand(frc2::RunCommand(
     [this] {
       SmartDashboard::PutNumber("Subsystem Target", TrackingTarget);
-      //Command toggle for field centric
-      controller.Y().OnTrue(&toggleFieldCentric);
       // store control inputs for driving
       double x = -controller.GetLeftY();
       double y = -controller.GetLeftX();
