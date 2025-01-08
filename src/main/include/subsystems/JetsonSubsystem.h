@@ -15,6 +15,18 @@
 
 using namespace frc;
 
+struct AprilTagFrame {
+  uint8_t tagId = -1;
+  uint8_t camId = -1;
+  unsigned long timeCaptured;
+  double tx;
+  double ty;
+  double tz;
+  double rx;
+  double ry;
+  double rz;
+};
+
 class JetsonSubsystem : public frc2::SubsystemBase {
  public:
   JetsonSubsystem();
@@ -52,10 +64,25 @@ class JetsonSubsystem : public frc2::SubsystemBase {
    */
   double GetTargetSize();
 
-  
-
   void SetRecording(bool state);
     
+  /**
+   * Get the raw data from the jetson.
+   * 
+   * @return Raw vector of tag information
+   */
+  std::vector<uint8_t> GetRawTagInfo();
+
+  /**
+   * Turn the raw data from the jetson into usable information.
+   */
+  void GetTagInfo();
+
+  /**
+   * Set the requested tags from the Jetson
+   */
+  void SetRequestedTags();
+
  private:
   double targetXOffset;
   double targetYOffset;
