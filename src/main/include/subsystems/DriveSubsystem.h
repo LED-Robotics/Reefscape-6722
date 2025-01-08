@@ -82,7 +82,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
   /**
    * Generates a command to follow the path passed in.
    */
-  // frc2::CommandPtr FollowPathCommand(std::shared_ptr<pathplanner::PathPlannerPath> path);
+  frc2::CommandPtr FollowPathCommand(std::string path);
   frc2::CommandPtr Aimbot();
 
   /**

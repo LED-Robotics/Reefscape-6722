@@ -12,6 +12,7 @@
 #include <pathplanner/lib/auto/AutoBuilder.h>
 #include <pathplanner/lib/config/RobotConfig.h>
 #include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
+#include <pathplanner/lib/path/PathPlannerPath.h>
 
 using namespace frc;
 using namespace rev;
@@ -244,10 +245,10 @@ wpi::array<SwerveModuleState, 4> DriveSubsystem::GetModuleStates() const {
   return {s_frontLeft.GetState(), s_frontRight.GetState(), s_backLeft.GetState(), s_backRight.GetState()};
 }
 
-// frc2::CommandPtr  DriveSubsystem::FollowPathCommand(std::shared_ptr<pathplanner::PathPlannerPath> path){
-
-
-// }
+frc2::CommandPtr DriveSubsystem::FollowPathCommand(std::string path){
+  auto useablePath = PathPlannerPath::fromPathFile(path);
+  return AutoBuilder::followPath(useablePath);
+}
 
 void DriveSubsystem::SetDrivePower(double power) {
   // std::cout << "Power: " << power << '\n';

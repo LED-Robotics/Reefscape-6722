@@ -57,10 +57,13 @@ RobotContainer::RobotContainer() {
   driverTurning.OnTrue(&tempDisableOmega);
   driverTurning.OnFalse(&restoreOmega);
 
+  // Uncomment for actual use to prevent dumbass
+  // controller.A().OnTrue(std::move(m_drive.FollowPathCommand("Example Path")));
+
   // funny rumble command bindings. These might not work. 
-  // controller.Start().WhileTrue(&rumbleSecondaryOn);
+  controller.Start().WhileTrue(&rumbleSecondaryOn);
   controller2.Start().WhileTrue(&rumblePrimaryOn);
-  // controller.Start().OnFalse(&rumbleSecondaryOff);
+  controller.Start().OnFalse(&rumbleSecondaryOff);
   controller2.Start().OnFalse(&rumblePrimaryOff);
   //Command toggle for field centric
   controller.Y().OnTrue(&toggleFieldCentric);
