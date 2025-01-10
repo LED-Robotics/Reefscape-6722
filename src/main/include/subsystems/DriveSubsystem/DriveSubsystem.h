@@ -22,9 +22,9 @@
 
 #include <frc/DriverStation.h>
 
-#include "Constants.h"
+#include "GlobalConstants.h"
 #include "SwerveModule.h"
-#include "subsystems/JetsonSubsystem.h"
+#include "subsystems/JetsonSubsystem/JetsonSubsystem.h"
 
 using namespace frc;
 using namespace ctre::phoenix6;
@@ -289,5 +289,4 @@ class DriveSubsystem : public frc2::SubsystemBase {
   int distSample = 0;
   double distArray[kDistSamples];
   units::length::meter_t distFromTarget{0.0_m};
-  Orchestra *orca;
 };

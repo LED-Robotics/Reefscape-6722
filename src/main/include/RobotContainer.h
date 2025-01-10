@@ -22,9 +22,9 @@
 #include <frc2/command/RunCommand.h>
 #include "units/angle.h"
 
-#include "Constants.h"
-#include "subsystems/DriveSubsystem.h"
-#include "subsystems/LEDSubsystem.h"
+#include "GlobalConstants.h"
+#include "subsystems/DriveSubsystem/DriveSubsystem.h"
+#include "subsystems/LEDSubsystem/LEDSubsystem.h"
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/WaitCommand.h>
 #include "iostream"

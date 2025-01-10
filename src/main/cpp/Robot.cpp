@@ -37,7 +37,7 @@ void Robot::DisabledInit() {
 }
 
 void Robot::DisabledPeriodic() {
-  m_container.SetRecording(false);
+  
 }
 
 /**

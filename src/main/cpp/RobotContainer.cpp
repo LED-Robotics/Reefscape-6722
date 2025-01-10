@@ -16,7 +16,7 @@
 #include <frc2/command/button/JoystickButton.h>
 // #include "pathplanner/lib/auto/NamedCommands.h"
 
-#include "Constants.h"
+#include "GlobalConstants.h"
 
 // return current Alliance from either FMS or Driver Station
 bool RobotContainer::IsBlue() {
@@ -65,6 +65,7 @@ RobotContainer::RobotContainer() {
   controller2.Start().WhileTrue(&rumblePrimaryOn);
   controller.Start().OnFalse(&rumbleSecondaryOff);
   controller2.Start().OnFalse(&rumblePrimaryOff);
+  
   //Command toggle for field centric
   controller.Y().OnTrue(&toggleFieldCentric);
   // Set up default drive command
@@ -118,8 +119,4 @@ void RobotContainer::EnableTagTracking() {
 
 void RobotContainer::SetSlew(bool state) {
   m_drive.SetLimiting(state);
-}
-
-void RobotContainer::SetRecording(bool state) {
-  jetson.SetRecording(state);
 }

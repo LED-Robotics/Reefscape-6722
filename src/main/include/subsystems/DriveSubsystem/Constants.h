@@ -1,6 +1,4 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+#pragma once
 
 #include <units/acceleration.h>
 #include <units/angle.h>
@@ -15,28 +13,7 @@
 #include <units/voltage.h>
 #include <numbers>
 #include <frc/geometry/Pose2d.h>
-#include <frc/Encoder.h>
-#include <frc/controller/ArmFeedforward.h>
-#include <frc/motorcontrol/PWMSparkMax.h>
-#include <frc2/command/ProfiledPIDSubsystem.h>
-#include <ctre/phoenix6/Orchestra.hpp>
 
-
-#pragma once
-
-/**
- * The Constants header provides a convenient place for teams to hold robot-wide
- * numerical or bool constants.  This should not be used for any other purpose.
- *
- * It is generally a good idea to place constants into subsystem- or
- * command-specific namespaces within this header, which can then be used where
- * they are needed.
- */
-
-namespace GlobalConstants {
-    // Subsystem Target States
-    constexpr int kArbitrary = 0;
-}
 
 namespace DriveConstants {
     //Wheel motors
@@ -104,29 +81,4 @@ namespace DriveConstants {
     constexpr units::kilogram_t kRobotWeight = 54.43_kg;
     constexpr auto kMOI = 60;
 
-}  // namespace DriveConstants
-
-namespace AutoConstants {
-    // for PID/pathfinding
-    constexpr auto kMaxSpeed = 4.5_mps;
-    constexpr auto kMaxAcceleration = 2_mps_sq;
-    constexpr auto kAngularSpeed = 180_deg_per_s;
-    constexpr auto kMaxAngularAcceleration = 180_deg_per_s_sq;
-
-    constexpr double kPXController = 0.4;
-    constexpr double kPYController = 0.4;
-    constexpr double kPThetaController = 0.0;
-
-    constexpr frc::Pose2d kDefaultStartingPose{{1.39_m, 4.11_m}, {180_deg}};
-} //namespace AutoConstants
-
-namespace OIConstants {
-    constexpr int kDriverControllerPort = 0;
-    constexpr int kCoDriverControllerPort = 1;
-}  // namespace OIConstants
-
-namespace LEDConstants {
-    constexpr int kBlinkin1Port = 0;
-    constexpr int kBlinkin2Port = 1;
-    constexpr double kIdlePreset = 0.41;
 }

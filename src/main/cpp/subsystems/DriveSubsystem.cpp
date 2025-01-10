@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-#include "subsystems/DriveSubsystem.h"
+#include "subsystems/DriveSubsystem/DriveSubsystem.h"
 
 #include <iostream>
 #include <cmath>
@@ -174,30 +174,12 @@ void DriveSubsystem::Drive(frc::ChassisSpeeds speeds,
   units::meters_per_second_t y = speeds.vy;
   units::angular_velocity::radians_per_second_t rot = speeds.omega;
   if(omegaOverride) {
-    if(*thetaTarget == GlobalConstants::kArbitrary) {
-      if(jetson->IsTarget()) {
-        double tx = jetson->GetXOffset();
-        rot -= units::angular_velocity::degrees_per_second_t{tx * kPNote};
-      } else {
-        rot -= 0_deg_per_s;
-      }
-    }
-    else {
-      double angle = GetPose().Rotation().Degrees().value();
-      double target = SwerveModule::PlaceInAppropriate0To360Scope(thetaHoldController.GetSetpoint(), angle);
-      double val = thetaHoldController.Calculate(target);
-      rot = units::angular_velocity::radians_per_second_t{val};
-    }
+    double angle = GetPose().Rotation().Degrees().value();
+    double target = SwerveModule::PlaceInAppropriate0To360Scope(thetaHoldController.GetSetpoint(), angle);
+    double val = thetaHoldController.Calculate(target);
+    rot = units::angular_velocity::radians_per_second_t{val};
   }
-  // if(yOverride) {
-  //   if(limelight->IsTarget()) {
-  //     double tx = limelight->GetXOffset();
-  //     x -= units::meters_per_second_t{tx * kPYTrans};
-  //   } else {
-  //     x *= 0.0;
-  //   }
-  // }
-  // arbitrary speed component adjustments
+
   x *= 1.0;
   y *= 1.0;
   rot *= 1.0;

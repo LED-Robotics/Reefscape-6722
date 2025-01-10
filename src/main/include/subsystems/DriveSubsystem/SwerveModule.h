@@ -19,6 +19,7 @@
 #include <units/velocity.h>
 #include <ctre/phoenix6/TalonFX.hpp>
 
+#include "GlobalConstants.h"
 #include "Constants.h"
 
 using namespace frc;
