@@ -64,7 +64,7 @@ void Robot::AutonomousInit() {
 void Robot::AutonomousPeriodic() {}
 
 void Robot::TeleopInit() {
-  // m_container.EnableTagTracking();  // station auto-align uses AprilTag tracking 
+  m_container.EnableTagTracking();  // station auto-align uses AprilTag tracking 
   // m_container.SetDriveBrakes(true);
   // m_container.SetSlew(true);
   // m_container.SetAutoIndex(true);

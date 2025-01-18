@@ -6,6 +6,7 @@
 
 #include <frc/geometry/Pose2d.h>
 #include <frc/geometry/Rotation2d.h>
+#include <frc/smartdashboard/Field2d.h>
 #include <frc/kinematics/SwerveDriveOdometry.h>
 #include <frc/kinematics/SwerveModulePosition.h>
 #include <frc/kinematics/SwerveDriveKinematics.h>
@@ -173,7 +174,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
    */
   frc::Pose2d GetPoseToHold();
 
-  void ResetFromLimelight();
+  void ResetFromJetson();
 
   // for vision
   
@@ -289,4 +290,5 @@ class DriveSubsystem : public frc2::SubsystemBase {
   int distSample = 0;
   double distArray[kDistSamples];
   units::length::meter_t distFromTarget{0.0_m};
+  Field2d fieldWidget;
 };

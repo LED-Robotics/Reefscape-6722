@@ -3,25 +3,29 @@
 // the WPILib BSD license file in the root directory of this project.
 
 #include <frc/geometry/Rotation3d.h>
+#include <frc/smartdashboard/Field2d.h>
 #include <frc/geometry/Translation3d.h>
 #include <frc/geometry/Transform3d.h>
+#include <frc/geometry/Pose3d.h>
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc2/command/SubsystemBase.h>
 #include "networktables/NetworkTable.h"
 #include "networktables/NetworkTableInstance.h"
 #include "networktables/NetworkTableEntry.h"
 #include "networktables/NetworkTableValue.h"
+#include "frc/smartdashboard/SmartDashboard.h"
 
 #include <frc/DriverStation.h>
 
-#include "GlobalConstants.h"
+#include "Constants.h"
+
 
 using namespace frc;
 
 struct AprilTagFrame {
   uint8_t tagId = -1;
   uint8_t camId = -1;
-  unsigned long timeCaptured;
+  uint32_t timeCaptured;
   double tx;
   double ty;
   double tz;
@@ -32,12 +36,13 @@ struct AprilTagFrame {
 
 struct TagDetections {
   int tagId;
-  frc::Transform3d tagTransform;
+  frc::Transform3d aprilTagRelativePose;
+  frc::Pose3d fieldRelativePose;
 };
 
 struct CameraInformation {
   int camId;
-  frc::Pose3d pose;
+  frc::Transform3d pose;
 };
 
 class JetsonSubsystem : public frc2::SubsystemBase {
@@ -80,15 +85,30 @@ class JetsonSubsystem : public frc2::SubsystemBase {
   std::vector<TagDetections> CreateTagVector(std::vector<AprilTagFrame> parsedData);
 
   /**
-   * Grab the specific information about a tag 
-   * 
-   * 
+   * Grab the average robot pos from all tags detected on field 
    */
+  frc::Pose2d AverageRobotPose();
+
+  bool IsPoseAvailable();
+
  private:
-  const int TAG_FRAME_SIZE = sizeof(AprilTagFrame);
+  const size_t TAG_FRAME_SIZE = sizeof(AprilTagFrame);
+  bool poseAvailable = false;
 
   std::shared_ptr<nt::NetworkTable> table;
+  
   std::vector<uint8_t> requestedTags;
   std::vector<AprilTagFrame> parsedTagData;
-  std::vector<TagDetections> jetsonTagDetections; // Vector containing the Transforms of the tag 
+  std::vector<TagDetections> jetsonTagDetections; 
+
+  frc::Transform3d camTrans;
+  AprilTagFieldLayout field;
+
+  CameraInformation testCam0;
+  CameraInformation testCam1;
+  CameraInformation testCam2;
+
+  std::vector<CameraInformation> cams;
+
+  Pose2d fieldRelativePose;
 };

@@ -122,9 +122,10 @@ class RobotContainer {
   // update odom based on Limelight's AprilTag megabotpose estimation
   frc2::SequentialCommandGroup updateOdometry{
     frc2::InstantCommand([this] {
-      if(!tagOverrideDisable) {
-        m_drive.ResetFromLimelight();
-      }
+      // if(!tagOverrideDisable) {
+      std::cout << "Skib" << std::endl;
+        m_drive.ResetFromJetson();
+      // }
     }, {}),
     frc2::WaitCommand(5.0_s)
   };
@@ -142,7 +143,7 @@ class RobotContainer {
   frc2::RepeatCommand repeatOdom{std::move(updateOdometry)};
 
   // Trigger odom update on flag
-  frc2::Trigger odomTrigger{[this]() { return validTag && !tagOverrideDisable; }};
+  frc2::Trigger odomTrigger{[this]() { return !tagOverrideDisable; }};
 
   frc2::InstantCommand toggleFieldCentric{[this] {
       fieldCentric = !fieldCentric;

@@ -154,18 +154,21 @@ void DriveSubsystem::Periodic() {
   targetUsingLimelight = SmartDashboard::GetBoolean("Limelight Targeting", targetUsingLimelight);
 
   odometry.Update(GetRotation(),
-                  {s_frontLeft.GetPosition(), s_frontRight.GetPosition(),
-                  s_backLeft.GetPosition(), s_backRight.GetPosition()});
+              {s_frontLeft.GetPosition(), s_frontRight.GetPosition(),
+              s_backLeft.GetPosition(), s_backRight.GetPosition()});
+  
+  fieldWidget.SetRobotPose(odometry.GetPose());          
   auto pose = odometry.GetPose();
   SmartDashboard::PutNumber("poseX", (double)pose.X());
   SmartDashboard::PutNumber("poseY", (double)pose.Y());
   SmartDashboard::PutNumber("poseAngle", (double)pose.Rotation().Degrees());
   SmartDashboard::PutBoolean("isAtTarget", isAtTarget);
+  SmartDashboard::PutData("Field", &fieldWidget);
   HandleTargeting();
 }
 
 void DriveSubsystem::HandleTargeting() {
-
+  
 }
 
 void DriveSubsystem::Drive(frc::ChassisSpeeds speeds,
@@ -333,10 +336,10 @@ frc::Pose2d DriveSubsystem::GetPoseToHold() {
   return poseToHold;
 }
 
-void DriveSubsystem::ResetFromLimelight() {
-  // std::vector<double> pose = limelight->GetBotPos();
-  // if(pose[0] == 0.0 && pose[1] == 0.0 && pose[5] == 0.0) return;
-  // ResetOdometry({units::meter_t{pose[0]}, units::meter_t{pose[1]}, odometry.GetPose().Rotation()});
+void DriveSubsystem::ResetFromJetson() {
+  auto updatedPose = jetson->AverageRobotPose();
+  if(!jetson->IsPoseAvailable()) return;
+  ResetOdometry({updatedPose.Translation(), GetRotation()});
 }
 
 void DriveSubsystem::SetThetaToHold(frc::Rotation2d target) {

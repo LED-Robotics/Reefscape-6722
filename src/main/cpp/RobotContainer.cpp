@@ -76,6 +76,8 @@ RobotContainer::RobotContainer() {
       double x = -controller.GetLeftY();
       double y = -controller.GetLeftX();
       double turnX = controller.GetRightX();
+
+      tagOverrideDisable = SmartDashboard::GetBoolean("detectorOverride", true);
       
       // zero out axes if they fall within deadzone
       if (x > -DriveConstants::kDriveDeadzone && x < DriveConstants::kDriveDeadzone)
