@@ -113,47 +113,46 @@ class RobotContainer {
 
   bool autoIntakeEnabled = false;
 
-  bool climbed = false;
-
   int currentTarget = 0;
 
   int omegaTempDisabled = 0;
 
-  // update odom based on Limelight's AprilTag megabotpose estimation
-  frc2::SequentialCommandGroup updateOdometry{
-    frc2::InstantCommand([this] {
-      // if(!tagOverrideDisable) {
-      std::cout << "Skib" << std::endl;
-        m_drive.ResetFromJetson();
-      // }
-    }, {}),
-    frc2::WaitCommand(5.0_s)
-  };
+  // update odom based on Nvdia Jetson estimation
+  frc2::CommandPtr updateOdometry {
+    frc2::cmd::Sequence(
+      frc2::cmd::RunOnce([this] {
+        // if(!tagOverrideDisable) {
+        std::cout << "Skib" << std::endl;
+          m_drive.ResetFromJetson();
+        // }
+      }, {}),
+      frc2::cmd::Wait(5.0_s)
+    )};
 
-  frc2::CommandPtr autonOdomSet{frc2::InstantCommand ([this]{
+  frc2::CommandPtr autonOdomSet{frc2::cmd::RunOnce([this]{
       m_drive.ResetOdometry(AutoConstants::kDefaultStartingPose);
     },{&m_drive}
-  ).ToPtr()};
+  )};
 
-  frc2::InstantCommand odomReset{[this]{
+  frc2::CommandPtr odomReset{frc2::cmd::RunOnce([this]{
       m_drive.ResetOdometry({7.5_m, 4.3_m, 180_deg});
-    },{}};
+  },{})};
 
   // Command to repetitively call odom update
-  frc2::RepeatCommand repeatOdom{std::move(updateOdometry)};
+  frc2::CommandPtr repeatOdom{std::move(updateOdometry).Repeatedly()};
 
   // Trigger odom update on flag
   frc2::Trigger odomTrigger{[this]() { return !tagOverrideDisable; }};
 
-  frc2::InstantCommand toggleFieldCentric{[this] {
+  frc2::CommandPtr toggleFieldCentric{frc2::cmd::RunOnce([this] {
       fieldCentric = !fieldCentric;
-    }, {}
+    }, {})
   };
 
-  frc2::InstantCommand toggleOmegaOverride{[this] { 
+  frc2::CommandPtr toggleOmegaOverride{frc2::cmd::RunOnce([this] { 
       omegaOverride = !omegaOverride;
       m_drive.SetOmegaOverride(omegaOverride);
-    }, {}
+    }, {})
   };
 
   frc2::Trigger driverTurning{[this]() {
@@ -161,51 +160,49 @@ class RobotContainer {
     }
   };
   
-  frc2::InstantCommand tempDisableOmega{[this] { 
+  frc2::CommandPtr tempDisableOmega{frc2::cmd::RunOnce([this] { 
       omegaTempDisabled++;
       m_drive.SetOmegaOverride(false);
-    }, {}
+    }, {})
   };
 
-  frc2::InstantCommand restoreOmega{[this] { 
+  frc2::CommandPtr restoreOmega{frc2::cmd::RunOnce([this] { 
       omegaTempDisabled--;
       if(omegaTempDisabled <= 0) {
         omegaTempDisabled = 0;
         m_drive.SetOmegaOverride(omegaOverride);
       }
-    }, {}
+    }, {})
   };
 
-  frc2::InstantCommand targetArbitrary{[this] { 
+  frc2::CommandPtr targetArbitrary{frc2::cmd::RunOnce([this] { 
       TrackingTarget = GlobalConstants::kArbitrary;
-    }, {}
+    }, {})
   };
 
-  frc2::CommandPtr driveOff{frc2::InstantCommand([this] { 
-        m_drive.Drive({0_mps, 0_mps, 0_deg_per_s});
-      }, {&m_drive}
-    ).ToPtr()
+  frc2::CommandPtr driveOff{frc2::cmd::RunOnce([this] { 
+      m_drive.Drive({0_mps, 0_mps, 0_deg_per_s});
+    }, {&m_drive})
   };
 
-  frc2::CommandPtr autonTrackingDisable{frc2::InstantCommand([this] { 
-        TrackingTarget = GlobalConstants::kArbitrary;
-        m_drive.SetOmegaOverride(false);
-      }, {&m_drive}
-    ).ToPtr()
+  frc2::CommandPtr autonTrackingDisable{frc2::cmd::RunOnce([this] { 
+      TrackingTarget = GlobalConstants::kArbitrary;
+      m_drive.SetOmegaOverride(false);
+    }, {&m_drive})  
   };
 
   // funny rumble Commands
-  frc2::InstantCommand rumblePrimaryOn{[this] { controller.SetRumble(GenericHID::kBothRumble, 1.0); },
-                                        {}};
+  frc2::CommandPtr rumblePrimaryOn{frc2::cmd::RunOnce([this] { controller.SetRumble(GenericHID::kBothRumble, 1.0); },
+                                        {})};
 
-  frc2::InstantCommand rumbleSecondaryOn{[this] { controller2.SetRumble(GenericHID::kBothRumble, 1.0); },
-                                        {}};
+  frc2::CommandPtr rumbleSecondaryOn{frc2::cmd::RunOnce([this] { controller2.SetRumble(GenericHID::kBothRumble, 1.0); },
+                                        {})};
   
-  frc2::InstantCommand rumblePrimaryOff{[this] { controller.SetRumble(GenericHID::kBothRumble, 0.0); },
-                                        {}};
+  frc2::CommandPtr rumblePrimaryOff{frc2::cmd::RunOnce([this] { controller.SetRumble(GenericHID::kBothRumble, 0.0); },
+                                        {})};
 
-  frc2::InstantCommand rumbleSecondaryOff{[this] { controller2.SetRumble(GenericHID::kBothRumble, 0.0); },
-                                        {}};
+  frc2::CommandPtr rumbleSecondaryOff{frc2::cmd::RunOnce([this] { controller2.SetRumble(GenericHID::kBothRumble, 0.0); },
+                                        {})};
   /**
    * Find whether the robot is on the blue or red alliance as set by the FMS/DriverStation.
    *

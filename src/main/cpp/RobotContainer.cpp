@@ -42,34 +42,34 @@ RobotContainer::RobotContainer() {
   
   autonChooser.SetDefaultOption("None", "None");
 
-  SmartDashboard::PutData(&autonChooser);  // send auton selector to Shuffleboard
+  SmartDashboard::PutData(std::move(&autonChooser));  // send auton selector to Shuffleboard
 
-  odomTrigger.WhileTrue(&repeatOdom); // trigger to handle odom updates from AprilTags
+  odomTrigger.WhileTrue(std::move(repeatOdom)); // trigger to handle odom updates from AprilTags
 
-  controller.POVLeft().OnTrue(&targetArbitrary);
+  controller.POVLeft().OnTrue(std::move(targetArbitrary));
 
-  controller2.POVLeft().OnTrue(&targetArbitrary);  
+  controller2.POVLeft().OnTrue(std::move(targetArbitrary));
   //Turn lock toggles
-  controller.LeftStick().OnTrue(&toggleOmegaOverride);
+  controller.LeftStick().OnTrue(std::move(toggleOmegaOverride));
   // controller.RightStick().OnTrue(std::move(rotateTo180));
-  controller2.LeftBumper().OnTrue(&toggleOmegaOverride);
+  controller2.LeftBumper().OnTrue(std::move(toggleOmegaOverride));
 
-  driverTurning.OnTrue(&tempDisableOmega);
-  driverTurning.OnFalse(&restoreOmega);
+  driverTurning.OnTrue(std::move(tempDisableOmega));
+  driverTurning.OnFalse(std::move(restoreOmega));
 
   // Uncomment for actual use to prevent dumbass
   // controller.A().OnTrue(std::move(m_drive.FollowPathCommand("Example Path")));
 
   // funny rumble command bindings. These might not work. 
-  controller.Start().WhileTrue(&rumbleSecondaryOn);
-  controller2.Start().WhileTrue(&rumblePrimaryOn);
-  controller.Start().OnFalse(&rumbleSecondaryOff);
-  controller2.Start().OnFalse(&rumblePrimaryOff);
+  controller.Start().WhileTrue(std::move(rumbleSecondaryOn));
+  controller2.Start().WhileTrue(std::move(rumblePrimaryOn));
+  controller.Start().OnFalse(std::move(rumbleSecondaryOff));
+  controller2.Start().OnFalse(std::move(rumblePrimaryOff));
   
   //Command toggle for field centric
-  controller.Y().OnTrue(&toggleFieldCentric);
+  controller.Y().OnTrue(std::move(toggleFieldCentric));
   // Set up default drive command
-  m_drive.SetDefaultCommand(frc2::RunCommand(
+  m_drive.SetDefaultCommand(frc2::cmd::Run(
     [this] {
       SmartDashboard::PutNumber("Subsystem Target", TrackingTarget);
       // store control inputs for driving
@@ -97,7 +97,7 @@ RobotContainer::RobotContainer() {
       turn * -270.0_deg_per_s}, true, fieldCentric);
     }, {&m_drive}));
 
-  led.SetDefaultCommand(frc2::RunCommand(
+  led.SetDefaultCommand(frc2::cmd::Run(
     [this] {
     
     },
