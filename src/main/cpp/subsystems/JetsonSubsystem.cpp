@@ -135,11 +135,11 @@ frc::Pose2d JetsonSubsystem::AverageRobotPose() {
     Translation2d finalFieldTrans;
     Rotation2d finalFieldRot;
     int count = 0;
-    for(TagDetections detections : jetsonTagDetections) {
-      finalFieldTrans.operator+(detections.fieldRelativePose.ToPose2d().Translation());
+    for(TagDetections& detections : jetsonTagDetections) {
+      finalFieldTrans = finalFieldTrans.operator+(detections.fieldRelativePose.ToPose2d().Translation());
       count++;
     }
-    finalFieldTrans.operator/(count);
+    finalFieldTrans = finalFieldTrans.operator/(count);
     return {finalFieldTrans, finalFieldRot};
   }
   else return {};
