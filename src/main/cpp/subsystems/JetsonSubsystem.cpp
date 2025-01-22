@@ -14,9 +14,9 @@ JetsonSubsystem::JetsonSubsystem() {
   table = nt::NetworkTableInstance::GetDefault().GetTable("jetson");
   field = AprilTagFieldLayout::LoadField(AprilTagField::k2025Reefscape);
   field.SetOrigin(AprilTagFieldLayout::OriginPosition::kBlueAllianceWallRightSide);
-  testCam0 = {0, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, 180.0_deg}}};
-  testCam1 = {1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, 180.0_deg}}};
-  testCam2 = {2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, 180.0_deg}}};
+  testCam0 = {0, {0.0_m, 0.371_m, -0.089_m, {0.0_deg, 0.0_deg, 90.0_deg}}};
+  testCam1 = {1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
+  testCam2 = {2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
   
   this->AddRequestedTags(std::vector<uint8_t> {6, 7, 8, 9, 10, 11});
 
@@ -27,10 +27,10 @@ void JetsonSubsystem::Periodic() {
   parsedTagData = ParseRawTagInfo(GetRawTagInfo());
   jetsonTagDetections = CreateTagVector(parsedTagData);
   fieldRelativePose = AverageRobotPose();  
-
   
   table->PutRaw("rqsted", requestedTags);
 
+  // Debug printouts
   // if(!jetsonTagDetections.empty()) {
   //   SmartDashboard::PutNumber("testSigma", jetsonTagDetections.at(0).tagId);
   // }
@@ -39,8 +39,6 @@ void JetsonSubsystem::Periodic() {
   // SmartDashboard::PutNumber("Final Detections", jetsonTagDetections.size());
 
   // SmartDashboard::PutNumber("Parsed size", parsedTagData.size());
-
-
 }
 
 std::vector<uint8_t> JetsonSubsystem::GetRawTagInfo() {
@@ -89,6 +87,18 @@ std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<AprilTag
     Transform3d tagTransform(tagTranslation, tagRotation);
 
     Transform3d finalTransform = tagTransform + camTrans;
+
+    // std::cout << "tx: " << finalTransform.X().value() << std::endl; 
+    // std::cout << "ty: " << finalTransform.Y().value() << std::endl; 
+    // std::cout << "tz: " << finalTransform.Z().value() << std::endl; 
+    // std::cout << "rz: " << units::degree_t(finalTransform.Rotation().Z()).value() << std::endl; 
+    
+    std::cout << "Tag tx: " << tag.tx << std::endl; 
+    std::cout << "Tag ty: " << tag.ty << std::endl; 
+    std::cout << "Tag tz: " << tag.tz << std::endl; 
+
+
+
     auto realTagPose = field.GetTagPose((int)tag.tagId);
 
     // std::cout << tagTranslation.Y().value() << std::endl;
@@ -136,10 +146,10 @@ frc::Pose2d JetsonSubsystem::AverageRobotPose() {
     Rotation2d finalFieldRot;
     int count = 0;
     for(TagDetections& detections : jetsonTagDetections) {
-      finalFieldTrans = finalFieldTrans.operator+(detections.fieldRelativePose.ToPose2d().Translation());
+      finalFieldTrans = finalFieldTrans + detections.fieldRelativePose.ToPose2d().Translation();
       count++;
     }
-    finalFieldTrans = finalFieldTrans.operator/(count);
+    finalFieldTrans = finalFieldTrans / count;
     return {finalFieldTrans, finalFieldRot};
   }
   else return {};

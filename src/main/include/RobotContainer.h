@@ -122,11 +122,10 @@ class RobotContainer {
     frc2::cmd::Sequence(
       frc2::cmd::RunOnce([this] {
         // if(!tagOverrideDisable) {
-        std::cout << "Skib" << std::endl;
           m_drive.ResetFromJetson();
         // }
       }, {}),
-      frc2::cmd::Wait(5.0_s)
+      frc2::cmd::Wait(1.0_s)
     )};
 
   frc2::CommandPtr autonOdomSet{frc2::cmd::RunOnce([this]{
@@ -142,7 +141,8 @@ class RobotContainer {
   frc2::CommandPtr repeatOdom{std::move(updateOdometry).Repeatedly()};
 
   // Trigger odom update on flag
-  frc2::Trigger odomTrigger{[this]() { return !tagOverrideDisable; }};
+  frc2::Trigger odomTrigger{[this]() { 
+    return jetson.IsPoseAvailable(); }};
 
   frc2::CommandPtr toggleFieldCentric{frc2::cmd::RunOnce([this] {
       fieldCentric = !fieldCentric;

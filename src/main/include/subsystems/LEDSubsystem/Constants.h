@@ -1,5 +1,4 @@
 
-
 namespace LEDConstants {
     constexpr int kBlinkin1Port = 0;
     constexpr int kBlinkin2Port = 1;

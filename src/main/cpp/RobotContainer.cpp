@@ -48,15 +48,15 @@ RobotContainer::RobotContainer() {
 
   controller.POVLeft().OnTrue(std::move(targetArbitrary));
 
-  controller2.POVLeft().OnTrue(std::move(targetArbitrary));
+  // controller2.POVLeft().OnTrue(std::move(targetArbitrary));
   //Turn lock toggles
   controller.LeftStick().OnTrue(std::move(toggleOmegaOverride));
   // controller.RightStick().OnTrue(std::move(rotateTo180));
-  controller2.LeftBumper().OnTrue(std::move(toggleOmegaOverride));
+  // controller2.LeftBumper().OnTrue(std::move(toggleOmegaOverride));
 
   driverTurning.OnTrue(std::move(tempDisableOmega));
   driverTurning.OnFalse(std::move(restoreOmega));
-
+  
   // Uncomment for actual use to prevent dumbass
   // controller.A().OnTrue(std::move(m_drive.FollowPathCommand("Example Path")));
 

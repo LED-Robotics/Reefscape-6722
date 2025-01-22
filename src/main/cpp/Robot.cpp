@@ -67,12 +67,7 @@ void Robot::TeleopInit() {
   m_container.EnableTagTracking();  // station auto-align uses AprilTag tracking 
   // m_container.SetDriveBrakes(true);
   // m_container.SetSlew(true);
-  // m_container.SetAutoIndex(true);
-  // if(DriverStation::IsFMSAttached()) {
-  //   m_container.SetRecording(true);
-  // }
-  // // This makes sure that the autonomous stops running when
-  // // teleop starts running.
+
   // if (m_autonomousCommand) {
   //   m_autonomousCommand->Cancel();
   // }
