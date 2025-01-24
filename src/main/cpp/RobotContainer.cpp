@@ -39,7 +39,6 @@ frc2::Command* RobotContainer::GetEmptyCommand() {
 
 RobotContainer::RobotContainer() {
   // Autonomous selector configuration
-  
   autonChooser.SetDefaultOption("None", "None");
 
   SmartDashboard::PutData(std::move(&autonChooser));  // send auton selector to Shuffleboard
@@ -56,16 +55,15 @@ RobotContainer::RobotContainer() {
 
   driverTurning.OnTrue(std::move(tempDisableOmega));
   driverTurning.OnFalse(std::move(restoreOmega));
-  
+
   // Uncomment for actual use to prevent dumbass
   // controller.A().OnTrue(std::move(m_drive.FollowPathCommand("Example Path")));
 
   // funny rumble command bindings. These might not work. 
-  controller.Start().WhileTrue(std::move(rumbleSecondaryOn));
-  controller2.Start().WhileTrue(std::move(rumblePrimaryOn));
-  controller.Start().OnFalse(std::move(rumbleSecondaryOff));
-  controller2.Start().OnFalse(std::move(rumblePrimaryOff));
+  controller.Start().WhileTrue(std::move(rumblePrimaryOn));
+  controller.Start().OnFalse(std::move(rumblePrimaryOff));
   
+
   //Command toggle for field centric
   controller.Y().OnTrue(std::move(toggleFieldCentric));
   // Set up default drive command

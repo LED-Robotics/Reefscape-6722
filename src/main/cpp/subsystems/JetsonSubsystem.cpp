@@ -14,7 +14,7 @@ JetsonSubsystem::JetsonSubsystem() {
   table = nt::NetworkTableInstance::GetDefault().GetTable("jetson");
   field = AprilTagFieldLayout::LoadField(AprilTagField::k2025Reefscape);
   field.SetOrigin(AprilTagFieldLayout::OriginPosition::kBlueAllianceWallRightSide);
-  testCam0 = {0, {0.0_m, 0.371_m, -0.089_m, {0.0_deg, 0.0_deg, 90.0_deg}}};
+  testCam0 = {0, {0.0_m, -0.371_m, 0.089_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
   testCam1 = {1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
   testCam2 = {2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
   
@@ -57,10 +57,11 @@ std::vector<AprilTagFrame> JetsonSubsystem::ParseRawTagInfo(std::vector<uint8_t>
         if(arrayData[i] == 0x69 && arrayData[i + 1] == 0x69) {
           AprilTagFrame parsedData;
           memcpy(&parsedData, arrayData + i + 2, TAG_FRAME_SIZE);
+          std::cout << "rY: " << parsedData.ry << std::endl;
+          if(fabs(parsedData.ry) >= JetsonConstants::kAngularConfThresh) continue;
           tagData.push_back(parsedData);
         }
         i += TAG_FRAME_SIZE - 1;
-        
       }
   }
     // SmartDashboard::PutNumber("Buffer Length", bufSize);
@@ -82,6 +83,7 @@ std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<AprilTag
     // tag.tz = forward from tag
 
     Translation3d tagTranslation(units::meter_t(tag.tz), units::meter_t(-tag.tx), units::meter_t(tag.ty));
+    
     Rotation3d tagRotation(units::degree_t(tag.rx), units::degree_t(tag.ry), units::degree_t(tag.rz));
 
     Transform3d tagTransform(tagTranslation, tagRotation);
@@ -93,11 +95,9 @@ std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<AprilTag
     // std::cout << "tz: " << finalTransform.Z().value() << std::endl; 
     // std::cout << "rz: " << units::degree_t(finalTransform.Rotation().Z()).value() << std::endl; 
     
-    std::cout << "Tag tx: " << tag.tx << std::endl; 
-    std::cout << "Tag ty: " << tag.ty << std::endl; 
-    std::cout << "Tag tz: " << tag.tz << std::endl; 
-
-
+    // std::cout << "Tag tx: " << tag.tx << std::endl; 
+    // std::cout << "Tag ty: " << tag.ty << std::endl; 
+    // std::cout << "Tag tz: " << tag.tz << std::endl; 
 
     auto realTagPose = field.GetTagPose((int)tag.tagId);
 

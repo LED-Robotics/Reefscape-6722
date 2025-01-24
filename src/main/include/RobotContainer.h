@@ -125,7 +125,7 @@ class RobotContainer {
           m_drive.ResetFromJetson();
         // }
       }, {}),
-      frc2::cmd::Wait(1.0_s)
+      frc2::cmd::Wait(5.0_s)
     )};
 
   frc2::CommandPtr autonOdomSet{frc2::cmd::RunOnce([this]{
@@ -192,16 +192,16 @@ class RobotContainer {
   };
 
   // funny rumble Commands
-  frc2::CommandPtr rumblePrimaryOn{frc2::cmd::RunOnce([this] { controller.SetRumble(GenericHID::kBothRumble, 1.0); },
+  frc2::CommandPtr rumblePrimaryOn{frc2::cmd::RunOnce([this] { controller.GetHID().SetRumble(GenericHID::kBothRumble, 1.0); },
                                         {})};
 
-  frc2::CommandPtr rumbleSecondaryOn{frc2::cmd::RunOnce([this] { controller2.SetRumble(GenericHID::kBothRumble, 1.0); },
+  frc2::CommandPtr rumbleSecondaryOn{frc2::cmd::RunOnce([this] { controller2.GetHID().SetRumble(GenericHID::kBothRumble, 1.0); },
                                         {})};
   
-  frc2::CommandPtr rumblePrimaryOff{frc2::cmd::RunOnce([this] { controller.SetRumble(GenericHID::kBothRumble, 0.0); },
+  frc2::CommandPtr rumblePrimaryOff{frc2::cmd::RunOnce([this] { controller.GetHID().SetRumble(GenericHID::kBothRumble, 0.0); },
                                         {})};
 
-  frc2::CommandPtr rumbleSecondaryOff{frc2::cmd::RunOnce([this] { controller2.SetRumble(GenericHID::kBothRumble, 0.0); },
+  frc2::CommandPtr rumbleSecondaryOff{frc2::cmd::RunOnce([this] { controller2.GetHID().SetRumble(GenericHID::kBothRumble, 0.0); },
                                         {})};
   /**
    * Find whether the robot is on the blue or red alliance as set by the FMS/DriverStation.

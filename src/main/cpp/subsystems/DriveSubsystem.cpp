@@ -339,7 +339,8 @@ frc::Pose2d DriveSubsystem::GetPoseToHold() {
 void DriveSubsystem::ResetFromJetson() {
   auto updatedPose = jetson->AverageRobotPose();
   if(!jetson->IsPoseAvailable()) return;
-  ResetOdometry({updatedPose.Translation(), GetRotation()});
+  auto rot = odometry.GetPose().Rotation();
+  ResetOdometry({updatedPose.Translation(), rot});
 }
 
 void DriveSubsystem::SetThetaToHold(frc::Rotation2d target) {
