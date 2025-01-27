@@ -174,10 +174,11 @@ class DriveSubsystem : public frc2::SubsystemBase {
    */
   frc::Pose2d GetPoseToHold();
 
+  /**
+   * Reset the odometry based on confidence of April Tag detections.
+   */ 
   void ResetFromJetson();
 
-  // for vision
-  
   /**
    * Give DriveSubsystem a theta to hold at.
    */
