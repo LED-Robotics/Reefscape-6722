@@ -48,7 +48,6 @@ std::vector<uint8_t> JetsonSubsystem::GetRawTagInfo() {
 
 std::vector<AprilTagFrame> JetsonSubsystem::ParseRawTagInfo(std::vector<uint8_t> rawBuf) {
   std::vector<AprilTagFrame> tagData = {};
-  bool temp = false;
   int bufSize = 2;
   if(rawBuf.size() > 2){
     uint8_t* arrayData = &rawBuf[0]; //Turn the recieved vector into an array for memcpy
@@ -156,5 +155,6 @@ frc::Pose2d JetsonSubsystem::AverageRobotPose() {
 }
 
 bool JetsonSubsystem::IsPoseAvailable() {
+
   return poseAvailable;
 }

@@ -25,7 +25,7 @@
 
 #include "GlobalConstants.h"
 #include "SwerveModule.h"
-#include "subsystems/JetsonSubsystem/JetsonSubsystem.h"
+#include "subsystems/Jetson-Subsystem/JetsonSubsystem.h"
 
 using namespace frc;
 using namespace ctre::phoenix6;
