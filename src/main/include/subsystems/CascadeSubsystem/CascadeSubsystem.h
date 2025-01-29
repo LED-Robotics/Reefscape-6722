@@ -100,7 +100,7 @@ class CascadeSubsystem : public frc2::SubsystemBase {
   hardware::TalonFX left;
   hardware::TalonFX right;
 
-  hardware::CANcoder encoder;
+  // hardware::CANcoder encoder;
 
   controls::PositionVoltage positionController{0_tr};
   // controls::MotionMagicVoltage positionController{0_tr};

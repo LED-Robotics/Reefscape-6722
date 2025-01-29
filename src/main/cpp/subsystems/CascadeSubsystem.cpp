@@ -14,8 +14,9 @@ using namespace frc;
 
 CascadeSubsystem::CascadeSubsystem()
     : left{kLeftMotorPort},
-    right{kRightMotorPort},
-    encoder{kEncoderPort} {
+    right{kRightMotorPort}
+    // encoder{kEncoderPort} 
+    {
       SmartDashboard::PutNumber("Cascade Position", position.value());
 
       configs::TalonFXConfiguration cascadeConfig{};
@@ -30,25 +31,28 @@ CascadeSubsystem::CascadeSubsystem()
       // cascadeConfig.MotionMagic.MotionMagicAcceleration = 2.0;
       // cascadeConfig.MotionMagic.MotionMagicJerk = 200.0;
       
-      cascadeConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
+      cascadeConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
       cascadeConfig.Feedback.RotorToSensorRatio = kRotorToGearbox;
       cascadeConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
       cascadeConfig.MotorOutput.PeakForwardDutyCycle = 1.0;
-      cascadeConfig.Feedback.SensorToMechanismRatio = 1.0;
+      cascadeConfig.Feedback.SensorToMechanismRatio = 16.0;
       cascadeConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kRampSeconds;
       cascadeConfig.Audio.AllowMusicDurDisable = true;
-
-      cascadeConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
+      
+      cascadeConfig.MotorOutput.Inverted = true;
+      // cascadeConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
       
       left.GetConfigurator().Apply(cascadeConfig);
-      cascadeConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
+      cascadeConfig.MotorOutput.Inverted = false;
+      // cascadeConfig.DifferentialSensors.DifferentialSensorSource = signals::DifferentialSensorSourceValue::RemoteTalonFX_Diff;
+      // cascadeConfig.DifferentialSensors.DifferentialTalonFXSensorID = kLeftMotorPort;
       right.GetConfigurator().Apply(cascadeConfig);
 
-      configs::CANcoderConfiguration encoderConfig{};
-      encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
-      encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Positive;
-      encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
-      encoder.GetConfigurator().Apply(encoderConfig);
+      // configs::CANcoderConfiguration encoderConfig{};
+      // encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
+      // encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Positive;
+      // encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
+      // encoder.GetConfigurator().Apply(encoderConfig);
 
 }
 
@@ -69,12 +73,12 @@ void CascadeSubsystem::Periodic() {
 
     SmartDashboard::PutNumber("Position Target", position.value());
     units::angle::turn_t posTarget{(position.value() - kStartOffset) * kTurnsPerMeter};
-    left.SetControl(positionController
-      .WithPosition(units::angle::turn_t{posTarget})
-      .WithEnableFOC(true));
-    right.SetControl(positionController
-      .WithPosition(units::angle::turn_t{posTarget})
-      .WithEnableFOC(true));
+    // left.SetControl(positionController
+    //   .WithPosition(units::angle::turn_t{posTarget})
+    //   .WithEnableFOC(true));
+    // right.SetControl(positionController
+    //   .WithPosition(units::angle::turn_t{posTarget})
+    //   .WithEnableFOC(true));
 
     // Test Motion Magic
     // left.SetControl(position

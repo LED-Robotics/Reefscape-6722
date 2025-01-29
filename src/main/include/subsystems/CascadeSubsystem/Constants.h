@@ -27,6 +27,6 @@ namespace CascadeConstants {
     // position deadzone
     constexpr units::length::meter_t kPositionDeadzone{3.0_cm};
     // TalonFX config
-    constexpr double kP = 24;
+    constexpr double kP = 6.0;
     constexpr double kRotorToGearbox = 25.0;
 }

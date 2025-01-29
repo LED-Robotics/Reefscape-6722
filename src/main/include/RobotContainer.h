@@ -24,6 +24,7 @@
 
 #include "GlobalConstants.h"
 #include "subsystems/DriveSubsystem/DriveSubsystem.h"
+#include "subsystems/CascadeSubsystem/CascadeSubsystem.h"
 #include "subsystems/LEDSubsystem/LEDSubsystem.h"
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/WaitCommand.h>
@@ -88,6 +89,8 @@ class RobotContainer {
   JetsonSubsystem jetson{};
 
   DriveSubsystem m_drive{&jetson, &TrackingTarget};
+  
+  CascadeSubsystem cascade{};
 
   std::function<units::length::meter_t()> distToTarget{[this]() { 
       return m_drive.GetDistToTarget();
