@@ -158,6 +158,11 @@ class RobotContainer {
     }, {})
   };
 
+  frc2::Trigger mainDpadUp{controller.POV(0)};
+  frc2::Trigger mainDpadDown{controller.POV(180)};
+  frc2::Trigger mainDpadLeft{controller.POV(270)};
+  frc2::Trigger mainDpadRight{controller.POV(90)};
+
   frc2::Trigger driverTurning{[this]() {
       return abs(controller.GetRightX()) > DriveConstants::kTurnDeadzone && !controller2.A().Get();
     }

@@ -69,8 +69,10 @@ void CascadeSubsystem::Periodic() {
     right.Set(power);
   } else if(state == kPositionMode) {
 
-    // SmartDashboard::PutNumber("cascadePosition", ((GetLeftPosition().value()) + (GetRightPosition().value())) / 2);  // print to Shuffleboard
-
+  SmartDashboard::PutNumber("leftCascadeTr", left.GetPosition().GetValue().value());
+  SmartDashboard::PutNumber("rightCascadeTr", right.GetPosition().GetValue().value());
+  /*SmartDashboard::PutNumber("cascadePosition", ((GetLeftPosition().value()) + (GetRightPosition().value())) / 2);  // print to Shuffleboard*/
+    
     SmartDashboard::PutNumber("Position Target", position.value());
     units::angle::turn_t posTarget{(position.value() - kStartOffset) * kTurnsPerMeter};
     // left.SetControl(positionController
