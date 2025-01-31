@@ -7,6 +7,7 @@
 #include <iostream>
 
 using namespace frc;
+using namespace JetsonConstants;
 
 
 JetsonSubsystem::JetsonSubsystem() {
@@ -56,8 +57,16 @@ std::vector<AprilTagFrame> JetsonSubsystem::ParseRawTagInfo(std::vector<uint8_t>
         if(arrayData[i] == 0x69 && arrayData[i + 1] == 0x69) {
           AprilTagFrame parsedData;
           memcpy(&parsedData, arrayData + i + 2, TAG_FRAME_SIZE);
-          std::cout << "rY: " << parsedData.ry << std::endl;
-          if(fabs(parsedData.ry) >= JetsonConstants::kAngularConfThresh) continue;
+          // Detection confidence calculation
+          double angRaw = parsedData.ry / kAngularConfThresh;
+          double angularConf = constrain(1 - pow(angRaw, kAngularConfCurveExtent), 0.0, 1.0);
+          angularConf *= kAngularConfWeight;
+          double distRaw = parsedData.tz / kDistanceConfThresh;
+          double distConf = constrain(1 - pow(distRaw, kDistanceConfCurveExtent), 0.0, 1.0);
+          distConf *= kDistanceConfWeight;
+          // Ensure conf weights make angle + dist = 1.0
+          double conf = distConf + angularConf;
+          parsedData.confidence = conf;
           tagData.push_back(parsedData);
         }
         i += TAG_FRAME_SIZE - 1;
@@ -157,4 +166,16 @@ frc::Pose2d JetsonSubsystem::AverageRobotPose() {
 bool JetsonSubsystem::IsPoseAvailable() {
 
   return poseAvailable;
+}
+
+double JetsonSubsystem::Min(double val, double min) {
+  return val < min ? min : val;
+}
+
+double JetsonSubsystem::Max(double val, double max) {
+  return val < max ? max : val;
+}
+
+double JetsonSubsystem::Constrain(double val, double floor, double ceiling) {
+  return min(max(val, ceiling), floor);
 }

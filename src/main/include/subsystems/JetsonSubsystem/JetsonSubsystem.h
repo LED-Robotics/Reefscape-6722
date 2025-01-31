@@ -32,6 +32,7 @@ struct AprilTagFrame {
   double rx;
   double ry;
   double rz;
+  double confidence;
 };
 
 struct TagDetections {
@@ -90,6 +91,12 @@ class JetsonSubsystem : public frc2::SubsystemBase {
   frc::Pose2d AverageRobotPose();
 
   bool IsPoseAvailable();
+
+  double Min(double val, double min);
+
+  double Max(double val, double max);
+
+  double Constrain(double val, double floor, double ceiling);
 
  private:
   const size_t TAG_FRAME_SIZE = sizeof(AprilTagFrame);
