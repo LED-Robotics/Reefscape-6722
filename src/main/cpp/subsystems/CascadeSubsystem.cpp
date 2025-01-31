@@ -53,12 +53,13 @@ CascadeSubsystem::CascadeSubsystem()
       // encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Positive;
       // encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
       // encoder.GetConfigurator().Apply(encoderConfig);
+      SetTargetPosition(kCascadeMeterMin);
 
 }
 
 void CascadeSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
-  SetTargetPosition(units::length::meter_t{SmartDashboard::GetNumber("Cascade Position", position.value())});
+  /*SetTargetPosition(units::length::meter_t{SmartDashboard::GetNumber("Cascade Position", position.value())});*/
   SmartDashboard::PutNumber("Left Actual Cascade", GetLeftPosition().value());
   SmartDashboard::PutNumber("Right Actual Cascade", GetRightPosition().value());
   if(state == kOff) {
@@ -71,16 +72,16 @@ void CascadeSubsystem::Periodic() {
 
   SmartDashboard::PutNumber("leftCascadeTr", left.GetPosition().GetValue().value());
   SmartDashboard::PutNumber("rightCascadeTr", right.GetPosition().GetValue().value());
-  /*SmartDashboard::PutNumber("cascadePosition", ((GetLeftPosition().value()) + (GetRightPosition().value())) / 2);  // print to Shuffleboard*/
+  SmartDashboard::PutNumber("cascadePosition", ((GetLeftPosition().value()) + (GetRightPosition().value())) / 2);  // print to Shuffleboard
     
     SmartDashboard::PutNumber("Position Target", position.value());
     units::angle::turn_t posTarget{(position.value() - kStartOffset) * kTurnsPerMeter};
-    // left.SetControl(positionController
-    //   .WithPosition(units::angle::turn_t{posTarget})
-    //   .WithEnableFOC(true));
-    // right.SetControl(positionController
-    //   .WithPosition(units::angle::turn_t{posTarget})
-    //   .WithEnableFOC(true));
+    left.SetControl(positionController
+      .WithPosition(units::angle::turn_t{posTarget})
+      .WithEnableFOC(true));
+    right.SetControl(positionController
+      .WithPosition(units::angle::turn_t{posTarget})
+      .WithEnableFOC(true));
 
     // Test Motion Magic
     // left.SetControl(position

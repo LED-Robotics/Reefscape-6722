@@ -17,10 +17,10 @@ namespace CascadeConstants {
     // default power in power mode
     constexpr double kDefaultPower = 1.0;
     // arm min/max positions
-    constexpr units::length::meter_t kCascadeMeterMin{0.0_m};   // encoder Turns at the Cascade's minimum usable position
-    constexpr units::length::meter_t kCascadeMeterMax{2.0_m}; // meters the Cascade is capable of moving 
+    constexpr units::length::meter_t kCascadeMeterMin{0.15_m};   // encoder Turns at the Cascade's minimum usable position
+    constexpr units::length::meter_t kCascadeMeterMax{0.7_m}; // meters the Cascade is capable of moving 
     // for arm feed forward trig
-    constexpr double kTurnsPerMeter = 0.00278;
+    constexpr double kTurnsPerMeter = 6.066743827160493;
     // arm position constants
     constexpr double kStartOffset = 0.0;
     constexpr units::length::meter_t kStartPosition{0.0_m};
