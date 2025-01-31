@@ -157,3 +157,13 @@ void CascadeSubsystem::ConfigMotors() {
   // left.Config_kP(0, kP, 100);
   // right.Config_kP(0, kP, 100);
 }
+
+frc2::CommandPtr CascadeSubsystem::GetMoveCommand(units::length::meter_t target) {
+  return frc2::cmd::Sequence(
+      frc2::cmd::RunOnce([&]() {
+        SetTargetPosition(target);
+      }, {this}),
+      frc2::cmd::WaitUntil([&](){
+        return IsAtTarget();
+      }));
+}

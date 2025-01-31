@@ -7,6 +7,8 @@
 #include <frc2/command/SubsystemBase.h>
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/CANcoder.hpp>
+#include <frc2/command/Command.h>
+#include <frc2/command/Commands.h>
 #include "Constants.h"
 
 using namespace frc;
@@ -86,6 +88,11 @@ class CascadeSubsystem : public frc2::SubsystemBase {
    * Initially configure onboard TalonFX settings for motors.
    */
   void ConfigMotors();
+
+  /**
+   * Create command to move Subsystem
+   */
+  frc2::CommandPtr GetMoveCommand(units::length::meter_t target);
     
  private:
   // while the state is kOn the Cascade will run at the current power setting
