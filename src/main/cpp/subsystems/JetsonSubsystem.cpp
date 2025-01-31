@@ -15,13 +15,8 @@ JetsonSubsystem::JetsonSubsystem() {
   table = nt::NetworkTableInstance::GetDefault().GetTable("jetson");
   field = AprilTagFieldLayout::LoadField(AprilTagField::k2025Reefscape);
   field.SetOrigin(AprilTagFieldLayout::OriginPosition::kBlueAllianceWallRightSide);
-  testCam0 = {0, {0.0_m, -0.371_m, 0.089_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
-  testCam1 = {1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
-  testCam2 = {2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
   
   this->AddRequestedTags(std::vector<uint8_t> {6, 7, 8, 9, 10, 11});
-
-  cams = {testCam0, testCam1, testCam2};
 }
 
 void JetsonSubsystem::Periodic() {
@@ -59,10 +54,10 @@ std::vector<AprilTagFrame> JetsonSubsystem::ParseRawTagInfo(std::vector<uint8_t>
           memcpy(&parsedData, arrayData + i + 2, TAG_FRAME_SIZE);
           // Detection confidence calculation
           double angRaw = parsedData.ry / kAngularConfThresh;
-          double angularConf = constrain(1 - pow(angRaw, kAngularConfCurveExtent), 0.0, 1.0);
+          double angularConf = Constrain(1 - pow(angRaw, kAngularConfCurveExtent), 0.0, 1.0);
           angularConf *= kAngularConfWeight;
           double distRaw = parsedData.tz / kDistanceConfThresh;
-          double distConf = constrain(1 - pow(distRaw, kDistanceConfCurveExtent), 0.0, 1.0);
+          double distConf = Constrain(1 - pow(distRaw, kDistanceConfCurveExtent), 0.0, 1.0);
           distConf *= kDistanceConfWeight;
           // Ensure conf weights make angle + dist = 1.0
           double conf = distConf + angularConf;
@@ -80,6 +75,7 @@ std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<AprilTag
   std::vector<TagDetections> finalResult;
   for(int i = 0; i < (int)parsedData.size(); i++) {
     AprilTagFrame tag = parsedData.at(i);
+    if(tag.confidence < kPoseConfidenceThresh) continue;
     int camFrameId = tag.camId;
 
     for(CameraInformation cam : cams) {
@@ -177,5 +173,5 @@ double JetsonSubsystem::Max(double val, double max) {
 }
 
 double JetsonSubsystem::Constrain(double val, double floor, double ceiling) {
-  return min(max(val, ceiling), floor);
+  return Min(Max(val, ceiling), floor);
 }
