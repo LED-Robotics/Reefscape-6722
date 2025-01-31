@@ -63,17 +63,11 @@ RobotContainer::RobotContainer() {
   controller.Start().WhileTrue(std::move(rumblePrimaryOn));
   controller.Start().OnFalse(std::move(rumblePrimaryOff));
   
-  mainDpadDown.OnTrue(frc2::cmd::RunOnce([this] {
-      cascade.SetTargetPosition(0.15_m);
-  }, {&cascade})); 
+  mainDpadDown.OnTrue(cascade.GetMoveCommand(0.15_m)); 
 
-  mainDpadRight.OnTrue(frc2::cmd::RunOnce([this] {
-      cascade.SetTargetPosition(0.25_m);
-  }, {&cascade})); 
+  mainDpadRight.OnTrue(cascade.GetMoveCommand(0.40_m)); 
 
-  mainDpadUp.OnTrue(frc2::cmd::RunOnce([this] {
-      cascade.SetTargetPosition(0.7_m);
-  }, {&cascade})); 
+  mainDpadUp.OnTrue(cascade.GetMoveCommand(0.7_m)); 
 
   //Command toggle for field centric
   controller.Y().OnTrue(std::move(toggleFieldCentric));
