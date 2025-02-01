@@ -32,11 +32,12 @@ struct AprilTagFrame {
   double rx;
   double ry;
   double rz;
-  double confidence;
 };
 
 struct TagDetections {
   int tagId;
+  bool poseAvailable = false;
+  bool relativeAvailable = false;
   frc::Transform3d aprilTagRelativePose;
   frc::Pose3d fieldRelativePose;
 };

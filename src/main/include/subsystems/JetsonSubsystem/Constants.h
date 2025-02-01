@@ -5,8 +5,9 @@ namespace JetsonConstants {
     const double kAngularConfCurveExtent = 2.5;
     // Weights for distance/angle.
     // THESE SHOULD ADD UP TO 1.0
-    const double kDistanceConfWeight = 0.4;
-    const double kAngularConfWeight = 0.6;
+    const double kDistanceConfWeight = 0.5;
+    const double kAngularConfWeight = 0.5;
 
-    const double kPoseConfidenceThresh = 0.7;
+    const double kPoseConfidenceThresh = 0.9;
+    const double kRelativeConfidenceThresh = 0.7;
 }
