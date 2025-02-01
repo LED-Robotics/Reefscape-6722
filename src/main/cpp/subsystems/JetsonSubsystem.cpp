@@ -7,6 +7,7 @@
 #include <iostream>
 
 using namespace frc;
+using namespace JetsonConstants;
 
 
 JetsonSubsystem::JetsonSubsystem() {
@@ -14,13 +15,8 @@ JetsonSubsystem::JetsonSubsystem() {
   table = nt::NetworkTableInstance::GetDefault().GetTable("jetson");
   field = AprilTagFieldLayout::LoadField(AprilTagField::k2025Reefscape);
   field.SetOrigin(AprilTagFieldLayout::OriginPosition::kBlueAllianceWallRightSide);
-  testCam0 = {0, {0.0_m, -0.371_m, 0.089_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
-  testCam1 = {1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
-  testCam2 = {2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
   
   this->AddRequestedTags(std::vector<uint8_t> {6, 7, 8, 9, 10, 11});
-
-  cams = {testCam0, testCam1, testCam2};
 }
 
 void JetsonSubsystem::Periodic() {
@@ -56,8 +52,16 @@ std::vector<AprilTagFrame> JetsonSubsystem::ParseRawTagInfo(std::vector<uint8_t>
         if(arrayData[i] == 0x69 && arrayData[i + 1] == 0x69) {
           AprilTagFrame parsedData;
           memcpy(&parsedData, arrayData + i + 2, TAG_FRAME_SIZE);
-          std::cout << "rY: " << parsedData.ry << std::endl;
-          if(fabs(parsedData.ry) >= JetsonConstants::kAngularConfThresh) continue;
+          // Detection confidence calculation
+          double angRaw = parsedData.ry / kAngularConfThresh;
+          double angularConf = Constrain(1 - pow(angRaw, kAngularConfCurveExtent), 0.0, 1.0);
+          angularConf *= kAngularConfWeight;
+          double distRaw = parsedData.tz / kDistanceConfThresh;
+          double distConf = Constrain(1 - pow(distRaw, kDistanceConfCurveExtent), 0.0, 1.0);
+          distConf *= kDistanceConfWeight;
+          // Ensure conf weights make angle + dist = 1.0
+          double conf = distConf + angularConf;
+          parsedData.confidence = conf;
           tagData.push_back(parsedData);
         }
         i += TAG_FRAME_SIZE - 1;
@@ -71,6 +75,7 @@ std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<AprilTag
   std::vector<TagDetections> finalResult;
   for(int i = 0; i < (int)parsedData.size(); i++) {
     AprilTagFrame tag = parsedData.at(i);
+    if(tag.confidence < kPoseConfidenceThresh) continue;
     int camFrameId = tag.camId;
 
     for(CameraInformation cam : cams) {
@@ -157,4 +162,16 @@ frc::Pose2d JetsonSubsystem::AverageRobotPose() {
 bool JetsonSubsystem::IsPoseAvailable() {
 
   return poseAvailable;
+}
+
+double JetsonSubsystem::Min(double val, double min) {
+  return val < min ? min : val;
+}
+
+double JetsonSubsystem::Max(double val, double max) {
+  return val < max ? max : val;
+}
+
+double JetsonSubsystem::Constrain(double val, double floor, double ceiling) {
+  return Min(Max(val, ceiling), floor);
 }

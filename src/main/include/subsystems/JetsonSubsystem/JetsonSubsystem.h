@@ -32,6 +32,7 @@ struct AprilTagFrame {
   double rx;
   double ry;
   double rz;
+  double confidence;
 };
 
 struct TagDetections {
@@ -91,6 +92,12 @@ class JetsonSubsystem : public frc2::SubsystemBase {
 
   bool IsPoseAvailable();
 
+  double Min(double val, double min);
+
+  double Max(double val, double max);
+
+  double Constrain(double val, double floor, double ceiling);
+
  private:
   const size_t TAG_FRAME_SIZE = sizeof(AprilTagFrame);
   bool poseAvailable = false;
@@ -104,11 +111,11 @@ class JetsonSubsystem : public frc2::SubsystemBase {
   frc::Transform3d camTrans;
   AprilTagFieldLayout field;
 
-  CameraInformation testCam0;
-  CameraInformation testCam1;
-  CameraInformation testCam2;
+  CameraInformation testCam0{0, {0.0_m, -0.371_m, 0.089_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
+  CameraInformation testCam1{1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
+  CameraInformation testCam2{2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
 
-  std::vector<CameraInformation> cams;
+  std::vector<CameraInformation> cams{testCam0, testCam1, testCam2};
 
   Pose2d fieldRelativePose;
 };

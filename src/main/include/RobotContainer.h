@@ -24,6 +24,7 @@
 
 #include "GlobalConstants.h"
 #include "subsystems/DriveSubsystem/DriveSubsystem.h"
+#include "subsystems/CascadeSubsystem/CascadeSubsystem.h"
 #include "subsystems/LEDSubsystem/LEDSubsystem.h"
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/WaitCommand.h>
@@ -47,6 +48,19 @@ class RobotContainer {
  public:
   RobotContainer();
 
+  static struct KinematicsPoses {
+    units::length::meter_t cascadePose;
+    //Angle of wrist
+    //More will be added
+  } kinematicsInfo;
+  /**
+   * Return the command pointer that sets all subsystem kinematics.
+   */
+  frc2::CommandPtr SetAllKinematics(KinematicsPoses kinInfoRef);
+
+  /**
+   * Return the command pointer to the autonomous command. 
+   */
   frc2::CommandPtr GetAutonomousCommand();
   /**
    * Set the brake mode of most robot motors.
@@ -73,9 +87,7 @@ class RobotContainer {
 
   void SetAutoIndex(bool state);
 
-
  private:
-
   // The driver's controller
   frc2::CommandXboxController controller{OIConstants::kDriverControllerPort};
   // The partner controller
@@ -88,6 +100,8 @@ class RobotContainer {
   JetsonSubsystem jetson{};
 
   DriveSubsystem m_drive{&jetson, &TrackingTarget};
+  
+  CascadeSubsystem cascade{};
 
   std::function<units::length::meter_t()> distToTarget{[this]() { 
       return m_drive.GetDistToTarget();
@@ -154,6 +168,11 @@ class RobotContainer {
       m_drive.SetOmegaOverride(omegaOverride);
     }, {})
   };
+
+  frc2::Trigger mainDpadUp{controller.POV(0)};
+  frc2::Trigger mainDpadDown{controller.POV(180)};
+  frc2::Trigger mainDpadLeft{controller.POV(270)};
+  frc2::Trigger mainDpadRight{controller.POV(90)};
 
   frc2::Trigger driverTurning{[this]() {
       return abs(controller.GetRightX()) > DriveConstants::kTurnDeadzone && !controller2.A().Get();

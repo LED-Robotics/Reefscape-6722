@@ -62,7 +62,7 @@ namespace DriveConstants {
     constexpr auto turnKp = 0.275;
 
     // drivetrain controller constants
-    constexpr double kDriveDeadzone = 0.1;
+    constexpr double kDriveDeadzone = 0.2;
     constexpr double kTurnDeadzone = 0.1;
     constexpr double kDriveCurveExtent = 0.6;
     constexpr auto kDriveAccelerationLimit = 9.0_mps_sq;
