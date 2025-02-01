@@ -48,6 +48,19 @@ class RobotContainer {
  public:
   RobotContainer();
 
+  static struct KinematicsPoses {
+    units::length::meter_t cascadePose;
+    //Angle of wrist
+    //More will be added
+  } kinematicsInfo;
+  /**
+   * Return the command pointer that sets all subsystem kinematics.
+   */
+  frc2::CommandPtr SetAllKinematics(KinematicsPoses kinInfoRef);
+
+  /**
+   * Return the command pointer to the autonomous command. 
+   */
   frc2::CommandPtr GetAutonomousCommand();
   /**
    * Set the brake mode of most robot motors.
@@ -74,9 +87,7 @@ class RobotContainer {
 
   void SetAutoIndex(bool state);
 
-
  private:
-
   // The driver's controller
   frc2::CommandXboxController controller{OIConstants::kDriverControllerPort};
   // The partner controller

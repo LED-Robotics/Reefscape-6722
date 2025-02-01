@@ -160,10 +160,10 @@ void CascadeSubsystem::ConfigMotors() {
 
 frc2::CommandPtr CascadeSubsystem::GetMoveCommand(units::length::meter_t target) {
   return frc2::cmd::Sequence(
-      frc2::cmd::RunOnce([&]() {
+      frc2::cmd::RunOnce([this, target]() {
         SetTargetPosition(target);
       }, {this}),
-      frc2::cmd::WaitUntil([&](){
+      frc2::cmd::WaitUntil([this, target](){
         return IsAtTarget();
       }));
 }
