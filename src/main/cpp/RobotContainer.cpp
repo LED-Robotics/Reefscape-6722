@@ -62,12 +62,6 @@ RobotContainer::RobotContainer() {
   // funny rumble command bindings. These might not work. 
   controller.Start().WhileTrue(std::move(rumblePrimaryOn));
   controller.Start().OnFalse(std::move(rumblePrimaryOff));
-  
-  mainDpadDown.OnTrue(cascade.GetMoveCommand(0.15_m)); 
-
-  mainDpadRight.OnTrue(cascade.GetMoveCommand(0.40_m)); 
-
-  mainDpadUp.OnTrue(cascade.GetMoveCommand(0.74_m)); 
 
   //Command toggle for field centric
   controller.Y().OnTrue(std::move(toggleFieldCentric));
@@ -106,16 +100,6 @@ RobotContainer::RobotContainer() {
     },
   {&led}));
 
-}
-
-frc2::CommandPtr RobotContainer::SetAllKinematics(RobotContainer::KinematicsPoses kinInfoRef) {
-  return frc2::cmd::Sequence(
-    frc2::cmd::RunOnce(
-      [&]() {
-        cascade.SetTargetPosition(kinInfoRef.cascadePose);
-        // Add other subsystems
-      }, {&cascade})
-  );
 }
 
 void RobotContainer::SetDriveBrakes(bool state) {
