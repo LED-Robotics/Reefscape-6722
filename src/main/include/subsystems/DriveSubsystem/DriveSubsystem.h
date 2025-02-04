@@ -21,6 +21,8 @@
 #include <ctre/phoenix6/Pigeon2.hpp>
 #include <ctre/phoenix6/CANcoder.hpp>
 
+#include <pathplanner/lib/path/PathConstraints.h>
+
 #include <frc/DriverStation.h>
 
 #include "GlobalConstants.h"
@@ -84,6 +86,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
    * Generates a command to follow the path passed in.
    */
   frc2::CommandPtr FollowPathCommand(std::string path);
+  frc2::CommandPtr PathGenCommand(frc::Pose2d pose);
   frc2::CommandPtr Aimbot();
 
   /**
@@ -243,12 +246,9 @@ class DriveSubsystem : public frc2::SubsystemBase {
  
   frc::Pose2d poseToHold{}; // var to contain target pose
   // PID controllers for turn holding
-  frc::PIDController thetaHoldController{0.13, 0.0, 0.0};
+  frc::PIDController thetaHoldController{0.045, 0.0, 0.0};
   int lastTarget = GlobalConstants::kArbitrary;
-
-  // Components (e.g. motor controllers and sensors) should generally be
-  // declared private and exposed only through public methods.
-
+  
   // The motor controllers
   //Wheel motors
   hardware::TalonFX backLeft;
@@ -262,7 +262,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
   hardware::TalonFX backRightTheta;
   hardware::TalonFX frontRightTheta;
 
-  //Degree of wheel motors
+  //Abs encoders
   hardware::CANcoder blCANCoder;
   hardware::CANcoder flCANCoder;
   hardware::CANcoder brCANCoder;
@@ -288,8 +288,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
   double lastX = 0.0;
   double lastY = 0.0;
 
-  int distSample = 0;
-  double distArray[kDistSamples];
   units::length::meter_t distFromTarget{0.0_m};
   Field2d fieldWidget;
+  pathplanner::PathConstraints pathConstraints{3.0_mps, 4.0_mps_sq, 540_deg_per_s, 720_deg_per_s_sq};
 };

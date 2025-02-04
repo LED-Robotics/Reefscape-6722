@@ -26,7 +26,7 @@ namespace DriveConstants {
     constexpr int kFrontLeftThetaPort = 5;
     constexpr int kBackRightThetaPort = 6;
     constexpr int kFrontRightThetaPort = 7;
-
+    //Abs encoders
     constexpr int kBackLeftEncoderPort = 4;
     constexpr int kFrontLeftEncoderPort = 5;
     constexpr int kBackRightEncoderPort = 6;
@@ -38,15 +38,14 @@ namespace DriveConstants {
     constexpr units::angle::turn_t kFRightMagPos = -0.37939453125_tr;
     
     // info for odometry
-    constexpr int kEncoderResolution = 4096;
     constexpr auto kDriveBaseRadius = 0.319786_m;
     constexpr double kWheelRadius = .0508;
-    constexpr double kDriveRatio = 1 / 4.125;
-    constexpr double kTurnRatio = 1 / 10.29;
+    constexpr double kDriveRatio = 1 / 4.41;
+    constexpr double kTurnRatio = 1 / 11.3142;
     constexpr double kDriveDistancePerRev = (2 * std::numbers::pi * kWheelRadius) * kDriveRatio;
-    // constexpr double kDriveEncoderDistancePerPulse = (2 * std::numbers::pi * kWheelRadius / (double)kEncoderResolution) * kDriveRatio;
-    // constexpr double kTurnEncoderDegreesPerPulse = (360.0 / (double)kEncoderResolution) * kTurnRatio;
     constexpr double kTurnEncoderDegreesPerPulse = 360.0;
+    constexpr auto kMOI = 60;
+    constexpr units::kilogram_t kRobotWeight = 54.43_kg;
 
     // states
     constexpr int kArbitrary = 0;
@@ -59,8 +58,6 @@ namespace DriveConstants {
     constexpr double kTurnP = 80.0;
     constexpr double kTurnPRatio = 10.279000282287598;
 
-    constexpr auto turnKp = 0.275;
-
     // drivetrain controller constants
     constexpr double kDriveDeadzone = 0.2;
     constexpr double kTurnDeadzone = 0.1;
@@ -68,17 +65,7 @@ namespace DriveConstants {
     constexpr auto kDriveAccelerationLimit = 9.0_mps_sq;
     constexpr auto kDriveDecelerationLimit = 25.0_mps_sq;
     constexpr auto kDriveTranslationLimit = 7.7_mps;
-    constexpr double kTxAdjust = 0.5;
-    constexpr double kAlignP = 0.5;
-    constexpr double kPVelTurnOffset = -2.0;
-    constexpr double kPVelDistOffset = 0.0;
-    constexpr double kDistMultiplier = 1.5;
-    constexpr int kDistSamples = 5;
-    constexpr double kPNote = 0.3;
-    constexpr double kPYTrans = 0.1;
-    constexpr double kThetaDeadzone = 2.0;
-
-    constexpr units::kilogram_t kRobotWeight = 54.43_kg;
-    constexpr auto kMOI = 60;
+    constexpr double kThetaDeadzone = 1.0;
+    constexpr double kThetaControllerDefaultP = 0.13;
 
 }

@@ -105,10 +105,6 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
         frCANCoder.GetConfigurator().Apply(encoderConfig);
 
         SmartDashboard::PutBoolean("Limelight Targeting", targetUsingLimelight);
-        SmartDashboard::PutNumber("offP", kPVelTurnOffset);
-        SmartDashboard::PutNumber("offD", kPVelDistOffset);
-        SmartDashboard::PutNumber("turnP", kTxAdjust);
-        
         RobotConfig config = RobotConfig::fromGUISettings();
 
         // Configure the AutoBuilder last
@@ -139,17 +135,12 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
 
 void DriveSubsystem::Periodic() {
   // Encoder Vals
-  // SmartDashboard::PutNumber("BL Abs", backLeftEncoder.GetAbsolutePosition());
-  // SmartDashboard::PutNumber("FL Abs", frontLeftEncoder.GetAbsolutePosition());
-  // SmartDashboard::PutNumber("BR Abs", backRightEncoder.GetAbsolutePosition());
-  // SmartDashboard::PutNumber("FR Abs", frontRightEncoder.GetAbsolutePosition());
-
   // SmartDashboard::PutNumber("BL Pos", (double)s_backLeft.GetTurnEncoderAngle());
   // SmartDashboard::PutNumber("FL Pos", (double)s_frontLeft.GetTurnEncoderAngle());
   // SmartDashboard::PutNumber("BR Pos", (double)s_backRight.GetTurnEncoderAngle());
   // SmartDashboard::PutNumber("FR Pos", (double)s_frontRight.GetTurnEncoderAngle());
 
-  // SetThetaToHold({units::angle::degree_t{SmartDashboard::GetNumber("Theta Target", 0.0)}});
+  SetThetaToHold({units::angle::degree_t{SmartDashboard::GetNumber("Theta Target", 0.0)}});
   SmartDashboard::PutBoolean("Omega Override State", omegaOverride);
   targetUsingLimelight = SmartDashboard::GetBoolean("Limelight Targeting", targetUsingLimelight);
 
@@ -233,6 +224,10 @@ wpi::array<SwerveModuleState, 4> DriveSubsystem::GetModuleStates() const {
 frc2::CommandPtr DriveSubsystem::FollowPathCommand(std::string path){
   auto useablePath = PathPlannerPath::fromPathFile(path);
   return AutoBuilder::followPath(useablePath);
+}
+
+frc2::CommandPtr DriveSubsystem::PathGenCommand(frc::Pose2d pose) {
+  return AutoBuilder::pathfindToPose(pose, pathConstraints);
 }
 
 void DriveSubsystem::SetDrivePower(double power) {

@@ -129,13 +129,13 @@ class RobotContainer {
 
   int omegaTempDisabled = 0;
 
-  // update odom based on Nvdia Jetson estimation
+  // update odom based on Nvidia Jetson estimation
   frc2::CommandPtr updateOdometry {
     frc2::cmd::Sequence(
       frc2::cmd::RunOnce([this] {
-        // if(!tagOverrideDisable) {
+        if(!tagOverrideDisable) {
           m_drive.ResetFromJetson();
-        // }
+        }
       }, {}),
       frc2::cmd::Wait(5.0_s)
     )};
