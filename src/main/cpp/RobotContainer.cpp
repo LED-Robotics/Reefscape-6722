@@ -69,6 +69,11 @@ RobotContainer::RobotContainer() {
 
   mainDpadUp.OnTrue(cascade.GetMoveCommand(0.74_m)); 
 
+
+  controller.LeftBumper().OnTrue(floor.GetMoveCommand(90_deg));
+
+  controller.RightBumper().OnTrue(floor.GetMoveCommand(0_deg));
+
   //Command toggle for field centric
   controller.Y().OnTrue(std::move(toggleFieldCentric));
   // Set up default drive command
@@ -99,6 +104,16 @@ RobotContainer::RobotContainer() {
       m_drive.Drive({xSpeed * DriveConstants::kDriveTranslationLimit, ySpeed * DriveConstants::kDriveTranslationLimit, 
       turn * -270.0_deg_per_s}, true, fieldCentric);
     }, {&m_drive}));
+
+  intake.SetDefaultCommand(frc2::cmd::Run(
+    [this] {
+      intake.UsePowerMode();
+      double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
+      if(power < 0.2) power = 0.0;
+      intake.SetPower(power);
+    },
+  {&intake}));
+
 
   led.SetDefaultCommand(frc2::cmd::Run(
     [this] {

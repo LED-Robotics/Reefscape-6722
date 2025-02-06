@@ -1,6 +1,6 @@
 #include <units/length.h>
 
-namespace CascadeConstants {
+namespace FloorConstants {
     // ports
     constexpr int kLeftMotorPort = 12;
     constexpr int kRightMotorPort = 13;
@@ -13,20 +13,20 @@ namespace CascadeConstants {
     // states
     constexpr int kOff = 0;
     constexpr int kPowerMode = 1;
-    constexpr int kPositionMode = 2;
+    constexpr int kAngleMode = 2;
     // default power in power mode
     constexpr double kDefaultPower = 1.0;
     // arm min/max positions
-    constexpr units::length::meter_t kCascadeMeterMin{0.15_m};   // encoder Turns at the Cascade's minimum usable position
-    constexpr units::length::meter_t kCascadeMeterMax{0.74_m}; // meters the Cascade is capable of moving 
+    constexpr units::angle::degree_t kFloorAngleMin{15_deg};   // encoder Turns at the Floor's minimum usable position
+    constexpr units::angle::degree_t kFloorAngleMax{90_deg}; // meters the Floor is capable of moving 
     // for arm feed forward trig
-    constexpr double kTurnsPerMeter = 6.066743827160493;
+    constexpr double kTurnsPerDegree = 6.066743827160493;
     // arm position constants
     constexpr double kStartOffset = 0.0;
-    constexpr units::length::meter_t kStartPosition{0.0_m};
+    constexpr units::angle::degree_t kStartAngle{90_deg};
     // position deadzone
-    constexpr units::length::meter_t kPositionDeadzone{3.0_cm};
+    constexpr units::angle::degree_t kAngleDeadzone{10_deg};
     // TalonFX config
-    constexpr double kP = 4.0;
+    constexpr double kP = 6.0;
     constexpr double kRotorToGearbox = 25.0;
 }
