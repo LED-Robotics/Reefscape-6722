@@ -69,10 +69,9 @@ RobotContainer::RobotContainer() {
 
   mainDpadUp.OnTrue(cascade.GetMoveCommand(0.74_m)); 
 
+  // controller.LeftBumper().OnTrue(floor.GetMoveCommand(90_deg));
 
-  controller.LeftBumper().OnTrue(floor.GetMoveCommand(90_deg));
-
-  controller.RightBumper().OnTrue(floor.GetMoveCommand(0_deg));
+  // controller.RightBumper().OnTrue(floor.GetMoveCommand(0_deg));
 
   //Command toggle for field centric
   controller.Y().OnTrue(std::move(toggleFieldCentric));
@@ -109,7 +108,7 @@ RobotContainer::RobotContainer() {
     [this] {
       intake.UsePowerMode();
       double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
-      if(power < 0.2) power = 0.0;
+      if(fabs(power) < 0.1) power = 0.0;
       intake.SetPower(power);
     },
   {&intake}));

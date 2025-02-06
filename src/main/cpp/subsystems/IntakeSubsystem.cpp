@@ -17,7 +17,7 @@ IntakeSubsystem::IntakeSubsystem()
     : left{kLeftPort, SparkMax::MotorType::kBrushless},
       right{kRightPort, SparkMax::MotorType::kBrushless} {
     // : intakeMotor{kIntakePort, CANSparkLowLevel::MotorType::kBrushless} {
-      right.SetInverted(true);
+      right.SetInverted(false);
 }
 
 void IntakeSubsystem::Periodic() {
