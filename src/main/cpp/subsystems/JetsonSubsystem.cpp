@@ -68,13 +68,12 @@ std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<AprilTag
   for(int i = 0; i < (int)parsedData.size(); i++) {
     AprilTagFrame tag = parsedData.at(i);
     // Detection confidence calculation
-    double angRaw = fabs(tag.ry) / kAngularConfThresh;
+    double angRaw = fabs(tag.rz) / kAngularConfThresh;
     double angularConf = Constrain(1 - pow(fabs(angRaw), kAngularConfCurveExtent), 0.0, 1.0);
     angularConf *= kAngularConfWeight;
     std::cout << "Skibidi Ang:" << std::endl;
     std::cout << (double)angularConf << std::endl;
-    std::cout << (double)tag.ry << std::endl;
-    
+    std::cout << (double)tag.rz << std::endl;    
     std::cout << std::endl;
 
     double distRaw = tag.tz / kDistanceConfThresh;
