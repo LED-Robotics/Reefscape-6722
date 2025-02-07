@@ -65,9 +65,9 @@ RobotContainer::RobotContainer() {
   
   mainDpadDown.OnTrue(cascade.GetMoveCommand(0.15_m)); 
 
-  mainDpadRight.OnTrue(cascade.GetMoveCommand(0.40_m)); 
+  mainDpadRight.OnTrue(cascade.GetMoveCommand(0.25_m)); 
 
-  mainDpadUp.OnTrue(cascade.GetMoveCommand(0.74_m)); 
+  mainDpadUp.OnTrue(cascade.GetMoveCommand(0.475_m)); 
 
   // controller.LeftBumper().OnTrue(floor.GetMoveCommand(90_deg));
 
@@ -109,7 +109,7 @@ RobotContainer::RobotContainer() {
       intake.UsePowerMode();
       double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
       if(fabs(power) < 0.1) power = 0.0;
-      intake.SetPower(power);
+      intake.SetPower(power * 0.2);
     },
   {&intake}));
 
