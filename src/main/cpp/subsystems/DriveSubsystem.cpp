@@ -203,39 +203,37 @@ void DriveSubsystem::Drive(frc::ChassisSpeeds speeds, bool applyLimits, bool fie
 
   ChassisSpeeds finalSpeeds{x, y, rot};
 
-  std::cout << (int)previousSetpoint.moduleStates.size() << std::endl;
-
   previousSetpoint = setpointGenerator.generateSetpoint(
 		previousSetpoint, // The previous setpoint
 		finalSpeeds, // The desired target speeds
-		0.02_s // The loop time of the robot code, in seconds
+		0.2_s // The loop time of the robot code, in seconds
   );
 
-  // previousSetpoint.moduleStates = chassisPPConfig.toSwerveModuleStates(
-  //   fieldRelative ? frc::ChassisSpeeds::FromFieldRelativeSpeeds(
-  //       x, y, rot, GetPose().Rotation()
-  //       .RotateBy(DriverStation::GetAlliance() == DriverStation::Alliance::kRed ? 180_deg : 0_deg))
-  //     : frc::ChassisSpeeds{x, y, rot});
+  previousSetpoint.moduleStates = chassisPPConfig.toSwerveModuleStates(
+    fieldRelative ? frc::ChassisSpeeds::FromFieldRelativeSpeeds(
+        x, y, rot, GetPose().Rotation()
+        .RotateBy(DriverStation::GetAlliance() == DriverStation::Alliance::kRed ? 180_deg : 0_deg))
+      : frc::ChassisSpeeds{x, y, rot});
 
-  // if(!applyLimits) previousSetpoint.moduleStates = chassisPPConfig.desaturateWheelSpeeds(previousSetpoint.moduleStates, kDriveTranslationLimit);
+  if(!applyLimits) previousSetpoint.moduleStates = chassisPPConfig.desaturateWheelSpeeds(previousSetpoint.moduleStates, kDriveTranslationLimit);
 
-  // std::cout << previousSetpoint.moduleStates.size() << std::endl;
+  std::cout << previousSetpoint.moduleStates.size() << std::endl;
 
-  // SetModuleStates(previousSetpoint.moduleStates, applyLimits);
+  SetModuleStates(previousSetpoint.moduleStates, applyLimits);
 }
 
 void DriveSubsystem::SetModuleStates(
   std::vector<SwerveModuleState> desiredStates, bool desaturate) {
-  // auto finalState = desiredStates;
-  // if(desaturate) finalState = chassisPPConfig.desaturateWheelSpeeds(finalState, kDriveTranslationLimit);
-  // // SmartDashboard::PutNumber("FL Target Angle", (double)desiredStates[0].angle.Degrees());
-  //   s_frontLeft.SetDesiredState(finalState.at(0));
-  // // SmartDashboard::PutNumber("FR Target Angle", (double)desiredStates[1].angle.Degrees());
-  //   s_frontRight.SetDesiredState(finalState.at(1));
-  // // SmartDashboard::PutNumber("BL Target Angle", (double)desiredStates[2].angle.Degrees());
-  //   s_backLeft.SetDesiredState(finalState.at(2));
-  // // SmartDashboard::PutNumber("BR Target Angle", (double)desiredStates[2].angle.Degrees());
-  //   s_backRight.SetDesiredState(finalState.at(3));
+  auto finalState = desiredStates;
+  if(desaturate) finalState = chassisPPConfig.desaturateWheelSpeeds(finalState, kDriveTranslationLimit);
+  // SmartDashboard::PutNumber("FL Target Angle", (double)desiredStates[0].angle.Degrees());
+    s_frontLeft.SetDesiredState(finalState.at(0));
+  // SmartDashboard::PutNumber("FR Target Angle", (double)desiredStates[1].angle.Degrees());
+    s_frontRight.SetDesiredState(finalState.at(1));
+  // SmartDashboard::PutNumber("BL Target Angle", (double)desiredStates[2].angle.Degrees());
+    s_backLeft.SetDesiredState(finalState.at(2));
+  // SmartDashboard::PutNumber("BR Target Angle", (double)desiredStates[2].angle.Degrees());
+    s_backRight.SetDesiredState(finalState.at(3));
 }
 
 std::vector<SwerveModuleState> DriveSubsystem::GetModuleStates() const {
