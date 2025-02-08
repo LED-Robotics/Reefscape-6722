@@ -22,9 +22,6 @@
 #include <ctre/phoenix6/CANcoder.hpp>
 
 #include <pathplanner/lib/path/PathConstraints.h>
-#include <pathplanner/lib/util/swerve/SwerveSetpointGenerator.h>
-#include <pathplanner/lib/util/DriveFeedforwards.h>
-#include <pathplanner/lib/config/RobotConfig.h>
 
 #include <frc/DriverStation.h>
 
@@ -78,13 +75,12 @@ class DriveSubsystem : public frc2::SubsystemBase {
   /**
    * Sets the swerve modules to a SwerveModuleState.
    */
-  void SetModuleStates(std::vector<SwerveModuleState> desiredStates, bool desaturate = true);
+  void SetModuleStates(wpi::array<frc::SwerveModuleState, 4> desiredStates, bool desaturate = true);
 
   /**
-   * Gets a vector of the swerve modules states.
+   * Gets an array of the swerve modules states.
    */
-  std::vector<SwerveModuleState> GetModuleStates() const;
-
+  wpi::array<SwerveModuleState, 4> GetModuleStates() const;
 
   /**
    * Generates a command to follow the path passed in.
@@ -226,7 +222,6 @@ class DriveSubsystem : public frc2::SubsystemBase {
 
   // Kinematics to generate swerve module states. The order the locations goes in is the , bool desaturateorder they come out from other functions.
   frc::SwerveDriveKinematics<4> kDriveKinematics{frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation};
-  SwerveSetpoint previousSetpoint;
 
  private:
   bool enableLimiting = false;  // flag for SlewRateLimiters
@@ -284,8 +279,6 @@ class DriveSubsystem : public frc2::SubsystemBase {
 
   // Odometry class for tracking robot pose
   frc::SwerveDriveOdometry<4> odometry;
-  pathplanner::SwerveSetpointGenerator setpointGenerator;
-  pathplanner::RobotConfig chassisPPConfig;
 
   // SlewRateLimiters for driving. They limit the max accel/decel of the drivetrain.
   SlewRateLimiter<units::meters_per_second> xAccel;
@@ -297,5 +290,5 @@ class DriveSubsystem : public frc2::SubsystemBase {
 
   units::length::meter_t distFromTarget{0.0_m};
   Field2d fieldWidget;
-  pathplanner::PathConstraints pathConstraints{1.0_mps, 1.0_mps_sq, 540_deg_per_s, 720_deg_per_s_sq};
+  pathplanner::PathConstraints pathConstraints{3.0_mps, 4.0_mps_sq, 540_deg_per_s, 720_deg_per_s_sq};
 };

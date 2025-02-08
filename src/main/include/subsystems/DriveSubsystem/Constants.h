@@ -13,7 +13,6 @@
 #include <units/voltage.h>
 #include <numbers>
 #include <frc/geometry/Pose2d.h>
-#include <pathplanner/lib/config/RobotConfig.h>
 
 
 namespace DriveConstants {
@@ -52,11 +51,11 @@ namespace DriveConstants {
     constexpr int kArbitrary = 0;
 
     // TalonFX config
-    constexpr double kDriveP = 0.042345985174179;
-    constexpr double kDriveV = 0.138214670981661;
-    constexpr units::time::second_t kDriveRamp = 0.25_s;
+    constexpr double kDriveP = 0.2402345985174179;
+    constexpr double kDriveV = 0.1345313787460327;
+    constexpr units::time::second_t kDriveRamp = 0.0_s;
     constexpr units::current::ampere_t kDriveCurrentLimit = 30.0_A;
-    constexpr double kTurnP = 40.0;
+    constexpr double kTurnP = 80.0;
     constexpr double kTurnPRatio = 10.279000282287598;
 
     // drivetrain controller constants

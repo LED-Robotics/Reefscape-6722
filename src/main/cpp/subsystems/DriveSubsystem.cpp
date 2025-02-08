@@ -10,9 +10,9 @@
 #include <frc/smartdashboard/Field2d.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <pathplanner/lib/auto/AutoBuilder.h>
+#include <pathplanner/lib/config/RobotConfig.h>
 #include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
 #include <pathplanner/lib/path/PathPlannerPath.h>
-
 
 using namespace frc;
 using namespace rev;
@@ -49,10 +49,6 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
       //Odometry
       odometry{kDriveKinematics, {GetRotation()}, {s_frontLeft.GetPosition(), s_frontRight.GetPosition(), s_backLeft.GetPosition(),
       s_backRight.GetPosition()}, frc::Pose2d{{0.0_m, 0.0_m}, {0_deg}}},
-
-      //Pathplanner Junk
-      chassisPPConfig{RobotConfig::fromGUISettings()},
-      setpointGenerator{chassisPPConfig, 360_deg_per_s},
       
       xAccel{kDriveAccelerationLimit},
       yAccel{kDriveAccelerationLimit},
@@ -109,18 +105,19 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
         frCANCoder.GetConfigurator().Apply(encoderConfig);
 
         SmartDashboard::PutBoolean("Limelight Targeting", targetUsingLimelight);
+        RobotConfig config = RobotConfig::fromGUISettings();
 
         // Configure the AutoBuilder last
         AutoBuilder::configure(
             [this](){ return GetPose(); }, // Robot pose supplier
             [this](frc::Pose2d pose){ odometry.ResetPose(pose); }, // Method to reset odometry (will be called if your auto has a starting pose)
-            [this](){ return previousSetpoint.robotRelativeSpeeds; }, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            [this](){ return kDriveKinematics.ToChassisSpeeds(GetModuleStates()); }, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
             [this](auto speeds, auto feedforwards){ Drive(speeds); }, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
             std::make_shared<PPHolonomicDriveController>( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                PIDConstants(1.0, 0.0, 0.0), // Translation PID constants
-                PIDConstants(1.0, 0.0, 0.0) // Rotation PID constants
+                PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
             ),
-            chassisPPConfig, // The robot configuration
+            config, // The robot configuration
             []() {
                 // Boolean supplier that controls when the path will be mirrored for the red alliance
                 // This will flip the path being followed to the red side of the field.
@@ -134,11 +131,7 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
             },
             this // Reference to this subsystem to set requirements
         );
-        ChassisSpeeds currentSpeeds = {};
-        std::vector<frc::SwerveModuleState> currentStates = {{}, {}, {}, {}};
-        // Method to get the current swerve module states
-	      previousSetpoint = SwerveSetpoint(currentSpeeds, currentStates, DriveFeedforwards::zeros(chassisPPConfig.numModules));
-    }
+      }
 
 void DriveSubsystem::Periodic() {
   // Encoder Vals
@@ -169,11 +162,12 @@ void DriveSubsystem::HandleTargeting() {
   
 }
 
-void DriveSubsystem::Drive(frc::ChassisSpeeds speeds, bool applyLimits, bool fieldRelative) {
+void DriveSubsystem::Drive(frc::ChassisSpeeds speeds,
+  bool applyLimits, bool fieldRelative) {
   units::meters_per_second_t x = speeds.vx;
   units::meters_per_second_t y = speeds.vy;
-  units::angular_velocity::radians_per_second_t rot = speeds.omega; //Pull target x, y and omega components
-  if(omegaOverride) { //If we override control of the omega component, set it to wherever we tell it to go
+  units::angular_velocity::radians_per_second_t rot = speeds.omega;
+  if(omegaOverride) {
     double angle = GetPose().Rotation().Degrees().value();
     double target = SwerveModule::PlaceInAppropriate0To360Scope(thetaHoldController.GetSetpoint(), angle);
     double val = thetaHoldController.Calculate(target);
@@ -184,7 +178,7 @@ void DriveSubsystem::Drive(frc::ChassisSpeeds speeds, bool applyLimits, bool fie
   y *= 1.0;
   rot *= 1.0;
 
-  if(enableLimiting && applyLimits) { //Whether to use slew rate limiter
+  if(enableLimiting && applyLimits) {
     auto xUp = xAccel.Calculate(x);
     auto yUp = yAccel.Calculate(y);
     auto xDown = xDecel.Calculate(x);
@@ -195,59 +189,46 @@ void DriveSubsystem::Drive(frc::ChassisSpeeds speeds, bool applyLimits, bool fie
   lastX = fabs(x.value());
   lastY = fabs(y.value());
 
-
   SmartDashboard::PutNumber("targetXVel", x.value());
   SmartDashboard::PutNumber("targetYVel", y.value());
   SmartDashboard::PutNumber("targetOmega", rot.value());
   SmartDashboard::PutBoolean("fieldCentric", fieldRelative);
-
-  ChassisSpeeds finalSpeeds{x, y, rot};
-
-  previousSetpoint = setpointGenerator.generateSetpoint(
-		previousSetpoint, // The previous setpoint
-		finalSpeeds, // The desired target speeds
-		0.02_s // The loop time of the robot code, in seconds
-	);
-
-  previousSetpoint.moduleStates = chassisPPConfig.toSwerveModuleStates(
+  auto states = kDriveKinematics.ToSwerveModuleStates(
     fieldRelative ? frc::ChassisSpeeds::FromFieldRelativeSpeeds(
         x, y, rot, GetPose().Rotation()
         .RotateBy(DriverStation::GetAlliance() == DriverStation::Alliance::kRed ? 180_deg : 0_deg))
       : frc::ChassisSpeeds{x, y, rot});
 
-  if(!applyLimits) previousSetpoint.moduleStates = chassisPPConfig.desaturateWheelSpeeds(previousSetpoint.moduleStates, kDriveTranslationLimit);
+  if(!applyLimits) kDriveKinematics.DesaturateWheelSpeeds(&states, kDriveTranslationLimit);
 
-  std::cout << previousSetpoint.moduleStates.size() << std::endl;
-
-  SetModuleStates(previousSetpoint.moduleStates, applyLimits);
+  SetModuleStates(states, applyLimits);
 }
 
 void DriveSubsystem::SetModuleStates(
-  std::vector<SwerveModuleState> desiredStates, bool desaturate) {
-  if(desaturate) previousSetpoint.moduleStates = chassisPPConfig.desaturateWheelSpeeds(previousSetpoint.moduleStates, kDriveTranslationLimit);
+  wpi::array<frc::SwerveModuleState, 4> desiredStates, bool desaturate) {
+  if(desaturate) kDriveKinematics.DesaturateWheelSpeeds(&desiredStates, kDriveTranslationLimit);
   // SmartDashboard::PutNumber("FL Target Angle", (double)desiredStates[0].angle.Degrees());
-    s_frontLeft.SetDesiredState(desiredStates.at(0));
+    s_frontLeft.SetDesiredState(desiredStates[0]);
   // SmartDashboard::PutNumber("FR Target Angle", (double)desiredStates[1].angle.Degrees());
-    s_frontRight.SetDesiredState(desiredStates.at(1));
+    s_frontRight.SetDesiredState(desiredStates[1]);
   // SmartDashboard::PutNumber("BL Target Angle", (double)desiredStates[2].angle.Degrees());
-    s_backLeft.SetDesiredState(desiredStates.at(2));
+    s_backLeft.SetDesiredState(desiredStates[2]);
   // SmartDashboard::PutNumber("BR Target Angle", (double)desiredStates[2].angle.Degrees());
-    s_backRight.SetDesiredState(desiredStates.at(3));
+    s_backRight.SetDesiredState(desiredStates[3]);
 }
 
-std::vector<SwerveModuleState> DriveSubsystem::GetModuleStates() const {
+wpi::array<SwerveModuleState, 4> DriveSubsystem::GetModuleStates() const {
   return {s_frontLeft.GetState(), s_frontRight.GetState(), s_backLeft.GetState(), s_backRight.GetState()};
 }
-
 
 frc2::CommandPtr DriveSubsystem::FollowPathCommand(std::string path){
   auto useablePath = PathPlannerPath::fromPathFile(path);
   return AutoBuilder::followPath(useablePath);
 }
 
-// frc2::CommandPtr DriveSubsystem::PathGenCommand(frc::Pose2d pose) {
-//   return AutoBuilder::pathfindToPose(pose, pathConstraints);
-// }
+frc2::CommandPtr DriveSubsystem::PathGenCommand(frc::Pose2d pose) {
+  return AutoBuilder::pathfindToPose(pose, pathConstraints);
+}
 
 void DriveSubsystem::SetDrivePower(double power) {
   // std::cout << "Power: " << power << '\n';
