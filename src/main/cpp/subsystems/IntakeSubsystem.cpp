@@ -15,14 +15,19 @@ IntakeSubsystem::IntakeSubsystem()
     /*: left{kLeftPort},*/
     /*  right{kRightPort} {*/
     : left{kLeftPort, SparkMax::MotorType::kBrushless},
-      right{kRightPort, SparkMax::MotorType::kBrushless} {
+      right{kRightPort, SparkMax::MotorType::kBrushless},
+      beamBreak{kBeamBreakPort} {
     // : intakeMotor{kIntakePort, CANSparkLowLevel::MotorType::kBrushless} {
       right.SetInverted(false);
+      previousVal = IsCoralIndexed();
 }
 
 void IntakeSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
   // Intake power control
+  SmartDashboard::PutNumber("Indexed", IsCoralIndexed());
+  SmartDashboard::PutNumber("Previous", previousVal);
+  SmartDashboard::PutNumber("powerOff", powerOff);
   if(state == kOff) {
     left.Set(0.0);
     right.Set(0.0);
@@ -33,8 +38,31 @@ void IntakeSubsystem::Periodic() {
     right.Set(power);
     // else intakeMotor.Set(0.0);
   } else if(state == kSensorMode) {
-    /*if(!shooter->IsNoteIndexed()) intakeMotor.Set(-IntakeConstants::kIntakeSpeed);*/
-    /*else intakeMotor.Set(0.0);*/
+    bool indexed = IsCoralIndexed();
+    if(indexed && !previousVal) {
+      powerOff = true;
+      trippedPower = fabs(power);
+    } 
+    SmartDashboard::PutNumber("tripped", trippedPower);
+
+    if(powerOff && fabs(power) < trippedPower) {
+      trippedPower = fabs(power);
+    }
+    SmartDashboard::PutNumber("power", fabs(power));
+    SmartDashboard::PutNumber("Skibidi", fabs(power) - trippedPower);
+
+    if(fabs(power) - trippedPower > 0.15 && powerOff) {
+      powerOff = false;
+    }
+    if(powerOff) {
+      left.Set(0);
+      right.Set(0);
+    } else {
+      left.Set(power * 0.2);
+      right.Set(power * 0.2);
+    }
+
+    previousVal = indexed;
   }
 }
 
@@ -75,4 +103,9 @@ void IntakeSubsystem::SetBrakeMode(bool state) {
 
 void IntakeSubsystem::ConfigMotors() {
   // wristMotor.Config_kP(0, kP, 100);
+}
+
+bool IntakeSubsystem::IsCoralIndexed() {
+
+  return !beamBreak.Get();
 }

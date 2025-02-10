@@ -106,10 +106,10 @@ RobotContainer::RobotContainer() {
 
   intake.SetDefaultCommand(frc2::cmd::Run(
     [this] {
-      intake.UsePowerMode();
+      // intake.UsePowerMode();
       double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
       if(fabs(power) < 0.1) power = 0.0;
-      intake.SetPower(power * 0.2);
+      intake.SetPower(power);
     },
   {&intake}));
 

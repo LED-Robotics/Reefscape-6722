@@ -4,6 +4,7 @@ namespace IntakeConstants {
     // Ports
     constexpr int kLeftPort = 1;
     constexpr int kRightPort = 2;
+    constexpr int kBeamBreakPort = 1;
 
     // States
     constexpr int kOff = 0;

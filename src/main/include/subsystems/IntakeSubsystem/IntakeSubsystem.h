@@ -5,6 +5,7 @@
 #pragma once
 
 #include <frc/motorcontrol/PWMSparkMax.h>
+#include <frc/DigitalInput.h>
 #include <frc2/command/SubsystemBase.h>
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <rev/SparkMax.h>
@@ -70,12 +71,20 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   /**
    * Initially configure onboard TalonFX settings for motors.
    */
-   void ConfigMotors();
+  void ConfigMotors();
 
+  /**
+  * Gets if a piece of coral is indexed.
+  */
+  bool IsCoralIndexed();
     
  private:
-  int state = IntakeConstants::kPowerMode;
+  int state = IntakeConstants::kSensorMode;
   double power = 0.0;
+  bool previousVal = false;
+  bool sensorTripped;
+  bool powerOff;
+  int trippedPower;
 
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
@@ -86,4 +95,5 @@ class IntakeSubsystem : public frc2::SubsystemBase {
 
   SparkFlex left;
   SparkFlex right;
+  DigitalInput beamBreak;
 };

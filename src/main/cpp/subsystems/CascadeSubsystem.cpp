@@ -53,7 +53,7 @@ CascadeSubsystem::CascadeSubsystem()
       // encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Positive;
       // encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
       // encoder.GetConfigurator().Apply(encoderConfig);
-      SetTargetPosition(kCascadeMeterMin);
+      SetTargetPosition(0.0_m);
 
 }
 
