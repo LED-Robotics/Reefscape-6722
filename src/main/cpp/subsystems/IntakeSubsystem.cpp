@@ -51,7 +51,7 @@ void IntakeSubsystem::Periodic() {
     SmartDashboard::PutNumber("power", fabs(power));
     SmartDashboard::PutNumber("Skibidi", fabs(power) - trippedPower);
 
-    if(fabs(power) - trippedPower > 0.15 && powerOff) {
+    if(fabs(power) - trippedPower > 0.10 && powerOff) {
       powerOff = false;
     }
     if(powerOff) {

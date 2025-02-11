@@ -63,9 +63,11 @@ RobotContainer::RobotContainer() {
   controller.Start().WhileTrue(std::move(rumblePrimaryOn));
   controller.Start().OnFalse(std::move(rumblePrimaryOff));
   
-  mainDpadDown.OnTrue(cascade.GetMoveCommand(0.15_m)); 
+  mainDpadDown.OnTrue(cascade.GetMoveCommand(0.0_m)); 
 
-  mainDpadRight.OnTrue(cascade.GetMoveCommand(0.25_m)); 
+  mainDpadRight.OnTrue(cascade.GetMoveCommand(0.15_m)); 
+
+  mainDpadLeft.OnTrue(cascade.GetMoveCommand(0.25_m));
 
   mainDpadUp.OnTrue(cascade.GetMoveCommand(0.475_m)); 
 
