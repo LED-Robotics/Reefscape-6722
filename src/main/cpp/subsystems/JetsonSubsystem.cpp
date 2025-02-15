@@ -13,7 +13,7 @@ using namespace JetsonConstants;
 JetsonSubsystem::JetsonSubsystem() {
   // Implementation of subsystem constructor goes here
   table = nt::NetworkTableInstance::GetDefault().GetTable("jetson");
-  field = AprilTagFieldLayout::LoadField(AprilTagField::k2025Reefscape);
+  field = AprilTagFieldLayout::LoadField(AprilTagField::k2025ReefscapeWelded);
   field.SetOrigin(AprilTagFieldLayout::OriginPosition::kBlueAllianceWallRightSide);
   
   this->AddRequestedTags(std::vector<uint8_t> {6, 7, 8, 9, 10, 11});
