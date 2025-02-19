@@ -159,11 +159,11 @@ class AlgaeSubsystem : public frc2::SubsystemBase {
     
  private:
   // While the state is kOn the intake will run at the current power setting
-  int intakeState = AlgaeConstants::kIntakePowerMode;
+  int intakeState = AlgaeConstants::IntakeStates::kIntakePowerMode;
   double intakePower = AlgaeConstants::kIntakeDefaultPower;
   
   // While the state is kOn the wrist will run on the angle mode.
-  double wristState = AlgaeConstants::kWristAngleMode;
+  int wristState = AlgaeConstants::WristStates::kWristAngleMode;
   double wristPower = AlgaeConstants::kWristDefaultPower;
   double wristAngle = AlgaeConstants::kWristStartAngle;
 

@@ -16,14 +16,17 @@ namespace AlgaeConstants {
 
     constexpr int kWristDefaultPower = 1.0;
     // Intake states
-    constexpr int kIntakeOff = 0;
-    constexpr int kIntakePowerMode = 1;
-    constexpr int kIntakeSensorMode = 2;
+    enum IntakeStates {
+      kIntakeOff,
+      kIntakePowerMode,
+      kIntakeSensorMode
+    };
     // Wrist states
-    constexpr int kWristOff = 0;
-    constexpr int kWristPowerMode = 1;
-    constexpr int kWristAngleMode = 2;
-    
+    enum WristStates {
+      kWristOff,
+      kWristPowerMode,
+      kWristAngleMode
+    };
     // wrist min/max positions
     constexpr double kWristDegreeMin = -80.0;   // encoder Turns at the wrist's minimum usable position
     constexpr int kMinAngleTurns = -4000;   // encoder Turns at the wrist's minimum usable position

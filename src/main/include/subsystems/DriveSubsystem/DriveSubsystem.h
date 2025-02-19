@@ -101,7 +101,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
    *
    * @return the robot's degrees, from -180 to 180
    */
-  units::degree_t GetAngle() const;
+  units::degree_t GetAngle();
 
   /**
    * Zeroes the heading of the robot.
@@ -151,9 +151,19 @@ class DriveSubsystem : public frc2::SubsystemBase {
   void SetBrakeMode(bool state);
 
    /**
-   * Initially configure onboard TalonFX settings for motors.
+   * Initially configure onboard TalonFX settings for the drive motors.
    */
-  void ConfigMotors();
+  void ConfigDriveMotors();
+   
+   /**
+   * Initially configure onboard TalonFX settings for the theta motors & absolute encoders.
+   */
+  void ConfigThetaMotors();
+
+  /**
+   * Configure the drivetrain's autonomous controller.
+   */
+  void ConfigAutonController();
 
    /**
    * Returns the pitch of the robot.

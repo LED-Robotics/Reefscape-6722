@@ -26,11 +26,11 @@ void AlgaeSubsystem::Periodic() {
   // Wrist Control
   SetTargetAngle(SmartDashboard::GetNumber("Algae Angle", wristAngle));
   SmartDashboard::PutNumber("Algae Actual", GetWristPosition());
-  if(wristState == kWristOff) {
+  if(wristState == WristStates::kWristOff) {
     wristMotor.Set(0.0);
-  } else if(wristState == kWristPowerMode) {
+  } else if(wristState == WristStates::kWristPowerMode) {
     wristMotor.Set(wristPower);
-  } else if(wristState == kWristAngleMode) {
+  } else if(wristState == WristStates::kWristAngleMode) {
     // feed forwards should be a changing constant that increases as the wrist moves further. It should be a static amount of power to overcome gravity.
 
     SmartDashboard::PutNumber("wristAngle", (GetWristPosition() / kTurnsPerDegree));  // print to Shuffleboard
@@ -44,7 +44,7 @@ void AlgaeSubsystem::Periodic() {
       .WithEnableFOC(true)
       .WithFeedForward(units::volt_t{feedForward}));
     //Intake Control
-    if(intakeState == kIntakeOff) {
+    if(intakeState == IntakeStates::kIntakeOff) {
       intakeMotor.Set(0.0);
     } else {
       intakeMotor.Set(intakePower);
@@ -53,11 +53,11 @@ void AlgaeSubsystem::Periodic() {
 }
 
 void AlgaeSubsystem::IntakeOn() {
-  intakeState = kIntakePowerMode;
+  intakeState = IntakeStates::kIntakePowerMode;
 }
 
 void AlgaeSubsystem::IntakeOff() {
-  intakeState = kIntakeOff;
+  intakeState = IntakeStates::kIntakeOff;
 }
 
 void AlgaeSubsystem::SetIntakePower(double newPower) {
@@ -100,11 +100,11 @@ bool AlgaeSubsystem::IsAlgaeIndexed() {
 }
 
 void AlgaeSubsystem::WristOn() {
-  wristState = kWristAngleMode;
+  wristState = WristStates::kWristAngleMode;
 }
 
 void AlgaeSubsystem::WristOff() {
-  wristState = kWristOff;
+  wristState = WristStates::kWristOff;
 }
 
 void AlgaeSubsystem::SetWristPower(double newPower) {

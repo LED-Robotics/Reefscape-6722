@@ -13,47 +13,13 @@ using namespace CascadeConstants;
 using namespace frc;
 
 CascadeSubsystem::CascadeSubsystem()
-    : left{kLeftMotorPort},
-    right{kRightMotorPort}
-    // encoder{kEncoderPort} 
-    {
-      SmartDashboard::PutNumber("Cascade Position", position.value());
-
-      configs::TalonFXConfiguration cascadeConfig{};
-      
-      cascadeConfig.Slot0.kP = kP;
-      // cascadeConfig.Slot0.kS = 0.28;
-      // cascadeConfig.Slot0.kV = 8.5;
-      // cascadeConfig.Slot0.kA = 3.0;
-      // cascadeConfig.Slot0.kP = 8.0;
-
-      // cascadeConfig.MotionMagic.MotionMagicCruiseVelocity = 6.0;
-      // cascadeConfig.MotionMagic.MotionMagicAcceleration = 2.0;
-      // cascadeConfig.MotionMagic.MotionMagicJerk = 200.0;
-      
-      cascadeConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
-      cascadeConfig.Feedback.RotorToSensorRatio = kRotorToGearbox;
-      cascadeConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
-      cascadeConfig.MotorOutput.PeakForwardDutyCycle = 1.0;
-      cascadeConfig.Feedback.SensorToMechanismRatio = 16.0;
-      cascadeConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kRampSeconds;
-      cascadeConfig.Audio.AllowMusicDurDisable = true;
-      
-      cascadeConfig.MotorOutput.Inverted = true;
-      // cascadeConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
-      
-      left.GetConfigurator().Apply(cascadeConfig);
-      cascadeConfig.MotorOutput.Inverted = false;
-      // cascadeConfig.DifferentialSensors.DifferentialSensorSource = signals::DifferentialSensorSourceValue::RemoteTalonFX_Diff;
-      // cascadeConfig.DifferentialSensors.DifferentialTalonFXSensorID = kLeftMotorPort;
-      right.GetConfigurator().Apply(cascadeConfig);
-
-      // configs::CANcoderConfiguration encoderConfig{};
-      // encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
-      // encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Positive;
-      // encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
-      // encoder.GetConfigurator().Apply(encoderConfig);
-      SetTargetPosition(0.0_m);
+  : left{kLeftMotorPort},
+  right{kRightMotorPort}
+  // encoder{kEncoderPort} 
+  {
+    SmartDashboard::PutNumber("Cascade Position", position.value());
+    ConfigMotors();
+    SetTargetPosition(0.0_m);
 
 }
 
@@ -65,10 +31,10 @@ void CascadeSubsystem::Periodic() {
   if(state == kOff) {
     left.Set(0.0);
     right.Set(0.0);
-  } else if(state == kPowerMode) {
+  } else if(state == CascadeStates::kPowerMode) {
     left.Set(power);
     right.Set(power);
-  } else if(state == kPositionMode) {
+  } else if(state == CascadeStates::kPositionMode) {
 
   SmartDashboard::PutNumber("leftCascadeTr", left.GetPosition().GetValue().value());
   SmartDashboard::PutNumber("rightCascadeTr", right.GetPosition().GetValue().value());
@@ -94,11 +60,11 @@ void CascadeSubsystem::Periodic() {
 }
 
 void CascadeSubsystem::Off() {
-  state = kOff;
+  state = CascadeStates::kOff;
 }
 
 void CascadeSubsystem::On() {
-  state = kPowerMode;
+  state = CascadeStates::kPowerMode;
 }
 
 void CascadeSubsystem::SetPower(double newPower) {
@@ -154,8 +120,40 @@ void CascadeSubsystem::SetBrakeMode(bool state) {
 }
 
 void CascadeSubsystem::ConfigMotors() {
-  // left.Config_kP(0, kP, 100);
-  // right.Config_kP(0, kP, 100);
+  configs::TalonFXConfiguration cascadeConfig{};
+  
+  cascadeConfig.Slot0.kP = kP;
+  // cascadeConfig.Slot0.kS = 0.28;
+  // cascadeConfig.Slot0.kV = 8.5;
+  // cascadeConfig.Slot0.kA = 3.0;
+  // cascadeConfig.Slot0.kP = 8.0;
+
+  // cascadeConfig.MotionMagic.MotionMagicCruiseVelocity = 6.0;
+  // cascadeConfig.MotionMagic.MotionMagicAcceleration = 2.0;
+  // cascadeConfig.MotionMagic.MotionMagicJerk = 200.0;
+  
+  cascadeConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
+  cascadeConfig.Feedback.RotorToSensorRatio = kRotorToGearbox;
+  cascadeConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
+  cascadeConfig.MotorOutput.PeakForwardDutyCycle = 1.0;
+  cascadeConfig.Feedback.SensorToMechanismRatio = 16.0;
+  cascadeConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kRampSeconds;
+  cascadeConfig.Audio.AllowMusicDurDisable = true;
+  
+  cascadeConfig.MotorOutput.Inverted = true;
+  // cascadeConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
+  
+  left.GetConfigurator().Apply(cascadeConfig);
+  cascadeConfig.MotorOutput.Inverted = false;
+  // cascadeConfig.DifferentialSensors.DifferentialSensorSource = signals::DifferentialSensorSourceValue::RemoteTalonFX_Diff;
+  // cascadeConfig.DifferentialSensors.DifferentialTalonFXSensorID = kLeftMotorPort;
+  right.GetConfigurator().Apply(cascadeConfig);
+
+  // configs::CANcoderConfiguration encoderConfig{};
+  // encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
+  // encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Positive;
+  // encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
+  // encoder.GetConfigurator().Apply(encoderConfig);
 }
 
 frc2::CommandPtr CascadeSubsystem::GetMoveCommand(units::length::meter_t target) {

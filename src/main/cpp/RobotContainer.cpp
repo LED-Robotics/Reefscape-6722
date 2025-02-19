@@ -14,7 +14,6 @@
 #include <frc2/command/SwerveControllerCommand.h>
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/button/JoystickButton.h>
-// #include "pathplanner/lib/auto/NamedCommands.h"
 
 #include "GlobalConstants.h"
 
@@ -44,40 +43,43 @@ RobotContainer::RobotContainer() {
   SmartDashboard::PutData(std::move(&autonChooser));  // send auton selector to Shuffleboard
 
   odomTrigger.WhileTrue(std::move(repeatOdom)); // trigger to handle odom updates from AprilTags
-
+ 
+  /*******Controller Bindings*******/
+  
   controller.POVLeft().OnTrue(std::move(targetArbitrary));
 
-  // controller2.POVLeft().OnTrue(std::move(targetArbitrary));
   //Turn lock toggles
   controller.LeftStick().OnTrue(std::move(toggleOmegaOverride));
-  // controller.RightStick().OnTrue(std::move(rotateTo180));
-  // controller2.LeftBumper().OnTrue(std::move(toggleOmegaOverride));
-
-  driverTurning.OnTrue(std::move(tempDisableOmega));
-  driverTurning.OnFalse(std::move(restoreOmega));
 
   // Uncomment for actual use to prevent dumbass
   // controller.A().OnTrue(std::move(m_drive.FollowPathCommand("Example Path")));
 
-  // funny rumble command bindings. These might not work. 
-  controller.Start().WhileTrue(std::move(rumblePrimaryOn));
+  // Controller rumble commands 
+  controller.Start().OnTrue(std::move(rumblePrimaryOn));
   controller.Start().OnFalse(std::move(rumblePrimaryOff));
-  
+
+  // Base level
   mainDpadDown.OnTrue(cascade.GetMoveCommand(0.0_m)); 
-
+  
+  // Level 1
   mainDpadRight.OnTrue(cascade.GetMoveCommand(0.15_m)); 
-
-  mainDpadLeft.OnTrue(cascade.GetMoveCommand(0.25_m));
-
-  mainDpadUp.OnTrue(cascade.GetMoveCommand(0.475_m)); 
-
-  controller.LeftBumper().OnTrue(std::move(targetCoral));
-
-  controller.RightBumper().OnTrue(std::move(targetAlgae));
+  
+  // Level 2
+  mainDpadLeft.OnTrue(cascade.GetMoveCommand(0.25_m)); 
+  
+  // Level 3
+  mainDpadUp.OnTrue(cascade.GetMoveCommand(0.475_m));
+  
+  // Change global target to coral
+  controller.LeftBumper().OnTrue(std::move(targetCoral)); 
+  
+  // Change global target to algae 
+  controller.RightBumper().OnTrue(std::move(targetAlgae)); 
 
   //Command toggle for field centric
   controller.Y().OnTrue(std::move(toggleFieldCentric));
-  // Set up default drive command
+  
+  /*******Subsystem DEFAULT Commands*******/
   m_drive.SetDefaultCommand(frc2::cmd::Run(
     [this] {
       SmartDashboard::PutNumber("Subsystem Target", TrackingTarget);
@@ -108,8 +110,7 @@ RobotContainer::RobotContainer() {
 
   intake.SetDefaultCommand(frc2::cmd::Run(
     [this] {
-      // intake.UsePowerMode();
-      if(TrackingTarget == GlobalConstants::GlobalModes::kCoralMode) {
+      if(TrackingTarget == GlobalConstants::kCoralMode) {
         double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
         intake.SetPower(power);
@@ -119,7 +120,7 @@ RobotContainer::RobotContainer() {
 
   algae.SetDefaultCommand(frc2::cmd::Run(
     [this] {
-      if(TrackingTarget == GlobalConstants::GlobalModes::kAlgaeMode) {
+      if(TrackingTarget == GlobalConstants::kAlgaeMode) {
         double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
         algae.SetIntakePower(power);

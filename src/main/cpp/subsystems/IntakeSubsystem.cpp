@@ -28,16 +28,16 @@ void IntakeSubsystem::Periodic() {
   SmartDashboard::PutNumber("Indexed", IsCoralIndexed());
   SmartDashboard::PutNumber("Previous", previousVal);
   SmartDashboard::PutNumber("powerOff", powerOff);
-  if(state == kOff) {
+  if(state == IntakeStates::kOff) {
     left.Set(0.0);
     right.Set(0.0);
-  } else if(state == kPowerMode) {
+  } else if(state == IntakeStates::kPowerMode) {
     // power limiting 
     // if(intakeMotor.GetOutputCurrent() < kCurrentLimit && power > 0.0) intakeMotor.Set(power);
     left.Set(power);
     right.Set(power);
     // else intakeMotor.Set(0.0);
-  } else if(state == kSensorMode) {
+  } else if(state == IntakeStates::kSensorMode) {
     bool indexed = IsCoralIndexed();
     if(indexed && !previousVal) {
       powerOff = true;
@@ -67,11 +67,11 @@ void IntakeSubsystem::Periodic() {
 }
 
 void IntakeSubsystem::Off() {
-  state = kOff;
+  state = IntakeStates::kOff;
 }
 
 void IntakeSubsystem::UsePowerMode() {
-  state = kPowerMode;
+  state = IntakeStates::kPowerMode;
 }
 
 void IntakeSubsystem::SetPower(double newPower) {

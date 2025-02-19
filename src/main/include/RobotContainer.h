@@ -93,11 +93,13 @@ class RobotContainer {
  private:
   // The driver's controller
   frc2::CommandXboxController controller{OIConstants::kDriverControllerPort};
+
   // The partner controller
   frc2::CommandXboxController controller2{OIConstants::kCoDriverControllerPort};
-
-  int TrackingTarget = GlobalConstants::GlobalModes::kCoralMode;
-
+  
+  // Starting tracking target
+  int TrackingTarget = GlobalConstants::kCoralMode;
+  
   // The robot's subsystems
   AlgaeSubsystem algae{};
 
@@ -110,11 +112,6 @@ class RobotContainer {
   IntakeSubsystem intake{};
 
   // FloorSubsystem floor{};
-
-
-  std::function<units::length::meter_t()> distToTarget{[this]() { 
-      return m_drive.GetDistToTarget();
-  }};
 
   LEDSubsystem led{};
 
@@ -187,34 +184,19 @@ class RobotContainer {
       return abs(controller.GetRightX()) > DriveConstants::kTurnDeadzone && !controller2.A().Get();
     }
   };
-  
-  frc2::CommandPtr tempDisableOmega{frc2::cmd::RunOnce([this] { 
-      omegaTempDisabled++;
-      m_drive.SetOmegaOverride(false);
-    }, {})
-  };
-
-  frc2::CommandPtr restoreOmega{frc2::cmd::RunOnce([this] { 
-      omegaTempDisabled--;
-      if(omegaTempDisabled <= 0) {
-        omegaTempDisabled = 0;
-        m_drive.SetOmegaOverride(omegaOverride);
-      }
-    }, {})
-  };
 
   frc2::CommandPtr targetArbitrary{frc2::cmd::RunOnce([this] { 
-      TrackingTarget = GlobalConstants::GlobalModes::kArbitrary;
+      TrackingTarget = GlobalConstants::kArbitrary;
     }, {})
   };
   
   frc2::CommandPtr targetCoral{frc2::cmd::RunOnce([this] { 
-      TrackingTarget = GlobalConstants::GlobalModes::kCoralMode;
+      TrackingTarget = GlobalConstants::kCoralMode;
     }, {})
   };
   
   frc2::CommandPtr targetAlgae{frc2::cmd::RunOnce([this] { 
-      TrackingTarget = GlobalConstants::GlobalModes::kAlgaeMode;
+      TrackingTarget = GlobalConstants::kAlgaeMode;
     }, {})
   };
 
@@ -247,21 +229,20 @@ class RobotContainer {
    * @return A bool for if the robot is on the blue alliance
    */
   bool IsBlue();
+
   /**
    * Return one of two Commands based on whether a partner controller is connected.
    *
    * @return The appropriate Command* based on partner controller status
    */
   frc2::Command* HandlePartnerCommands(frc2::Command* solo, frc2::Command* partner);
+
   /**
    * Return a pointer to an empty Command that will do nothing when run.
    *
    * @return A Command* to an empty Command
    */
   frc2::Command* GetEmptyCommand();
-
-  // frc2::CommandPtr testAuto{pathplanner::PathPlannerAuto("TestAuto").ToPtr()};
-  // frc2::CommandPtr threeNoteAuto{pathplanner::PathPlannerAuto("ThreeNoteAuto").ToPtr()};
 
   // The chooser for the autonomous routines
   frc::SendableChooser<std::string> autonChooser;

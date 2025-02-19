@@ -79,7 +79,7 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   bool IsCoralIndexed();
     
  private:
-  int state = IntakeConstants::kSensorMode;
+  int state = IntakeConstants::IntakeStates::kSensorMode;
   double power = 0.0;
   bool previousVal = false;
   bool sensorTripped;

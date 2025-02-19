@@ -55,86 +55,18 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
       xDecel{kDriveDecelerationLimit},
       yDecel{kDriveDecelerationLimit} {
         jetson = jetRef;
-
         thetaTarget = targetRef;
 
-        configs::TalonFXConfiguration driveConfig{};
-        driveConfig.MotorOutput.Inverted = signals::InvertedValue::Clockwise_Positive;
-        driveConfig.Slot0.kP = kDriveP;
-        driveConfig.Slot0.kV = kDriveV;
-        driveConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kDriveRamp;
-        driveConfig.CurrentLimits.SupplyCurrentLimit = kDriveCurrentLimit;
-        driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        driveConfig.Audio.AllowMusicDurDisable = true;
-        
-        backLeft.GetConfigurator().Apply(driveConfig);
-        frontLeft.GetConfigurator().Apply(driveConfig);
-        backRight.GetConfigurator().Apply(driveConfig);
-        frontRight.GetConfigurator().Apply(driveConfig);
-
-        configs::TalonFXConfiguration turnConfig{};
-        turnConfig.MotorOutput.Inverted = signals::InvertedValue::Clockwise_Positive;
-        turnConfig.Slot0.kP = kTurnP;
-        turnConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
-        turnConfig.Feedback.RotorToSensorRatio = kTurnPRatio;
-        turnConfig.Feedback.SensorToMechanismRatio = 1.0;
-        turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
-        turnConfig.Audio.AllowMusicDurDisable = true;
-        turnConfig.MotorOutput.Inverted = true;
-
-        turnConfig.Feedback.FeedbackRemoteSensorID = kBackLeftEncoderPort;
-        backLeftTheta.GetConfigurator().Apply(turnConfig);
-        turnConfig.Feedback.FeedbackRemoteSensorID = kFrontLeftEncoderPort;
-        frontLeftTheta.GetConfigurator().Apply(turnConfig);
-        turnConfig.Feedback.FeedbackRemoteSensorID = kBackRightEncoderPort;
-        backRightTheta.GetConfigurator().Apply(turnConfig);
-        turnConfig.Feedback.FeedbackRemoteSensorID = kFrontRightEncoderPort;
-        frontRightTheta.GetConfigurator().Apply(turnConfig);
-
-        configs::CANcoderConfiguration encoderConfig{};
-        encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
-        encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::Clockwise_Positive;
-        
-        encoderConfig.MagnetSensor.MagnetOffset = kBLeftMagPos;
-        blCANCoder.GetConfigurator().Apply(encoderConfig);
-        encoderConfig.MagnetSensor.MagnetOffset = kFLeftMagPos;
-        flCANCoder.GetConfigurator().Apply(encoderConfig);
-        encoderConfig.MagnetSensor.MagnetOffset = kBRightMagPos;
-        brCANCoder.GetConfigurator().Apply(encoderConfig);
-        encoderConfig.MagnetSensor.MagnetOffset = kFRightMagPos;
-        frCANCoder.GetConfigurator().Apply(encoderConfig);
+        ConfigDriveMotors();
+        ConfigThetaMotors();
 
         SmartDashboard::PutBoolean("Limelight Targeting", targetUsingLimelight);
         SmartDashboard::PutNumber("offP", kPVelTurnOffset);
         SmartDashboard::PutNumber("offD", kPVelDistOffset);
         SmartDashboard::PutNumber("turnP", kTxAdjust);
-        
-        RobotConfig config = RobotConfig::fromGUISettings();
 
         // Configure the AutoBuilder last
-        AutoBuilder::configure(
-            [this](){ return GetPose(); }, // Robot pose supplier
-            [this](frc::Pose2d pose){ odometry.ResetPose(pose); }, // Method to reset odometry (will be called if your auto has a starting pose)
-            [this](){ return kDriveKinematics.ToChassisSpeeds(GetModuleStates()); }, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            [this](auto speeds, auto feedforwards){ Drive(speeds); }, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
-            std::make_shared<PPHolonomicDriveController>( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
-            ),
-            config, // The robot configuration
-            []() {
-                // Boolean supplier that controls when the path will be mirrored for the red alliance
-                // This will flip the path being followed to the red side of the field.
-                // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-                auto alliance = DriverStation::GetAlliance();
-                if (alliance) {
-                    return alliance.value() == DriverStation::Alliance::kRed;
-                }
-                return false;
-            },
-            this // Reference to this subsystem to set requirements
-        );
+        ConfigAutonController();
       }
 
 void DriveSubsystem::Periodic() {
@@ -259,14 +191,22 @@ void DriveSubsystem::ResetEncoders() {
 }
 
 void DriveSubsystem::SetInverted(bool inverted) {
-  backLeft.SetInverted(inverted);
-  frontLeft.SetInverted(inverted);
-  backRight.SetInverted(inverted);
-  frontRight.SetInverted(inverted);
+  //Counter clockwise is inverted, clockwise is not inverted
+  signals::InvertedValue configInvert;
+  configs::MotorOutputConfigs updated;
+
+  configInvert = inverted ? signals::InvertedValue::CounterClockwise_Positive : signals::InvertedValue::Clockwise_Positive;
+  
+  updated.WithInverted(configInvert);
+
+  backLeft.GetConfigurator().Apply(updated, 50_ms);
+  frontLeft.GetConfigurator().Apply(updated, 50_ms);
+  backRight.GetConfigurator().Apply(updated, 50_ms);
+  frontRight.GetConfigurator().Apply(updated, 50_ms);
 }
 
-units::degree_t DriveSubsystem::GetAngle() const {
-  return units::degree_t{-gyro.GetAngle()};
+units::degree_t DriveSubsystem::GetAngle() {
+  return gyro.GetYaw().GetValue();
 }
 
 frc::Rotation2d DriveSubsystem::GetRotation() {
@@ -278,7 +218,7 @@ void DriveSubsystem::ZeroHeading() {
 }
 
 double DriveSubsystem::GetTurnRate() {
-  return -gyro.GetRate();
+  return -gyro.GetAngularVelocityZWorld().GetValueAsDouble();
 }
 
 frc::Pose2d DriveSubsystem::GetPose() {
@@ -376,4 +316,81 @@ bool DriveSubsystem::IsAtTarget() {
 
 units::length::meter_t DriveSubsystem::GetDistToTarget() {
   return distFromTarget;
+}
+
+void DriveSubsystem::ConfigDriveMotors() {
+  configs::TalonFXConfiguration driveConfig{};
+  driveConfig.MotorOutput.Inverted = signals::InvertedValue::Clockwise_Positive;
+  driveConfig.Slot0.kP = kDriveP;
+  driveConfig.Slot0.kV = kDriveV;
+  driveConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kDriveRamp;
+  driveConfig.CurrentLimits.SupplyCurrentLimit = kDriveCurrentLimit;
+  driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+  driveConfig.Audio.AllowMusicDurDisable = true;
+  
+  backLeft.GetConfigurator().Apply(driveConfig);
+  frontLeft.GetConfigurator().Apply(driveConfig);
+  backRight.GetConfigurator().Apply(driveConfig);
+  frontRight.GetConfigurator().Apply(driveConfig);
+}
+
+void DriveSubsystem::ConfigThetaMotors() {
+  configs::TalonFXConfiguration turnConfig{};
+  turnConfig.MotorOutput.Inverted = signals::InvertedValue::Clockwise_Positive;
+  turnConfig.Slot0.kP = kTurnP;
+  turnConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
+  turnConfig.Feedback.RotorToSensorRatio = kTurnPRatio;
+  turnConfig.Feedback.SensorToMechanismRatio = 1.0;
+  turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
+  turnConfig.Audio.AllowMusicDurDisable = true;
+  turnConfig.MotorOutput.Inverted = true;
+
+  turnConfig.Feedback.FeedbackRemoteSensorID = kBackLeftEncoderPort;
+  backLeftTheta.GetConfigurator().Apply(turnConfig);
+  turnConfig.Feedback.FeedbackRemoteSensorID = kFrontLeftEncoderPort;
+  frontLeftTheta.GetConfigurator().Apply(turnConfig);
+  turnConfig.Feedback.FeedbackRemoteSensorID = kBackRightEncoderPort;
+  backRightTheta.GetConfigurator().Apply(turnConfig);
+  turnConfig.Feedback.FeedbackRemoteSensorID = kFrontRightEncoderPort;
+  frontRightTheta.GetConfigurator().Apply(turnConfig);
+
+  configs::CANcoderConfiguration encoderConfig{};
+  encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
+  encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::Clockwise_Positive;
+  
+  encoderConfig.MagnetSensor.MagnetOffset = kBLeftMagPos;
+  blCANCoder.GetConfigurator().Apply(encoderConfig);
+  encoderConfig.MagnetSensor.MagnetOffset = kFLeftMagPos;
+  flCANCoder.GetConfigurator().Apply(encoderConfig);
+  encoderConfig.MagnetSensor.MagnetOffset = kBRightMagPos;
+  brCANCoder.GetConfigurator().Apply(encoderConfig);
+  encoderConfig.MagnetSensor.MagnetOffset = kFRightMagPos;
+  frCANCoder.GetConfigurator().Apply(encoderConfig);
+}
+
+void DriveSubsystem::ConfigAutonController() {
+  RobotConfig config = RobotConfig::fromGUISettings();
+  AutoBuilder::configure(
+      [this](){ return GetPose(); }, // Robot pose supplier
+      [this](frc::Pose2d pose){ odometry.ResetPose(pose); }, // Method to reset odometry (will be called if your auto has a starting pose)
+      [this](){ return kDriveKinematics.ToChassisSpeeds(GetModuleStates()); }, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+      [this](auto speeds, auto feedforwards){ Drive(speeds); }, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+      std::make_shared<PPHolonomicDriveController>( // PPHolonomicController is the built in path following controller for holonomic drive trains
+          PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+          PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+      ),
+      config, // The robot configuration
+      []() {
+          // Boolean supplier that controls when the path will be mirrored for the red alliance
+          // This will flip the path being followed to the red side of the field.
+          // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+          auto alliance = DriverStation::GetAlliance();
+          if (alliance) {
+              return alliance.value() == DriverStation::Alliance::kRed;
+          }
+          return false;
+      },
+      this // Reference to this subsystem to set requirements
+  );
 }

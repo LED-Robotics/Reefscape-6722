@@ -7,9 +7,11 @@ namespace IntakeConstants {
     constexpr int kBeamBreakPort = 1;
 
     // States
-    constexpr int kOff = 0;
-    constexpr int kPowerMode = 1;
-    constexpr int kSensorMode = 2;
+    enum IntakeStates {
+      kOff,
+      kPowerMode,
+      kSensorMode
+    };
 
     // Default power in power mode
     constexpr double kDefaultPower = 1.0;

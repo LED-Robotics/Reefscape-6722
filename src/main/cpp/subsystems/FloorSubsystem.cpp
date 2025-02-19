@@ -18,41 +18,8 @@ FloorSubsystem::FloorSubsystem()
     // encoder{kEncoderPort} 
     {
       SmartDashboard::PutNumber("Floor Angle", angle.value());
+      ConfigMotors();
 
-      configs::TalonFXConfiguration floorConfig{};
-      
-      floorConfig.Slot0.kP = kP;
-      // floorConfig.Slot0.kS = 0.28;
-      // floorConfig.Slot0.kV = 8.5;
-      // floorConfig.Slot0.kA = 3.0;
-      // floorConfig.Slot0.kP = 8.0;
-
-      // floorConfig.MotionMagic.MotionMagicCruiseVelocity = 6.0;
-      // floorConfig.MotionMagic.MotionMagicAcceleration = 2.0;
-      // floorConfig.MotionMagic.MotionMagicJerk = 200.0;
-      
-      floorConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
-      floorConfig.Feedback.RotorToSensorRatio = kRotorToGearbox;
-      floorConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
-      floorConfig.MotorOutput.PeakForwardDutyCycle = 1.0;
-      floorConfig.Feedback.SensorToMechanismRatio = 16.0;
-      floorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kRampSeconds;
-      floorConfig.Audio.AllowMusicDurDisable = true;
-      
-      floorConfig.MotorOutput.Inverted = true;
-      // floorConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
-      
-      left.GetConfigurator().Apply(floorConfig);
-      floorConfig.MotorOutput.Inverted = false;
-      // floorConfig.DifferentialSensors.DifferentialSensorSource = signals::DifferentialSensorSourceValue::RemoteTalonFX_Diff;
-      // floorConfig.DifferentialSensors.DifferentialTalonFXSensorID = kLeftMotorPort;
-      right.GetConfigurator().Apply(floorConfig);
-
-      // configs::CANcoderConfiguration encoderConfig{};
-      // encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
-      // encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Angleitive;
-      // encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
-      // encoder.GetConfigurator().Apply(encoderConfig);
       SetTargetAngle(kFloorAngleMin);
 
 }
@@ -154,8 +121,40 @@ void FloorSubsystem::SetBrakeMode(bool state) {
 }
 
 void FloorSubsystem::ConfigMotors() {
-  // left.Config_kP(0, kP, 100);
-  // right.Config_kP(0, kP, 100);
+  configs::TalonFXConfiguration floorConfig{};
+  
+  floorConfig.Slot0.kP = kP;
+  // floorConfig.Slot0.kS = 0.28;
+  // floorConfig.Slot0.kV = 8.5;
+  // floorConfig.Slot0.kA = 3.0;
+  // floorConfig.Slot0.kP = 8.0;
+
+  // floorConfig.MotionMagic.MotionMagicCruiseVelocity = 6.0;
+  // floorConfig.MotionMagic.MotionMagicAcceleration = 2.0;
+  // floorConfig.MotionMagic.MotionMagicJerk = 200.0;
+  
+  floorConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
+  floorConfig.Feedback.RotorToSensorRatio = kRotorToGearbox;
+  floorConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
+  floorConfig.MotorOutput.PeakForwardDutyCycle = 1.0;
+  floorConfig.Feedback.SensorToMechanismRatio = 16.0;
+  floorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kRampSeconds;
+  floorConfig.Audio.AllowMusicDurDisable = true;
+  
+  floorConfig.MotorOutput.Inverted = true;
+  // floorConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
+  
+  left.GetConfigurator().Apply(floorConfig);
+  floorConfig.MotorOutput.Inverted = false;
+  // floorConfig.DifferentialSensors.DifferentialSensorSource = signals::DifferentialSensorSourceValue::RemoteTalonFX_Diff;
+  // floorConfig.DifferentialSensors.DifferentialTalonFXSensorID = kLeftMotorPort;
+  right.GetConfigurator().Apply(floorConfig);
+
+  // configs::CANcoderConfiguration encoderConfig{};
+  // encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
+  // encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Angleitive;
+  // encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
+  // encoder.GetConfigurator().Apply(encoderConfig);
 }
 
 frc2::CommandPtr FloorSubsystem::GetMoveCommand(units::angle::degree_t target) {

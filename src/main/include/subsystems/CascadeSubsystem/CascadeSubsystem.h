@@ -96,7 +96,7 @@ class CascadeSubsystem : public frc2::SubsystemBase {
     
  private:
   // while the state is kOn the Cascade will run at the current power setting
-  int state = CascadeConstants::kPositionMode;
+  int state = CascadeConstants::CascadeStates::kPositionMode;
   double power = CascadeConstants::kDefaultPower;
   units::length::meter_t position{CascadeConstants::kStartPosition};
 

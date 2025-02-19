@@ -11,9 +11,11 @@ namespace CascadeConstants {
     constexpr units::time::second_t kRampSeconds = 0.5_s;
 
     // states
-    constexpr int kOff = 0;
-    constexpr int kPowerMode = 1;
-    constexpr int kPositionMode = 2;
+    enum CascadeStates {
+      kOff,
+      kPowerMode,
+      kPositionMode
+    };
     // default power in power mode
     constexpr double kDefaultPower = 1.0;
     // arm min/max positions

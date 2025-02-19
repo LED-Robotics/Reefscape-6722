@@ -57,7 +57,9 @@ namespace AutoConstants {
 } //namespace AutoConstants
 
 namespace OIConstants {
-    constexpr int kDriverControllerPort = 0;
-    constexpr int kCoDriverControllerPort = 1;
+  enum ControllerPorts {
+    kDriverControllerPort,
+    kCoDriverControllerPort
+  };
 }  // namespace OIConstants
 
