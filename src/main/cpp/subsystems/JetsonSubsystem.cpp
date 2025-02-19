@@ -21,10 +21,18 @@ JetsonSubsystem::JetsonSubsystem() {
 
 void JetsonSubsystem::Periodic() {
   parsedTagData = ParseRawTagInfo(GetRawTagInfo());
+  mlDetections = ParseDetections(GetMLInfo());
+
+  for(auto& det : mlDetections) {
+    std::cout << "Found label: " << (int)det.label << std::endl;
+    std::cout << "At: " << det.x << ", " << det.y << std::endl;
+    std::cout << "W: " << det.w << "H: " << det.h << std::endl;
+  }
   jetsonTagDetections = CreateTagVector(parsedTagData);
   fieldRelativePose = AverageRobotPose();  
   
   table->PutRaw("rqsted", requestedTags);
+  SmartDashboard::PutBoolean("IsPoseAvailable", IsPoseAvailable());
 
   // Debug printouts
   // if(!jetsonTagDetections.empty()) {
@@ -42,6 +50,11 @@ std::vector<uint8_t> JetsonSubsystem::GetRawTagInfo() {
   return tagBuf;
 }
 
+std::vector<uint8_t> JetsonSubsystem::GetMLInfo() {
+  std::vector<uint8_t> mlBuf = table->GetRaw("mlBuf", {});
+  return mlBuf;
+}
+
 std::vector<AprilTagFrame> JetsonSubsystem::ParseRawTagInfo(std::vector<uint8_t> rawBuf) {
   std::vector<AprilTagFrame> tagData = {};
   int bufSize = 2;
@@ -52,16 +65,6 @@ std::vector<AprilTagFrame> JetsonSubsystem::ParseRawTagInfo(std::vector<uint8_t>
         if(arrayData[i] == 0x69 && arrayData[i + 1] == 0x69) {
           AprilTagFrame parsedData;
           memcpy(&parsedData, arrayData + i + 2, TAG_FRAME_SIZE);
-          // Detection confidence calculation
-          double angRaw = parsedData.ry / kAngularConfThresh;
-          double angularConf = Constrain(1 - pow(angRaw, kAngularConfCurveExtent), 0.0, 1.0);
-          angularConf *= kAngularConfWeight;
-          double distRaw = parsedData.tz / kDistanceConfThresh;
-          double distConf = Constrain(1 - pow(distRaw, kDistanceConfCurveExtent), 0.0, 1.0);
-          distConf *= kDistanceConfWeight;
-          // Ensure conf weights make angle + dist = 1.0
-          double conf = distConf + angularConf;
-          parsedData.confidence = conf;
           tagData.push_back(parsedData);
         }
         i += TAG_FRAME_SIZE - 1;
@@ -71,11 +74,56 @@ std::vector<AprilTagFrame> JetsonSubsystem::ParseRawTagInfo(std::vector<uint8_t>
     return tagData;
 }
 
+std::vector<MLDetectionFrame> JetsonSubsystem::ParseDetections(std::vector<uint8_t> rawBuf) {
+  std::vector<MLDetectionFrame> detData = {};
+  int bufSize = 2;
+  if(rawBuf.size() > 2){
+    uint8_t* arrayData = &rawBuf[0]; //Turn the recieved vector into an array for memcpy
+    bufSize = arrayData[0] + (arrayData[1] << 8); //Bit shift the first two pieces of data which represent the int of how long the buffer is
+      for(int i = 2; i < bufSize && i + 1 < bufSize; i++) {
+        if(arrayData[i] == 0x69 && arrayData[i + 1] == 0x69) {
+          MLDetectionFrame parsedData;
+          memcpy(&parsedData, arrayData + i + 2, ML_FRAME_SIZE);
+          detData.push_back(parsedData);
+        }
+        i += ML_FRAME_SIZE - 1;
+      }
+  }
+    // SmartDashboard::PutNumber("Buffer Length", bufSize);
+    return detData;
+}
+
 std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<AprilTagFrame> parsedData) {
   std::vector<TagDetections> finalResult;
+  poseAvailable = false;
   for(int i = 0; i < (int)parsedData.size(); i++) {
     AprilTagFrame tag = parsedData.at(i);
-    if(tag.confidence < kPoseConfidenceThresh) continue;
+    // Detection confidence calculation
+    double angRaw = fabs(tag.rz) / kAngularConfThresh;
+    double angularConf = Constrain(1 - pow(fabs(angRaw), kAngularConfCurveExtent), 0.0, 1.0);
+    angularConf *= kAngularConfWeight;
+    /*std::cout << "Skibidi Ang:" << std::endl;*/
+    /*std::cout << (double)angularConf << std::endl;*/
+    /*std::cout << (double)tag.rz << std::endl;*/
+    /*std::cout << std::endl;*/
+
+    double distRaw = tag.tz / kDistanceConfThresh;
+    double distConf = Constrain(1 - pow(fabs(distRaw), kDistanceConfCurveExtent), 0.0, 1.0);
+    distConf *= kDistanceConfWeight;
+    /*std::cout << "Skibidi Dist:" << std::endl;*/
+    /*std::cout << (double)distConf << std::endl;*/
+    /*std::cout << (double)tag.tz << std::endl;*/
+    /*std::cout << std::endl;*/
+
+    // Ensure conf weights make angle + dist = 1.0
+    double conf = distConf + angularConf;
+    
+    // std::cout << (int)tag.tagId << std::endl;
+    // std::cout << distConf << std::endl;
+    // std::cout << angularConf << std::endl;
+    // std::cout << conf << std::endl;
+    // std::cout << std::endl;
+    
     int camFrameId = tag.camId;
 
     for(CameraInformation cam : cams) {
@@ -110,13 +158,17 @@ std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<AprilTag
     int tagId = tag.tagId;
     if(!realTagPose.has_value()) continue;
     Pose3d finalPose = field.GetTagPose(tagId).value().TransformBy(finalTransform);
-
+    bool poseFiltered = conf < kPoseConfidenceThresh;
     TagDetections finalData;
       finalData.tagId = tag.tagId;
       finalData.aprilTagRelativePose = finalTransform;
       finalData.fieldRelativePose = finalPose;
+      finalData.poseAvailable = !poseFiltered;
+      finalData.relativeAvailable = !poseFiltered;
 
     finalResult.push_back(finalData);
+
+    if(!poseFiltered) poseAvailable = true;
 
 
     // SmartDashboard::PutNumber("JetsonX", finalData.aprilTagRelativePose.X().value());
@@ -125,8 +177,6 @@ std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<AprilTag
     // SmartDashboard::PutNumber("JetsonRot", units::degree_t{finalData.aprilTagRelativePose.Rotation().Angle()}.value());
 
   }
-  if(finalResult.empty()) poseAvailable = false;
-  else poseAvailable = true;
   return finalResult;
 }
 
@@ -160,7 +210,6 @@ frc::Pose2d JetsonSubsystem::AverageRobotPose() {
 }
 
 bool JetsonSubsystem::IsPoseAvailable() {
-
   return poseAvailable;
 }
 
@@ -169,7 +218,7 @@ double JetsonSubsystem::Min(double val, double min) {
 }
 
 double JetsonSubsystem::Max(double val, double max) {
-  return val < max ? max : val;
+  return val > max ? max : val;
 }
 
 double JetsonSubsystem::Constrain(double val, double floor, double ceiling) {
