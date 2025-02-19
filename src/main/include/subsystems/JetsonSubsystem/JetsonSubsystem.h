@@ -22,6 +22,17 @@
 
 using namespace frc;
 
+// Struct format for ML detection
+struct MLDetectionFrame {
+  uint8_t label = 0;
+  uint8_t camId = 0;
+  uint32_t timeCaptured;
+  double x;
+  double y;
+  double w;
+  double h;
+};
+
 struct AprilTagFrame {
   uint8_t tagId = -1;
   uint8_t camId = -1;
@@ -57,17 +68,30 @@ class JetsonSubsystem : public frc2::SubsystemBase {
   void Periodic() override;
     
   /**
-   * Get the raw data from the jetson.
+   * Get the raw ApriLTag data from the jetson.
    * 
    * @return Raw vector of tag information
    */
   std::vector<uint8_t> GetRawTagInfo();
 
   /**
+   * Get the raw ML data from the jetson.
+   * 
+   * @return Raw vector of ML detection information
+   */
+  std::vector<uint8_t> GetMLInfo();
+
+  /**
    * Turn the raw data from the jetson into usable information.
    * @return A vector of structures of each april tag requested and detected on each camera
    */
   std::vector<AprilTagFrame> ParseRawTagInfo(std::vector<uint8_t> rawBuf);
+
+  /**
+   * Turn the raw data from the jetson into usable information.
+   * @return A vector of structures of each april tag requested and detected on each camera
+   */
+  std::vector<MLDetectionFrame> ParseDetections(std::vector<uint8_t> rawBuf);
 
   /**
    * Add the requested tag(s) to the global vector
@@ -101,6 +125,7 @@ class JetsonSubsystem : public frc2::SubsystemBase {
 
  private:
   const size_t TAG_FRAME_SIZE = sizeof(AprilTagFrame);
+  const size_t ML_FRAME_SIZE = sizeof(MLDetectionFrame);
   bool poseAvailable = false;
 
   std::shared_ptr<nt::NetworkTable> table;
@@ -108,6 +133,8 @@ class JetsonSubsystem : public frc2::SubsystemBase {
   std::vector<uint8_t> requestedTags;
   std::vector<AprilTagFrame> parsedTagData;
   std::vector<TagDetections> jetsonTagDetections; 
+
+  std::vector<MLDetectionFrame> mlDetections;
 
   frc::Transform3d camTrans;
   AprilTagFieldLayout field;
