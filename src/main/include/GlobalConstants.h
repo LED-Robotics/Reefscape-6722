@@ -35,7 +35,11 @@
 
 namespace GlobalConstants {
     // Subsystem Target States
-    constexpr int kArbitrary = 0;
+    enum GlobalModes {
+      kArbitrary,
+      kCoralMode,
+      kAlgaeMode
+    };
 }
 
 namespace AutoConstants {

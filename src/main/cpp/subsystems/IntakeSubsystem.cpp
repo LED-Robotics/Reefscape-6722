@@ -106,6 +106,5 @@ void IntakeSubsystem::ConfigMotors() {
 }
 
 bool IntakeSubsystem::IsCoralIndexed() {
-
   return !beamBreak.Get();
 }

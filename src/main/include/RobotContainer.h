@@ -23,6 +23,7 @@
 #include "units/angle.h"
 
 #include "GlobalConstants.h"
+#include "subsystems/AlgaeSubsystem/AlgaeSubsystem.h"
 #include "subsystems/DriveSubsystem/DriveSubsystem.h"
 #include "subsystems/CascadeSubsystem/CascadeSubsystem.h"
 #include "subsystems/IntakeSubsystem/IntakeSubsystem.h"
@@ -95,10 +96,11 @@ class RobotContainer {
   // The partner controller
   frc2::CommandXboxController controller2{OIConstants::kCoDriverControllerPort};
 
-  int TrackingTarget = GlobalConstants::kArbitrary;
+  int TrackingTarget = GlobalConstants::GlobalModes::kCoralMode;
 
   // The robot's subsystems
-  
+  AlgaeSubsystem algae{};
+
   JetsonSubsystem jetson{};
 
   DriveSubsystem m_drive{&jetson, &TrackingTarget};
@@ -202,7 +204,17 @@ class RobotContainer {
   };
 
   frc2::CommandPtr targetArbitrary{frc2::cmd::RunOnce([this] { 
-      TrackingTarget = GlobalConstants::kArbitrary;
+      TrackingTarget = GlobalConstants::GlobalModes::kArbitrary;
+    }, {})
+  };
+  
+  frc2::CommandPtr targetCoral{frc2::cmd::RunOnce([this] { 
+      TrackingTarget = GlobalConstants::GlobalModes::kCoralMode;
+    }, {})
+  };
+  
+  frc2::CommandPtr targetAlgae{frc2::cmd::RunOnce([this] { 
+      TrackingTarget = GlobalConstants::GlobalModes::kAlgaeMode;
     }, {})
   };
 

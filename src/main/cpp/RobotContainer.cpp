@@ -71,9 +71,9 @@ RobotContainer::RobotContainer() {
 
   mainDpadUp.OnTrue(cascade.GetMoveCommand(0.475_m)); 
 
-  // controller.LeftBumper().OnTrue(floor.GetMoveCommand(90_deg));
+  controller.LeftBumper().OnTrue(std::move(targetCoral));
 
-  // controller.RightBumper().OnTrue(floor.GetMoveCommand(0_deg));
+  controller.RightBumper().OnTrue(std::move(targetAlgae));
 
   //Command toggle for field centric
   controller.Y().OnTrue(std::move(toggleFieldCentric));
@@ -109,12 +109,23 @@ RobotContainer::RobotContainer() {
   intake.SetDefaultCommand(frc2::cmd::Run(
     [this] {
       // intake.UsePowerMode();
-      double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
-      if(fabs(power) < 0.1) power = 0.0;
-      intake.SetPower(power);
+      if(TrackingTarget == GlobalConstants::GlobalModes::kCoralMode) {
+        double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
+        if(fabs(power) < 0.1) power = 0.0;
+        intake.SetPower(power);
+      }
     },
   {&intake}));
 
+  algae.SetDefaultCommand(frc2::cmd::Run(
+    [this] {
+      if(TrackingTarget == GlobalConstants::GlobalModes::kAlgaeMode) {
+        double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
+        if(fabs(power) < 0.1) power = 0.0;
+        algae.SetIntakePower(power);
+      }
+    }, 
+  {&algae}));
 
   led.SetDefaultCommand(frc2::cmd::Run(
     [this] {
