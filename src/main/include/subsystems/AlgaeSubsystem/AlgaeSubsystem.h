@@ -7,6 +7,8 @@
 #include <frc2/command/SubsystemBase.h>
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/CANcoder.hpp>
+#include <frc2/command/Command.h>
+#include <frc2/command/Commands.h>
 
 #include "Constants.h"
 
@@ -108,14 +110,14 @@ class AlgaeSubsystem : public frc2::SubsystemBase {
    * 
    * @param newAngle new angle for the wrist
    */
-  void SetTargetAngle(double newAngle);
+  void SetTargetAngle(units::angle::degree_t newAngle);
 
   /**
    * Returns the current estimated angle of the wrist.
    * 
    * @return current wrist angle
    */
-  double GetAngle();
+  units::angle::degree_t GetAngle();
 
   /**
    * Returns the position from the TalonFX motor controller.
@@ -156,6 +158,11 @@ class AlgaeSubsystem : public frc2::SubsystemBase {
    * Initially configure onboard TalonFX settings for motors.
    */
   void ConfigWrist();
+
+  /**
+   * Create command to move Subsystem
+   */
+  frc2::CommandPtr GetMoveCommand(units::angle::degree_t target);
     
  private:
   // While the state is kOn the intake will run at the current power setting
@@ -165,7 +172,7 @@ class AlgaeSubsystem : public frc2::SubsystemBase {
   // While the state is kOn the wrist will run on the angle mode.
   int wristState = AlgaeConstants::WristStates::kWristAngleMode;
   double wristPower = AlgaeConstants::kWristDefaultPower;
-  double wristAngle = AlgaeConstants::kWristStartAngle;
+  units::angle::degree_t wristAngle = AlgaeConstants::kWristStartAngle;
 
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.

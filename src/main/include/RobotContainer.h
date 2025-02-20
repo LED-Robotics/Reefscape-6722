@@ -27,6 +27,7 @@
 #include "subsystems/DriveSubsystem/DriveSubsystem.h"
 #include "subsystems/CascadeSubsystem/CascadeSubsystem.h"
 #include "subsystems/IntakeSubsystem/IntakeSubsystem.h"
+#include "subsystems/FunnelSubsystem/FunnelSubsystem.h"
 #include "subsystems/FloorSubsystem/FloorSubsystem.h"
 #include "subsystems/LEDSubsystem/LEDSubsystem.h"
 #include <frc2/command/SequentialCommandGroup.h>
@@ -110,6 +111,8 @@ class RobotContainer {
   CascadeSubsystem cascade{};
 
   IntakeSubsystem intake{};
+
+  FunnelSubsystem funnel{};
 
   // FloorSubsystem floor{};
 

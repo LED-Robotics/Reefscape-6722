@@ -28,19 +28,17 @@ namespace AlgaeConstants {
       kWristAngleMode
     };
     // wrist min/max positions
-    constexpr double kWristDegreeMin = -80.0;   // encoder Turns at the wrist's minimum usable position
-    constexpr int kMinAngleTurns = -4000;   // encoder Turns at the wrist's minimum usable position
-    constexpr int kMaxAngleTurns = 4000;   // encoder Turns at the wrist's max usable position
-    constexpr double kWristDegreeMax = 80.0; // degrees the wrist is capable of moving 
-    // for wrist feed forward trig
-    constexpr double kTurnsPerDegree = 0.00278;
+    constexpr units::angle::degree_t kWristDegreeMin{-80_deg};   // encoder Turns at the Floor's minimum usable position
+    constexpr units::angle::degree_t kWristDegreeMax{80_deg}; // meters the Floor is capable of moving 
+    // for arm feed forward trig
+    constexpr double kTurnsPerDegree = 6.066743827160493;
+    // arm position constants
+    constexpr double kWristStartOffset = 0.0;
+    constexpr units::angle::degree_t kWristStartAngle{0_deg};
+    // position deadzone
+    constexpr units::angle::degree_t kWristAngleDeadzone{2_deg};
     // feed forward at max gravity i.e. 90 degrees off the floor
     constexpr double kMaxFeedForward = 0.04;
-    // arm position constants
-    constexpr double kWristStartOffset = 80.0;
-    constexpr double kWristStartAngle = 80.0;
-    // position deadzone
-    constexpr double kWristPositionDeadzone = 2.0;
     // TalonFX config
     constexpr double kPWrist = 0.0;
     constexpr double kWristRotorToGearbox = 25.0; //Will change

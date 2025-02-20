@@ -41,14 +41,14 @@ void FloorSubsystem::Periodic() {
   SmartDashboard::PutNumber("rightFloorTr", right.GetPosition().GetValue().value());
   SmartDashboard::PutNumber("floorAngle", ((GetLeftAngle().value()) + (GetRightAngle().value())) / 2);  // print to Shuffleboard
     
-    SmartDashboard::PutNumber("Angle Target", angle.value());
-    units::angle::turn_t angleTarget{(angle.value() - kStartOffset) * kTurnsPerDegree};
-    left.SetControl(angleController
-      .WithPosition(units::angle::turn_t{angleTarget})
-      .WithEnableFOC(true));
-    right.SetControl(angleController
-      .WithPosition(units::angle::turn_t{angleTarget})
-      .WithEnableFOC(true));
+  SmartDashboard::PutNumber("Angle Target", angle.value());
+  units::angle::turn_t angleTarget{(angle.value() - kStartOffset) * kTurnsPerDegree};
+  left.SetControl(angleController
+    .WithPosition(units::angle::turn_t{angleTarget})
+    .WithEnableFOC(true));
+  right.SetControl(angleController
+    .WithPosition(units::angle::turn_t{angleTarget})
+    .WithEnableFOC(true));
 
     // Test Motion Magic
     // left.SetControl(position

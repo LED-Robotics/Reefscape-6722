@@ -16,16 +16,19 @@ AlgaeSubsystem::AlgaeSubsystem()
   : wristMotor{kWristPort},
     intakeMotor{kIntakePort},
     wristEncoder{kEncoderPort} {
+      SmartDashboard::PutNumber("Algae Angle", wristAngle.value());
       ConfigIntake();
       ConfigWrist();
-      SmartDashboard::PutNumber("Algae Position", wristAngle);
+
+      SetTargetAngle(kWristStartAngle);
+
 }
 
 void AlgaeSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
   // Wrist Control
-  SetTargetAngle(SmartDashboard::GetNumber("Algae Angle", wristAngle));
-  SmartDashboard::PutNumber("Algae Actual", GetWristPosition());
+  SetTargetAngle(units::angle::degree_t{SmartDashboard::GetNumber("Algae Angle", wristAngle.value())});
+  SmartDashboard::PutNumber("Algae Actual", GetAngle().value());
   if(wristState == WristStates::kWristOff) {
     wristMotor.Set(0.0);
   } else if(wristState == WristStates::kWristPowerMode) {
@@ -33,12 +36,11 @@ void AlgaeSubsystem::Periodic() {
   } else if(wristState == WristStates::kWristAngleMode) {
     // feed forwards should be a changing constant that increases as the wrist moves further. It should be a static amount of power to overcome gravity.
 
-    SmartDashboard::PutNumber("wristAngle", (GetWristPosition() / kTurnsPerDegree));  // print to Shuffleboard
-    double targAngle = 0.0;
-    targAngle = wristAngle;
-    double feedForward = fabs(sin(wristAngle)) * kMaxFeedForward;
-    SmartDashboard::PutNumber("Angle Target", targAngle);
-    units::angle::turn_t posTarget{(targAngle - kWristStartOffset) * kTurnsPerDegree};
+    SmartDashboard::PutNumber("algaeWristTr", wristMotor.GetPosition().GetValue().value());  // print to Shuffleboard
+    SmartDashboard::PutNumber("algaeAngle", (GetWristPosition() / kTurnsPerDegree));  // print to Shuffleboard
+    double feedForward = fabs(sin(wristAngle.value())) * kMaxFeedForward;
+    SmartDashboard::PutNumber("Angle Target", wristAngle.value());
+    units::angle::turn_t posTarget{(wristAngle() - kWristStartOffset) * kTurnsPerDegree};
     wristMotor.SetControl(wristPosition
       .WithPosition(units::angle::turn_t{posTarget})
       .WithEnableFOC(true)
@@ -115,14 +117,14 @@ double AlgaeSubsystem::GetWristPower() {
   return wristPower;
 }
 
-void AlgaeSubsystem::SetTargetAngle(double newAngle) {
+void AlgaeSubsystem::SetTargetAngle(units::angle::degree_t newAngle) {
   wristAngle = newAngle;
   if(wristAngle < kWristDegreeMin) wristAngle = kWristDegreeMin;
   if(wristAngle > kWristDegreeMax) wristAngle = kWristDegreeMax;
 }
 
-double AlgaeSubsystem::GetAngle() {
-  return GetWristPosition() / kTurnsPerDegree;
+units::angle::degree_t AlgaeSubsystem::GetAngle() {
+  return units::angle::degree_t{wristMotor.GetPosition().GetValue().value() / kTurnsPerDegree};
 }
 
 double AlgaeSubsystem::GetWristPosition() {
@@ -130,10 +132,10 @@ double AlgaeSubsystem::GetWristPosition() {
 }
 
 bool AlgaeSubsystem::IsAtTarget() {
-  double target = wristAngle * kTurnsPerDegree;
-  double wristPos = GetWristPosition();
-  bool wristAtTarget = wristPos > target - (kWristPositionDeadzone / 2) && wristPos < target + (kWristPositionDeadzone / 2);
-  return wristAtTarget;
+  auto target = wristAngle;
+  auto angle = GetAngle();
+  bool atTarget = angle > target - (kWristAngleDeadzone / 2) && angle < target + (kWristAngleDeadzone / 2);
+  return atTarget;
 }
 
 void AlgaeSubsystem::SetWristState(int newState) {
@@ -144,6 +146,15 @@ int AlgaeSubsystem::GetWristState() {
   return wristState;
 }
 
+frc2::CommandPtr AlgaeSubsystem::GetMoveCommand(units::angle::degree_t target) {
+  return frc2::cmd::Sequence(
+      frc2::cmd::RunOnce([this, target]() {
+        SetTargetAngle(target);
+      }, {this}),
+      frc2::cmd::WaitUntil([this, target](){
+        return IsAtTarget();
+      }));
+}
 void AlgaeSubsystem::SetWristBrakeMode(bool state) {
   signals::NeutralModeValue mode;
   if(state) mode = signals::NeutralModeValue::Brake;

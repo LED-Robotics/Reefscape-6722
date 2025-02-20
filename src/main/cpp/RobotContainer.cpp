@@ -128,6 +128,12 @@ RobotContainer::RobotContainer() {
     }, 
   {&algae}));
 
+  funnel.SetDefaultCommand(frc2::cmd::Run(
+    [this] {
+
+    },  
+  {&funnel}));
+
   led.SetDefaultCommand(frc2::cmd::Run(
     [this] {
     
