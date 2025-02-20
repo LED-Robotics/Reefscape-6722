@@ -57,8 +57,13 @@ RobotContainer::RobotContainer() {
   driverTurning.OnFalse(std::move(restoreOmega));
 
   // Uncomment for actual use to prevent dumbass
-  controller.A().OnTrue(std::move(m_drive.FollowPathCommand("Example Path")));
-  // controller.A().OnTrue(std::move(m_drive.PathGenCommand(frc::Pose2d{frc::Translation2d{13.0_m, 6.0_m}, frc::Rotation2d{90_deg}})));
+  /*controller.A().OnTrue(std::move(m_drive.FollowPathCommand("Example Path")));*/
+  controller.X().ToggleOnTrue(std::move(m_drive.PathGenCommand(redReef[0])));
+  controller.A().ToggleOnTrue(std::move(m_drive.PathGenCommand(redReef[1])));
+  controller.B().ToggleOnTrue(std::move(m_drive.PathGenCommand(redReef[3])));
+  /*controller.X().ToggleOnTrue(std::move(m_drive.PathGenCommand({13.0_m, 3.0_m, {0_deg}})));*/
+  /*controller.A().ToggleOnTrue(std::move(m_drive.PathGenCommand({13.0_m, 4.0_m, {0_deg}})));*/
+  /*controller.B().ToggleOnTrue(std::move(m_drive.PathGenCommand({14.0_m, 3.0_m, {0_deg}})));*/
 
   // funny rumble command bindings. These might not work. 
   controller.Start().WhileTrue(std::move(rumblePrimaryOn));

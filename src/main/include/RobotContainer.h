@@ -220,6 +220,24 @@ class RobotContainer {
 
   frc2::CommandPtr rumbleSecondaryOff{frc2::cmd::RunOnce([this] { controller2.GetHID().SetRumble(GenericHID::kBothRumble, 0.0); },
                                         {})};
+
+  const frc::Pose2d blueReef[6] = {
+    {6.5_m, 4.0_m, {180_deg}}, 
+    {5.5_m, 2.25_m, {120_deg}}, 
+    {3.5_m, 2.25_m, {60_deg}}, 
+    {2.5_m, 4.0_m, {0_deg}}, 
+    {3.5_m, 5.75_m, {-60_deg}}, 
+    {5.5_m, 5.75_m, {-120_deg}}
+  };
+
+  const frc::Pose2d redReef[6] = {
+    {11.0_m, 4.0_m, {180_deg}}, 
+    {12.0_m, 5.75_m, {-60_deg}}, 
+    {14.1_m, 5.75_m, {-120_deg}}, 
+    {15.1_m, 4.0_m, {0_deg}}, 
+    {14.15_m, 2.25_m, {120_deg}}, 
+    {12.0_m, 2.25_m, {60_deg}}
+  };
   /**
    * Find whether the robot is on the blue or red alliance as set by the FMS/DriverStation.
    *
