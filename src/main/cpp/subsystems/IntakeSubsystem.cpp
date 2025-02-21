@@ -14,8 +14,7 @@ using namespace frc;
 IntakeSubsystem::IntakeSubsystem()
     /*: left{kLeftPort},*/
     /*  right{kRightPort} {*/
-    : left{kLeftPort, SparkMax::MotorType::kBrushless},
-      right{kRightPort, SparkMax::MotorType::kBrushless},
+    : right{kRightPort, SparkMax::MotorType::kBrushless},
       beamBreak{kBeamBreakPort} {
     // : intakeMotor{kIntakePort, CANSparkLowLevel::MotorType::kBrushless} {
       right.SetInverted(false);
@@ -29,12 +28,12 @@ void IntakeSubsystem::Periodic() {
   SmartDashboard::PutNumber("Previous", previousVal);
   SmartDashboard::PutNumber("powerOff", powerOff);
   if(state == IntakeStates::kOff) {
-    left.Set(0.0);
+    // left.Set(0.0);
     right.Set(0.0);
   } else if(state == IntakeStates::kPowerMode) {
     // power limiting 
     // if(intakeMotor.GetOutputCurrent() < kCurrentLimit && power > 0.0) intakeMotor.Set(power);
-    left.Set(power);
+    // left.Set(power);
     right.Set(power);
     // else intakeMotor.Set(0.0);
   } else if(state == IntakeStates::kSensorMode) {
@@ -55,11 +54,11 @@ void IntakeSubsystem::Periodic() {
       powerOff = false;
     }
     if(powerOff) {
-      left.Set(0);
+      // left.Set(0);
       right.Set(0);
     } else {
-      left.Set(power * 0.2);
-      right.Set(power * 0.2);
+      // left.Set(power * 0.2);
+      right.Set(power * 0.4);
     }
 
     previousVal = indexed;

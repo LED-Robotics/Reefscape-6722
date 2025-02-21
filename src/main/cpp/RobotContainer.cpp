@@ -55,23 +55,29 @@ RobotContainer::RobotContainer() {
   // controller.A().OnTrue(std::move(m_drive.FollowPathCommand("Example Path")));
 
   // Controller rumble commands 
-  controller.Start().OnTrue(std::move(rumblePrimaryOn));
-  controller.Start().OnFalse(std::move(rumblePrimaryOff));
+  // controller.Start().OnTrue(std::move(rumblePrimaryOn));
+  // controller.Start().OnFalse(std::move(rumblePrimaryOff));
+
+  controller.Start().OnTrue(cascade.GetMoveCommand(0.0_m));
+
+  controller.Back().OnTrue(cascade.GetMoveCommand(0.08_m));
 
   // Base level
-  mainDpadDown.OnTrue(cascade.GetMoveCommand(0.0_m)); 
+  mainDpadDown.OnTrue(cascade.GetMoveCommand(0.125_m)); 
   
   // Level 1
-  mainDpadRight.OnTrue(cascade.GetMoveCommand(0.15_m)); 
+  mainDpadRight.OnTrue(cascade.GetMoveCommand(0.3_m)); 
   
   // Level 2
-  mainDpadLeft.OnTrue(cascade.GetMoveCommand(0.25_m)); 
+  mainDpadLeft.OnTrue(cascade.GetMoveCommand(0.5_m)); 
   
   // Level 3
-  mainDpadUp.OnTrue(cascade.GetMoveCommand(0.475_m));
+  mainDpadUp.OnTrue(cascade.GetMoveCommand(0.75_m));
   
   // Change global target to coral
   controller.LeftBumper().OnTrue(std::move(targetCoral)); 
+
+  //Later change so that clicking cycles through
   
   // Change global target to algae 
   controller.RightBumper().OnTrue(std::move(targetAlgae)); 
@@ -110,7 +116,7 @@ RobotContainer::RobotContainer() {
 
   intake.SetDefaultCommand(frc2::cmd::Run(
     [this] {
-      if(TrackingTarget == GlobalConstants::kCoralMode) {
+      if(TrackingTarget == GlobalConstants::kCoralMode || TrackingTarget == GlobalConstants::kArbitrary){
         double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
         intake.SetPower(power);
@@ -120,7 +126,7 @@ RobotContainer::RobotContainer() {
 
   algae.SetDefaultCommand(frc2::cmd::Run(
     [this] {
-      if(TrackingTarget == GlobalConstants::kAlgaeMode) {
+      if(TrackingTarget == GlobalConstants::kAlgaeMode || TrackingTarget == GlobalConstants::kArbitrary) {
         double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
         algae.SetIntakePower(power);
@@ -128,11 +134,11 @@ RobotContainer::RobotContainer() {
     }, 
   {&algae}));
 
-  funnel.SetDefaultCommand(frc2::cmd::Run(
-    [this] {
+  // funnel.SetDefaultCommand(frc2::cmd::Run(
+  //   [this] {
 
-    },  
-  {&funnel}));
+  //   },  
+  // {&funnel}));
 
   led.SetDefaultCommand(frc2::cmd::Run(
     [this] {

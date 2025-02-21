@@ -13,7 +13,7 @@ using namespace FunnelConstants;
 using namespace frc;
 
 FunnelSubsystem::FunnelSubsystem()
-  : funnel{kFunnelMotorPort} {
+  : funnel{kFunnelMotorPort, "canCan"} {
       SmartDashboard::PutNumber("Funnel Angle", funnelAngle.value());
       ConfigMotor();
 

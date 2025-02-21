@@ -20,22 +20,22 @@ using namespace pathplanner;
 
 DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
       //Wheel motors
-    : backLeft{kBackLeftPort, "rio"},
-      frontLeft{kFrontLeftPort, "rio"},
-      backRight{kBackRightPort, "rio"},
-      frontRight{kFrontRightPort, "rio"},
+    : backLeft{kBackLeftPort, "canCan"},
+      frontLeft{kFrontLeftPort, "canCan"},
+      backRight{kBackRightPort, "canCan"},
+      frontRight{kFrontRightPort, "canCan"},
 
       //Degree of wheel motors
-      backLeftTheta{kBackLeftThetaPort, "rio"},
-      frontLeftTheta{kFrontLeftThetaPort, "rio"},
-      backRightTheta{kBackRightThetaPort, "rio"},
-      frontRightTheta{kFrontRightThetaPort, "rio"},
+      backLeftTheta{kBackLeftThetaPort, "canCan"},
+      frontLeftTheta{kFrontLeftThetaPort, "canCan"},
+      backRightTheta{kBackRightThetaPort, "canCan"},
+      frontRightTheta{kFrontRightThetaPort, "canCan"},
 
       //Mag encoder motor controllers
-      blCANCoder{kBackLeftEncoderPort, "rio"},
-      flCANCoder{kFrontLeftEncoderPort, "rio"},
-      brCANCoder{kBackRightEncoderPort, "rio"},
-      frCANCoder{kFrontRightEncoderPort, "rio"},
+      blCANCoder{kBackLeftEncoderPort, "canCan"},
+      flCANCoder{kFrontLeftEncoderPort, "canCan"},
+      brCANCoder{kBackRightEncoderPort, "canCan"},
+      frCANCoder{kFrontRightEncoderPort, "canCan"},
 
       //Swerve group motors
       s_backLeft{&backLeft, &backLeftTheta},
@@ -44,7 +44,7 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
       s_frontRight{&frontRight, &frontRightTheta},
 
       //Gryo
-      gyro{0, "rio"},
+      gyro{0, "canCan"},
 
       //Odometry
       odometry{kDriveKinematics, {GetRotation()}, {s_frontLeft.GetPosition(), s_frontRight.GetPosition(), s_backLeft.GetPosition(),

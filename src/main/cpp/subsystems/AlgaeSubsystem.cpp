@@ -16,7 +16,7 @@ AlgaeSubsystem::AlgaeSubsystem()
   : wristMotor{kWristPort},
     intakeMotor{kIntakePort},
     wristEncoder{kEncoderPort} {
-      SmartDashboard::PutNumber("Algae Angle", wristAngle.value());
+      SmartDashboard::PutNumber("Algae Angle", GetAngle().value());
       ConfigIntake();
       ConfigWrist();
 
@@ -27,7 +27,7 @@ AlgaeSubsystem::AlgaeSubsystem()
 void AlgaeSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
   // Wrist Control
-  SetTargetAngle(units::angle::degree_t{SmartDashboard::GetNumber("Algae Angle", wristAngle.value())});
+  SetTargetAngle(units::angle::degree_t{SmartDashboard::GetNumber("Algae Angle", GetAngle().value())});
   SmartDashboard::PutNumber("Algae Actual", GetAngle().value());
   if(wristState == WristStates::kWristOff) {
     wristMotor.Set(0.0);
@@ -37,10 +37,11 @@ void AlgaeSubsystem::Periodic() {
     // feed forwards should be a changing constant that increases as the wrist moves further. It should be a static amount of power to overcome gravity.
 
     SmartDashboard::PutNumber("algaeWristTr", wristMotor.GetPosition().GetValue().value());  // print to Shuffleboard
-    SmartDashboard::PutNumber("algaeAngle", (GetWristPosition() / kTurnsPerDegree));  // print to Shuffleboard
+    SmartDashboard::PutNumber("algaeAngle", GetAngle().value());  // print to Shuffleboard
     double feedForward = fabs(sin(wristAngle.value())) * kMaxFeedForward;
     SmartDashboard::PutNumber("Angle Target", wristAngle.value());
-    units::angle::turn_t posTarget{(wristAngle() - kWristStartOffset) * kTurnsPerDegree};
+    units::angle::turn_t posTarget{(wristAngle - kWristStartAngle) * kTurnsPerDegree};
+    SmartDashboard::PutNumber("wrTurnTarget", posTarget.value());
     wristMotor.SetControl(wristPosition
       .WithPosition(units::angle::turn_t{posTarget})
       .WithEnableFOC(true)
@@ -124,7 +125,7 @@ void AlgaeSubsystem::SetTargetAngle(units::angle::degree_t newAngle) {
 }
 
 units::angle::degree_t AlgaeSubsystem::GetAngle() {
-  return units::angle::degree_t{wristMotor.GetPosition().GetValue().value() / kTurnsPerDegree};
+  return units::angle::degree_t{(GetWristPosition() * kTurnsPerDegree)} + kWristStartAngle;
 }
 
 double AlgaeSubsystem::GetWristPosition() {
@@ -168,6 +169,7 @@ void AlgaeSubsystem::ConfigWrist() {
   configs::TalonFXConfiguration algaeWristConfig{};
 
   algaeWristConfig.Slot0.kP = kPWrist;
+  algaeWristConfig.MotorOutput.Inverted = true;
   // algaeWristConfig.Slot0.kS = 0.28;
   // algaeWristConfig.Slot0.kV = 8.5;
   // algaeWristConfig.Slot0.kA = 3.0;
@@ -177,8 +179,10 @@ void AlgaeSubsystem::ConfigWrist() {
   // algaeWristConfig.MotionMagic.MotionMagicAcceleration = 2.0;
   // algaeWristConfig.MotionMagic.MotionMagicJerk = 200.0;
   
-  algaeWristConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
-  algaeWristConfig.Feedback.RotorToSensorRatio = kWristRotorToGearbox;
+  algaeWristConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
+  // algaeWristConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
+  // algaeWristConfig.Feedback.RotorToSensorRatio = kWristRotorToGearbox;
+  algaeWristConfig.Feedback.SensorToMechanismRatio = kWristRotorToGearbox * kWristGearboxToMechanism;
   algaeWristConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
   algaeWristConfig.MotorOutput.PeakForwardDutyCycle = 1.0;
   algaeWristConfig.Feedback.SensorToMechanismRatio = 1.0;
