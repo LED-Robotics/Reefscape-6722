@@ -25,7 +25,7 @@ CascadeSubsystem::CascadeSubsystem()
 
 void CascadeSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
-  SetTargetPosition(units::length::meter_t{SmartDashboard::GetNumber("Cascade Position", position.value())});
+  // SetTargetPosition(units::length::meter_t{SmartDashboard::GetNumber("Cascade Position", position.value())});
   SmartDashboard::PutNumber("Left Actual Cascade", GetLeftPosition().value());
   SmartDashboard::PutNumber("Right Actual Cascade", GetRightPosition().value());
   if(state == kOff) {
@@ -41,7 +41,7 @@ void CascadeSubsystem::Periodic() {
   SmartDashboard::PutNumber("cascadePosition", ((GetLeftPosition().value()) + (GetRightPosition().value())) / 2);  // print to Shuffleboard
     
     SmartDashboard::PutNumber("Position Target", position.value());
-    units::angle::turn_t posTarget{(position.value() - kStartOffset) * kTurnsPerMeter};
+    units::angle::turn_t posTarget{((position - kStartPosition) / kStageMultiplier).value() * kTurnsPerMeter};
     left.SetControl(positionController
       .WithPosition(units::angle::turn_t{posTarget})
       .WithEnableFOC(true));
@@ -80,11 +80,13 @@ int CascadeSubsystem::GetState() {
 }
 
 units::length::meter_t CascadeSubsystem::GetLeftPosition() {
-  return units::length::meter_t{left.GetPosition().GetValue().value() / kTurnsPerMeter};
+  auto base = units::length::meter_t{left.GetPosition().GetValueAsDouble() / kTurnsPerMeter};
+  return base * kStageMultiplier + kStartPosition;
 }
 
 units::length::meter_t CascadeSubsystem::GetRightPosition() {
-  return units::length::meter_t{right.GetPosition().GetValue().value() / kTurnsPerMeter};
+  auto base = units::length::meter_t{right.GetPosition().GetValueAsDouble() / kTurnsPerMeter};
+  return base * kStageMultiplier + kStartPosition;
 }
 
 units::length::meter_t CascadeSubsystem::GetPosition() {

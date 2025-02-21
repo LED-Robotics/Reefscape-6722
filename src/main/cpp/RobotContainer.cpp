@@ -60,19 +60,19 @@ RobotContainer::RobotContainer() {
 
   controller.Start().OnTrue(cascade.GetMoveCommand(0.0_m));
 
-  controller.Back().OnTrue(cascade.GetMoveCommand(0.08_m));
+  controller.Back().OnTrue(cascade.GetMoveCommand(0.28_m));
 
-  // Base level
-  mainDpadDown.OnTrue(cascade.GetMoveCommand(0.125_m)); 
-  
   // Level 1
-  mainDpadRight.OnTrue(cascade.GetMoveCommand(0.3_m)); 
+  mainDpadDown.OnTrue(cascade.GetMoveCommand(0.36_m)); 
   
   // Level 2
-  mainDpadLeft.OnTrue(cascade.GetMoveCommand(0.5_m)); 
+  mainDpadRight.OnTrue(cascade.GetMoveCommand(0.67_m)); 
   
   // Level 3
-  mainDpadUp.OnTrue(cascade.GetMoveCommand(0.75_m));
+  mainDpadLeft.OnTrue(cascade.GetMoveCommand(1.03_m)); 
+  
+  // Level 4
+  mainDpadUp.OnTrue(cascade.GetMoveCommand(1.47_m));
   
   // Change global target to coral
   controller.LeftBumper().OnTrue(std::move(targetCoral)); 
