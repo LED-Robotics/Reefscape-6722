@@ -25,7 +25,7 @@ CascadeSubsystem::CascadeSubsystem()
 
 void CascadeSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
-  /*SetTargetPosition(units::length::meter_t{SmartDashboard::GetNumber("Cascade Position", position.value())});*/
+  SetTargetPosition(units::length::meter_t{SmartDashboard::GetNumber("Cascade Position", position.value())});
   SmartDashboard::PutNumber("Left Actual Cascade", GetLeftPosition().value());
   SmartDashboard::PutNumber("Right Actual Cascade", GetRightPosition().value());
   if(state == kOff) {

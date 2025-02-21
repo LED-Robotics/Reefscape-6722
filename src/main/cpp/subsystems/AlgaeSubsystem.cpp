@@ -93,6 +93,7 @@ void AlgaeSubsystem::ConfigIntake() {
 
   algaeIntakeConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
   algaeIntakeConfig.MotorOutput.PeakForwardDutyCycle = 1.0;
+  algaeIntakeConfig.MotorOutput.Inverted = true;
 
   intakeMotor.GetConfigurator().Apply(algaeIntakeConfig);
 }

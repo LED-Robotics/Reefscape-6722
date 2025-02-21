@@ -58,7 +58,7 @@ void IntakeSubsystem::Periodic() {
       right.Set(0);
     } else {
       // left.Set(power * 0.2);
-      right.Set(power * 0.4);
+      right.Set(power * 0.3);
     }
 
     previousVal = indexed;
