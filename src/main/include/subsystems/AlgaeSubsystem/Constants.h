@@ -42,5 +42,6 @@ namespace AlgaeConstants {
     constexpr double kPWrist = 1.0;
     constexpr double kWristRotorToGearbox = 9.0; //Will change
     constexpr double kWristGearboxToMechanism = 42.0 / 18.0; //Will change
-    constexpr double kTurnsPerDegree = kWristRotorToGearbox * kWristGearboxToMechanism;
+    /*constexpr double kTurnsPerDegree = kWristRotorToGearbox * kWristGearboxToMechanism;*/
+    constexpr double kTurnsPerDegree = 0.05863715277778;
 }

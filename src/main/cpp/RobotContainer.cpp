@@ -36,6 +36,13 @@ frc2::Command* RobotContainer::GetEmptyCommand() {
            }, {});
 }
 
+frc2::CommandPtr RobotContainer::SetMultijoint(units::length::meter_t cascadeHeight, units::angle::degree_t algaeAngle) {
+  return frc2::cmd::Parallel(
+    cascade.GetMoveCommand(cascadeHeight),
+    algae.GetMoveCommand(algaeAngle)
+  );
+}
+
 RobotContainer::RobotContainer() {
   // Autonomous selector configuration
   autonChooser.SetDefaultOption("None", "None");
@@ -58,21 +65,45 @@ RobotContainer::RobotContainer() {
   // controller.Start().OnTrue(std::move(rumblePrimaryOn));
   // controller.Start().OnFalse(std::move(rumblePrimaryOff));
 
-  controller.Start().OnTrue(cascade.GetMoveCommand(0.0_m));
+  controller.Start().OnTrue(SetMultijoint(0.0_m, 90_deg));
 
-  controller.Back().OnTrue(cascade.GetMoveCommand(0.265_m));
+  /*controller.Back().OnTrue(cascade.GetMoveCommand(0.2475_m));*/
+
+  controller.Back().OnTrue(frc2::cmd::Either(
+        SetMultijoint(0.2475_m, 90_deg),
+        SetMultijoint(0.0_m, -34_deg),
+        [&] { return TrackingTarget == GlobalConstants::kCoralMode; }
+  ));
 
   // Level 1
-  mainDpadDown.OnTrue(cascade.GetMoveCommand(0.36_m)); 
-  
+  /*mainDpadDown.OnTrue(cascade.GetMoveCommand(0.435_m)); */
+  mainDpadDown.OnTrue(frc2::cmd::Either(
+        SetMultijoint(0.435_m, 90_deg),
+        SetMultijoint(0.0_m, 15.0_deg),
+        [&] { return TrackingTarget == GlobalConstants::kCoralMode; }
+  ));
+
   // Level 2
-  mainDpadRight.OnTrue(cascade.GetMoveCommand(0.67_m)); 
-  
+  /*mainDpadRight.OnTrue(cascade.GetMoveCommand(0.623_m)); */
+  mainDpadRight.OnTrue(frc2::cmd::Either(
+        cascade.GetMoveCommand(0.623_m), 
+        cascade.GetMoveCommand(0.7_m),
+        [&] { return TrackingTarget == GlobalConstants::kCoralMode; }
+  ));
   // Level 3
-  mainDpadLeft.OnTrue(cascade.GetMoveCommand(1.03_m)); 
-  
+  /*mainDpadLeft.OnTrue(cascade.GetMoveCommand(0.998_m)); */
+  mainDpadLeft.OnTrue(frc2::cmd::Either(
+        cascade.GetMoveCommand(0.998_m), 
+        cascade.GetMoveCommand(1.1_m),
+        [&] { return TrackingTarget == GlobalConstants::kCoralMode; }
+  ));
   // Level 4
-  mainDpadUp.OnTrue(cascade.GetMoveCommand(1.47_m));
+  /*mainDpadUp.OnTrue(cascade.GetMoveCommand(1.47_m));*/
+  mainDpadUp.OnTrue(frc2::cmd::Either(
+        cascade.GetMoveCommand(1.2_m), 
+        cascade.GetMoveCommand(1.4_m),
+        [&] { return TrackingTarget == GlobalConstants::kCoralMode; }
+  ));
   
   // Change global target to coral
   controller.LeftBumper().OnTrue(std::move(targetCoral)); 

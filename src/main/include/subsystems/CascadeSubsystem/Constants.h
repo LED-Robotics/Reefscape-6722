@@ -24,7 +24,7 @@ namespace CascadeConstants {
     constexpr units::length::meter_t kStartPosition{0.13335_m};
     // arm min/max positions
     constexpr units::length::meter_t kCascadeMeterMin{kStartPosition};   // encoder Turns at the Cascade's minimum usable position
-    constexpr units::length::meter_t kCascadeMeterMax{1.6129_m}; // meters the Cascade is capable of moving 
+    constexpr units::length::meter_t kCascadeMeterMax{1.53_m}; // meters the Cascade is capable of moving 
     // for arm feed forward trig
     constexpr double kTurnsPerMeter = 6.066743827160493;
     // position deadzone

@@ -246,6 +246,8 @@ class RobotContainer {
    */
   frc2::Command* GetEmptyCommand();
 
+  frc2::CommandPtr SetMultijoint(units::length::meter_t cascadeHeight, units::angle::degree_t algaeAngle);
+
   // The chooser for the autonomous routines
   frc::SendableChooser<std::string> autonChooser;
   // frc::SendableChooser<frc2::Command*> autonChooser;

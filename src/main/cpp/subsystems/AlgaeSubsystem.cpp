@@ -16,6 +16,7 @@ AlgaeSubsystem::AlgaeSubsystem()
   : wristMotor{kWristPort},
     intakeMotor{kIntakePort},
     wristEncoder{kEncoderPort} {
+      wristMotor.SetPosition(0.0_tr);
       SmartDashboard::PutNumber("Algae Angle", GetAngle().value());
       ConfigIntake();
       ConfigWrist();
@@ -27,7 +28,7 @@ AlgaeSubsystem::AlgaeSubsystem()
 void AlgaeSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
   // Wrist Control
-  SetTargetAngle(units::angle::degree_t{SmartDashboard::GetNumber("Algae Angle", GetAngle().value())});
+  /*SetTargetAngle(units::angle::degree_t{SmartDashboard::GetNumber("Algae Angle", GetAngle().value())});*/
   SmartDashboard::PutNumber("Algae Actual", GetAngle().value());
   if(wristState == WristStates::kWristOff) {
     wristMotor.Set(0.0);
@@ -40,7 +41,7 @@ void AlgaeSubsystem::Periodic() {
     SmartDashboard::PutNumber("algaeAngle", GetAngle().value());  // print to Shuffleboard
     double feedForward = fabs(sin(wristAngle.value())) * kMaxFeedForward;
     SmartDashboard::PutNumber("Angle Target", wristAngle.value());
-    units::angle::turn_t posTarget{(wristAngle - kWristStartAngle) * kTurnsPerDegree};
+    units::angle::turn_t posTarget{(wristAngle - kWristStartAngle) / kTurnsPerDegree};
     SmartDashboard::PutNumber("wrTurnTarget", posTarget.value());
     wristMotor.SetControl(wristPosition
       .WithPosition(units::angle::turn_t{posTarget})
@@ -126,7 +127,7 @@ void AlgaeSubsystem::SetTargetAngle(units::angle::degree_t newAngle) {
 }
 
 units::angle::degree_t AlgaeSubsystem::GetAngle() {
-  return units::angle::degree_t{(GetWristPosition() * kTurnsPerDegree)} + kWristStartAngle;
+  return units::angle::degree_t{(GetWristPosition() / kTurnsPerDegree)} + kWristStartAngle;
 }
 
 double AlgaeSubsystem::GetWristPosition() {
@@ -149,13 +150,16 @@ int AlgaeSubsystem::GetWristState() {
 }
 
 frc2::CommandPtr AlgaeSubsystem::GetMoveCommand(units::angle::degree_t target) {
-  return frc2::cmd::Sequence(
-      frc2::cmd::RunOnce([this, target]() {
+  /*return frc2::cmd::Sequence(*/
+  /*    frc2::cmd::RunOnce([this, target]() {*/
+  /*      SetTargetAngle(target);*/
+  /*    }, {this}),*/
+  /*    frc2::cmd::WaitUntil([this, target](){*/
+  /*      return IsAtTarget();*/
+  /*    }));*/
+  return frc2::cmd::RunOnce([this, target]() {
         SetTargetAngle(target);
-      }, {this}),
-      frc2::cmd::WaitUntil([this, target](){
-        return IsAtTarget();
-      }));
+      }, {this});
 }
 void AlgaeSubsystem::SetWristBrakeMode(bool state) {
   signals::NeutralModeValue mode;
