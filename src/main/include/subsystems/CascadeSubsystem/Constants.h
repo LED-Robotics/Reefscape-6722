@@ -18,7 +18,7 @@ namespace CascadeConstants {
     };
     // default power in power mode
 
-    constexpr double kDefaultPower = 1.0;
+    constexpr double kDefaultPower = 0.0;
     constexpr double kStageMultiplier = 1.7825903614458;
     // arm position constants
     constexpr units::length::meter_t kStartPosition{0.13335_m};
@@ -30,6 +30,7 @@ namespace CascadeConstants {
     // position deadzone
     constexpr units::length::meter_t kPositionDeadzone{3.0_cm};
     // TalonFX config
-    constexpr double kP = 5.5;
+    constexpr double kP = 10.0;
+    constexpr double kG = 0.28;
     constexpr double kRotorToGearbox = 25.0;
 }

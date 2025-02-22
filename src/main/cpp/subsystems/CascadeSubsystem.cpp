@@ -18,6 +18,7 @@ CascadeSubsystem::CascadeSubsystem()
   // encoder{kEncoderPort} 
   {
     SmartDashboard::PutNumber("Cascade Position", position.value());
+    /*SmartDashboard::PutNumber("Cascade Power", 0.0);*/
     ConfigMotors();
     SetTargetPosition(0.0_m);
 
@@ -25,7 +26,9 @@ CascadeSubsystem::CascadeSubsystem()
 
 void CascadeSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
-  // SetTargetPosition(units::length::meter_t{SmartDashboard::GetNumber("Cascade Position", position.value())});
+  /*SetTargetPosition(units::length::meter_t{SmartDashboard::GetNumber("Cascade Position", position.value())});*/
+  /*SetPower(SmartDashboard::GetNumber("Cascade Power", power));*/
+  /*SmartDashboard::PutNumber("Cascade Voltage", left.GetMotorVoltage().GetValueAsDouble());*/
   SmartDashboard::PutNumber("Left Actual Cascade", GetLeftPosition().value());
   SmartDashboard::PutNumber("Right Actual Cascade", GetRightPosition().value());
   if(state == kOff) {
@@ -125,6 +128,7 @@ void CascadeSubsystem::ConfigMotors() {
   configs::TalonFXConfiguration cascadeConfig{};
   
   cascadeConfig.Slot0.kP = kP;
+  cascadeConfig.Slot0.kG = kG;
   // cascadeConfig.Slot0.kS = 0.28;
   // cascadeConfig.Slot0.kV = 8.5;
   // cascadeConfig.Slot0.kA = 3.0;
