@@ -165,6 +165,12 @@ RobotContainer::RobotContainer() {
     }, 
   {&algae}));
 
+  climb.SetDefaultCommand(frc2::cmd::Run(
+    [this] {
+          
+    }, 
+  {&climb}));
+
   // funnel.SetDefaultCommand(frc2::cmd::Run(
   //   [this] {
 

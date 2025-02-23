@@ -26,6 +26,7 @@
 #include "subsystems/AlgaeSubsystem/AlgaeSubsystem.h"
 #include "subsystems/DriveSubsystem/DriveSubsystem.h"
 #include "subsystems/CascadeSubsystem/CascadeSubsystem.h"
+#include "subsystems/ClimbSubsystem/ClimbSubsystem.h"
 #include "subsystems/IntakeSubsystem/IntakeSubsystem.h"
 #include "subsystems/FunnelSubsystem/FunnelSubsystem.h"
 #include "subsystems/LEDSubsystem/LEDSubsystem.h"
@@ -108,6 +109,8 @@ class RobotContainer {
   DriveSubsystem m_drive{&jetson, &TrackingTarget};
   
   CascadeSubsystem cascade{};
+
+  ClimbSubsystem climb{};
 
   IntakeSubsystem intake{};
 
