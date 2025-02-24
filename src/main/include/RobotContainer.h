@@ -110,7 +110,7 @@ class RobotContainer {
   
   CascadeSubsystem cascade{};
 
-  ClimbSubsystem climb{};
+  // ClimbSubsystem climb{};
 
   IntakeSubsystem intake{};
 

@@ -15,9 +15,11 @@ IntakeSubsystem::IntakeSubsystem()
     /*: left{kLeftPort},*/
     /*  right{kRightPort} {*/
     : right{kRightPort, SparkMax::MotorType::kBrushless},
+      left{kLeftPort, SparkMax::MotorType::kBrushless},
       beamBreak{kBeamBreakPort} {
     // : intakeMotor{kIntakePort, CANSparkLowLevel::MotorType::kBrushless} {
       right.SetInverted(false);
+      left.SetInverted(true);
       previousVal = IsCoralIndexed();
 }
 
@@ -28,12 +30,12 @@ void IntakeSubsystem::Periodic() {
   SmartDashboard::PutNumber("Previous", previousVal);
   SmartDashboard::PutNumber("powerOff", powerOff);
   if(state == IntakeStates::kOff) {
-    // left.Set(0.0);
+    left.Set(0.0);
     right.Set(0.0);
   } else if(state == IntakeStates::kPowerMode) {
     // power limiting 
     // if(intakeMotor.GetOutputCurrent() < kCurrentLimit && power > 0.0) intakeMotor.Set(power);
-    // left.Set(power);
+    left.Set(power);
     right.Set(power);
     // else intakeMotor.Set(0.0);
   } else if(state == IntakeStates::kSensorMode) {
@@ -50,14 +52,15 @@ void IntakeSubsystem::Periodic() {
     SmartDashboard::PutNumber("power", fabs(power));
     SmartDashboard::PutNumber("Skibidi", fabs(power) - trippedPower);
 
-    if(fabs(power) - trippedPower > 0.10 && powerOff) {
+    if(fabs(power) < 0.10 && powerOff) {
       powerOff = false;
+      power = 0.0;
     }
     if(powerOff) {
-      // left.Set(0);
+      left.Set(0);
       right.Set(0);
     } else {
-      // left.Set(power * 0.2);
+      left.Set(power * 0.3);
       right.Set(power * 0.3);
     }
 

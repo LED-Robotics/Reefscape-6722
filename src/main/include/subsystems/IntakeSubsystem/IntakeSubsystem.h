@@ -93,7 +93,7 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   /*hardware::TalonFX left;*/
   /*hardware::TalonFX right;*/
 
-  // SparkFlex left;
+  SparkFlex left;
   SparkFlex right;
   DigitalInput beamBreak;
 };

@@ -123,19 +123,6 @@
               "_showGlyph": false
             }
           },
-          "1,4": {
-            "size": [
-              2,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/targetOmega",
-              "_title": "/SmartDashboard/targetOmega",
-              "_glyph": 148,
-              "_showGlyph": false
-            }
-          },
           "9,1": {
             "size": [
               2,
@@ -410,7 +397,7 @@
               "_showGlyph": false
             }
           },
-          "4,0": {
+          "1,1": {
             "size": [
               1,
               1
@@ -423,7 +410,7 @@
               "_showGlyph": false
             }
           },
-          "7,2": {
+          "2,1": {
             "size": [
               1,
               1
@@ -447,24 +434,6 @@
               "_title": "Algae Angle",
               "_glyph": 148,
               "_showGlyph": false
-            }
-          },
-          "1,1": {
-            "size": [
-              4,
-              1
-            ],
-            "content": {
-              "_type": "Number Slider",
-              "_source0": "network_table:///SmartDashboard/Cascade Power",
-              "_title": "Cascade Power",
-              "_glyph": 148,
-              "_showGlyph": false,
-              "Slider Settings/Min": 0.0,
-              "Slider Settings/Max": 1.0,
-              "Slider Settings/Block increment": 0.0625,
-              "Visuals/Display value": true,
-              "Visuals/Orientation": "HORIZONTAL"
             }
           },
           "3,0": {
@@ -597,7 +566,7 @@
               "_showGlyph": false
             }
           },
-          "3,4": {
+          "1,4": {
             "size": [
               1,
               1
@@ -608,6 +577,37 @@
               "_title": "wrTurnTarget",
               "_glyph": 148,
               "_showGlyph": false
+            }
+          },
+          "2,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/targetOmega",
+              "_title": "targetOmega",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "3,4": {
+            "size": [
+              6,
+              1
+            ],
+            "content": {
+              "_type": "Number Slider",
+              "_source0": "network_table:///SmartDashboard/Cascade Position",
+              "_title": "SmartDashboard/Cascade Position",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Slider Settings/Min": 0.0,
+              "Slider Settings/Max": 2.0,
+              "Slider Settings/Block increment": 0.0625,
+              "Visuals/Display value": true,
+              "Visuals/Orientation": "HORIZONTAL"
             }
           }
         }
