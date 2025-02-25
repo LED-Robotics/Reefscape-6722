@@ -53,7 +53,7 @@ RobotContainer::RobotContainer() {
  
   /*******Controller Bindings*******/
   
-  controller.POVLeft().OnTrue(std::move(targetArbitrary));
+  /*controller.POVLeft().OnTrue(std::move(targetArbitrary));*/
 
   //Turn lock toggles
   controller.LeftStick().OnTrue(std::move(toggleOmegaOverride));
@@ -65,44 +65,44 @@ RobotContainer::RobotContainer() {
   // controller.Start().OnTrue(std::move(rumblePrimaryOn));
   // controller.Start().OnFalse(std::move(rumblePrimaryOff));
 
-  controller.Start().OnTrue(SetMultijoint(0.0_m, 90_deg));
+  controller.Start().OnTrue(SetMultijoint(0.0_m, 80_deg));
 
   /*controller.Back().OnTrue(cascade.GetMoveCommand(0.2475_m));*/
 
-  controller.Back().OnTrue(frc2::cmd::Either(
-        SetMultijoint(0.2475_m, 90_deg),
-        SetMultijoint(0.0_m, -34_deg),
-        [&] { return TrackingTarget == GlobalConstants::kCoralMode; }
+  mainBack.OnTrue(frc2::cmd::Either(
+        SetMultijoint(0.0_m, -45_deg),
+        SetMultijoint(0.07_m, 80_deg),
+        [&]() { return TrackingTarget == GlobalConstants::kAlgaeMode; }
   ));
 
   // Level 1
   /*mainDpadDown.OnTrue(cascade.GetMoveCommand(0.435_m)); */
   mainDpadDown.OnTrue(frc2::cmd::Either(
-        SetMultijoint(0.435_m, 90_deg),
-        SetMultijoint(0.0_m, 15.0_deg),
-        [&] { return TrackingTarget == GlobalConstants::kCoralMode; }
+        SetMultijoint(0.0_m, -15.0_deg),
+        SetMultijoint(0.15_m, 80_deg),
+        [&]() { return TrackingTarget == GlobalConstants::kAlgaeMode; }
   ));
 
   // Level 2
   /*mainDpadRight.OnTrue(cascade.GetMoveCommand(0.623_m)); */
   mainDpadRight.OnTrue(frc2::cmd::Either(
-        cascade.GetMoveCommand(0.623_m), 
-        cascade.GetMoveCommand(0.7_m),
-        [&] { return TrackingTarget == GlobalConstants::kCoralMode; }
+        SetMultijoint(0.38_m, 0_deg),
+        SetMultijoint(0.38_m, 80_deg),
+        [&]() { return TrackingTarget == GlobalConstants::kAlgaeMode; }
   ));
   // Level 3
   /*mainDpadLeft.OnTrue(cascade.GetMoveCommand(0.998_m)); */
   mainDpadLeft.OnTrue(frc2::cmd::Either(
-        cascade.GetMoveCommand(0.998_m), 
-        cascade.GetMoveCommand(1.1_m),
-        [&] { return TrackingTarget == GlobalConstants::kCoralMode; }
+        SetMultijoint(0.76_m, 0_deg),
+        SetMultijoint(0.76_m, 80_deg),
+        [&]() { return TrackingTarget == GlobalConstants::kAlgaeMode; }
   ));
   // Level 4
   /*mainDpadUp.OnTrue(cascade.GetMoveCommand(1.47_m));*/
   mainDpadUp.OnTrue(frc2::cmd::Either(
-        cascade.GetMoveCommand(1.2_m), 
-        cascade.GetMoveCommand(1.4_m),
-        [&] { return TrackingTarget == GlobalConstants::kCoralMode; }
+        SetMultijoint(1.3_m, 60.0_deg),
+        SetMultijoint(1.3_m, 80.0_deg),
+        [&]() { return TrackingTarget == GlobalConstants::kAlgaeMode; }
   ));
   
   // Change global target to coral

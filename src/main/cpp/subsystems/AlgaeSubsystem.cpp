@@ -16,19 +16,19 @@ AlgaeSubsystem::AlgaeSubsystem()
   : wristMotor{kWristPort},
     intakeMotor{kIntakePort},
     wristEncoder{kEncoderPort} {
-      wristMotor.SetPosition(0.0_tr);
-      SmartDashboard::PutNumber("Algae Angle", GetAngle().value());
+      /*wristMotor.SetPosition(0.0_tr);*/
+      SmartDashboard::PutNumber("Algae Angle", 80.0);
       ConfigIntake();
       ConfigWrist();
 
-      SetTargetAngle(kWristStartAngle);
+      /*SetTargetAngle(kWristStartAngle);*/
 
 }
 
 void AlgaeSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
   // Wrist Control
-  SetTargetAngle(units::angle::degree_t{SmartDashboard::GetNumber("Algae Angle", GetAngle().value())});
+  /*SetTargetAngle(units::angle::degree_t{SmartDashboard::GetNumber("Algae Angle", GetAngle().value())});*/
   SmartDashboard::PutNumber("Algae Actual", GetAngle().value());
   if(wristState == WristStates::kWristOff) {
     wristMotor.Set(0.0);

@@ -25,13 +25,14 @@ namespace CascadeConstants {
     // constexpr units::length::meter_t kStartPosition{0.13335_m};
     // arm min/max positions
     constexpr units::length::meter_t kCascadeMeterMin{kStartPosition};   // encoder Turns at the Cascade's minimum usable position
-    constexpr units::length::meter_t kCascadeMeterMax{1.53_m}; // meters the Cascade is capable of moving 
+    constexpr units::length::meter_t kCascadeMeterMax{1.3_m}; // meters the Cascade is capable of moving 
     // for arm feed forward trig
     constexpr double kTurnsPerMeter = 6.066743827160493;
     // position deadzone
     constexpr units::length::meter_t kPositionDeadzone{3.0_cm};
     // TalonFX config
     constexpr double kP = 10.0;
-    constexpr double kG = 0.28;
+    constexpr double kD = 1.4;
+    constexpr double kG = 0.4;
     constexpr double kRotorToGearbox = 25.0;
 }

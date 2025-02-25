@@ -172,7 +172,7 @@ class AlgaeSubsystem : public frc2::SubsystemBase {
   // While the state is kOn the wrist will run on the angle mode.
   int wristState = AlgaeConstants::WristStates::kWristAngleMode;
   double wristPower = AlgaeConstants::kWristDefaultPower;
-  units::angle::degree_t wristAngle = AlgaeConstants::kWristStartAngle;
+  units::angle::degree_t wristAngle{80_deg};
 
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.

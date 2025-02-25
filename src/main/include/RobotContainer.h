@@ -180,6 +180,7 @@ class RobotContainer {
     }, {})
   };
 
+  frc2::Trigger mainBack{controller.Back()};
   frc2::Trigger mainDpadUp{controller.POV(0)};
   frc2::Trigger mainDpadDown{controller.POV(180)};
   frc2::Trigger mainDpadLeft{controller.POV(270)};
