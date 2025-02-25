@@ -43,6 +43,10 @@ frc2::CommandPtr RobotContainer::SetMultijoint(units::length::meter_t cascadeHei
   );
 }
 
+void RobotContainer::ManuallySchedule(frc2::CommandPtr&& cmd) {
+  frc2::CommandScheduler::GetInstance().Schedule(cmd);
+}
+
 RobotContainer::RobotContainer() {
   // Autonomous selector configuration
   autonChooser.SetDefaultOption("None", "None");
@@ -69,40 +73,62 @@ RobotContainer::RobotContainer() {
 
   /*controller.Back().OnTrue(cascade.GetMoveCommand(0.2475_m));*/
 
-  mainBack.OnTrue(frc2::cmd::Either(
-        SetMultijoint(0.0_m, -45_deg),
-        SetMultijoint(0.07_m, 80_deg),
-        [&]() { return TrackingTarget == GlobalConstants::kAlgaeMode; }
+  /*mainBack.OnTrue(frc2::cmd::Either(*/
+  /*      SetMultijoint(0.0_m, -45_deg),*/
+  /*      SetMultijoint(0.07_m, 80_deg),*/
+  /*      [&]() { return TrackingTarget == GlobalConstants::kAlgaeMode; }*/
+  /*));*/
+
+  mainBack.OnTrue(frc2::cmd::RunOnce([this]() {
+        if(TrackingTarget == GlobalConstants::kAlgaeMode) {
+          ManuallySchedule(std::move(SetMultijoint(0.0_m, -60_deg)));
+        } else {
+          ManuallySchedule(std::move(SetMultijoint(0.07_m, 80_deg)));
+        }
+      }, {}
   ));
 
   // Level 1
   /*mainDpadDown.OnTrue(cascade.GetMoveCommand(0.435_m)); */
-  mainDpadDown.OnTrue(frc2::cmd::Either(
-        SetMultijoint(0.0_m, -15.0_deg),
-        SetMultijoint(0.15_m, 80_deg),
-        [&]() { return TrackingTarget == GlobalConstants::kAlgaeMode; }
+  mainDpadDown.OnTrue(frc2::cmd::RunOnce([this]() {
+        if(TrackingTarget == GlobalConstants::kAlgaeMode) {
+          ManuallySchedule(std::move(SetMultijoint(0.0_m, -15.0_deg)));
+        } else {
+          ManuallySchedule(std::move(SetMultijoint(0.15_m, 80_deg)));
+        }
+      }, {}
   ));
 
   // Level 2
   /*mainDpadRight.OnTrue(cascade.GetMoveCommand(0.623_m)); */
-  mainDpadRight.OnTrue(frc2::cmd::Either(
-        SetMultijoint(0.38_m, 0_deg),
-        SetMultijoint(0.38_m, 80_deg),
-        [&]() { return TrackingTarget == GlobalConstants::kAlgaeMode; }
+  mainDpadRight.OnTrue(frc2::cmd::RunOnce([this]() {
+        if(TrackingTarget == GlobalConstants::kAlgaeMode) {
+          ManuallySchedule(std::move(SetMultijoint(0.13_m, 10_deg)));
+        } else {
+          ManuallySchedule(std::move(SetMultijoint(0.33_m, 80_deg)));
+        }
+      }, {}
   ));
+
   // Level 3
   /*mainDpadLeft.OnTrue(cascade.GetMoveCommand(0.998_m)); */
-  mainDpadLeft.OnTrue(frc2::cmd::Either(
-        SetMultijoint(0.76_m, 0_deg),
-        SetMultijoint(0.76_m, 80_deg),
-        [&]() { return TrackingTarget == GlobalConstants::kAlgaeMode; }
+  mainDpadLeft.OnTrue(frc2::cmd::RunOnce([this]() {
+        if(TrackingTarget == GlobalConstants::kAlgaeMode) {
+          ManuallySchedule(std::move(SetMultijoint(0.51_m, 10_deg)));
+        } else {
+          ManuallySchedule(std::move(SetMultijoint(0.71_m, 80_deg)));
+        }
+      }, {}
   ));
   // Level 4
   /*mainDpadUp.OnTrue(cascade.GetMoveCommand(1.47_m));*/
-  mainDpadUp.OnTrue(frc2::cmd::Either(
-        SetMultijoint(1.3_m, 60.0_deg),
-        SetMultijoint(1.3_m, 80.0_deg),
-        [&]() { return TrackingTarget == GlobalConstants::kAlgaeMode; }
+  mainDpadUp.OnTrue(frc2::cmd::RunOnce([this]() {
+        if(TrackingTarget == GlobalConstants::kAlgaeMode) {
+          ManuallySchedule(std::move(SetMultijoint(1.3_m, 60.0_deg)));
+        } else {
+          ManuallySchedule(std::move(SetMultijoint(1.37_m, 80.0_deg)));
+        }
+      }, {}
   ));
   
   // Change global target to coral

@@ -28,7 +28,7 @@ namespace AlgaeConstants {
       kWristAngleMode
     };
     // wrist min/max positions
-    constexpr units::angle::degree_t kWristDegreeMin{-45_deg};   // encoder Turns at the Floor's minimum usable position
+    constexpr units::angle::degree_t kWristDegreeMin{-60_deg};   // encoder Turns at the Floor's minimum usable position
     constexpr units::angle::degree_t kWristDegreeMax{90_deg}; // meters the Floor is capable of moving 
     // for arm feed forward trig
     // arm position constants

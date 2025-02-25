@@ -252,6 +252,8 @@ class RobotContainer {
 
   frc2::CommandPtr SetMultijoint(units::length::meter_t cascadeHeight, units::angle::degree_t algaeAngle);
 
+  void ManuallySchedule(frc2::CommandPtr&& cmd);
+
   // The chooser for the autonomous routines
   frc::SendableChooser<std::string> autonChooser;
   // frc::SendableChooser<frc2::Command*> autonChooser;
