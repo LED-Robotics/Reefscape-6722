@@ -103,7 +103,7 @@ RobotContainer::RobotContainer() {
   /*mainDpadRight.OnTrue(cascade.GetMoveCommand(0.623_m)); */
   mainDpadRight.OnTrue(frc2::cmd::RunOnce([this]() {
         if(TrackingTarget == GlobalConstants::kAlgaeMode) {
-          ManuallySchedule(std::move(SetMultijoint(0.13_m, 10_deg)));
+          ManuallySchedule(std::move(SetMultijoint(0.13_m, -5_deg)));
         } else {
           ManuallySchedule(std::move(SetMultijoint(0.33_m, 80_deg)));
         }
@@ -114,7 +114,7 @@ RobotContainer::RobotContainer() {
   /*mainDpadLeft.OnTrue(cascade.GetMoveCommand(0.998_m)); */
   mainDpadLeft.OnTrue(frc2::cmd::RunOnce([this]() {
         if(TrackingTarget == GlobalConstants::kAlgaeMode) {
-          ManuallySchedule(std::move(SetMultijoint(0.51_m, 10_deg)));
+          ManuallySchedule(std::move(SetMultijoint(0.51_m, -5_deg)));
         } else {
           ManuallySchedule(std::move(SetMultijoint(0.71_m, 80_deg)));
         }
