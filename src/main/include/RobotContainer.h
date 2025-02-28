@@ -27,9 +27,9 @@
 #include "subsystems/DriveSubsystem/DriveSubsystem.h"
 #include "subsystems/CascadeSubsystem/CascadeSubsystem.h"
 #include "subsystems/ClimbSubsystem/ClimbSubsystem.h"
-#include "subsystems/IntakeSubsystem/IntakeSubsystem.h"
-#include "subsystems/FunnelSubsystem/FunnelSubsystem.h"
+#include "subsystems/CoralSubsystem/CoralSubsystem.h"
 #include "subsystems/LEDSubsystem/LEDSubsystem.h"
+#include "subsystems/PivotSubsystem/PivotSubsystem.h"
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/WaitCommand.h>
 #include "iostream"
@@ -112,13 +112,15 @@ class RobotContainer {
 
   // ClimbSubsystem climb{};
 
-  IntakeSubsystem intake{};
+  CoralSubsystem coral{};
 
   // FunnelSubsystem funnel{};
 
   // FloorSubsystem floor{};
 
   LEDSubsystem led{};
+
+  PivotSubsystem pivot{};
 
   // used for AprilTag odom updates
   units::degree_t startOffset{180.0};

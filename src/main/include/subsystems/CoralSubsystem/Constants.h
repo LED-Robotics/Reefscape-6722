@@ -1,13 +1,12 @@
 #include <units/length.h>
 
-namespace IntakeConstants {
+namespace CoralConstants {
     // Ports
-    constexpr int kLeftPort = 3;
-    constexpr int kRightPort = 2;
+    constexpr int kIntakePort = 2;
     constexpr int kBeamBreakPort = 1;
 
     // States
-    enum IntakeStates {
+    enum CoralStates {
       kOff,
       kPowerMode,
       kSensorMode
