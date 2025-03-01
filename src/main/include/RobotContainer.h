@@ -52,6 +52,18 @@ class RobotContainer {
  public:
   RobotContainer();
 
+  enum MLLabels {
+    Algae,
+    Coral,
+    Reef
+  };
+
+  enum ReefTargetStates {
+    Unset,
+    Left,
+    Right
+  };
+
   static struct KinematicsPoses {
     units::length::meter_t cascadePose;
     //Angle of wrist
@@ -106,7 +118,7 @@ class RobotContainer {
 
   JetsonSubsystem jetson{};
 
-  DriveSubsystem m_drive{&jetson, &TrackingTarget};
+  DriveSubsystem drive{&jetson, &TrackingTarget};
   
   CascadeSubsystem cascade{};
 
@@ -122,6 +134,12 @@ class RobotContainer {
 
   // used for AprilTag odom updates
   units::degree_t startOffset{180.0};
+
+  int reefTargetDirection = ReefTargetStates::Unset;
+
+  frc::PIDController xTransAdjust{0.006, 0.0, 0.0003};
+
+  frc::PIDController yTransAdjust{0.006, 0.0, 0.0003};
 
   // flag to drive using field-centric positions
   bool fieldCentric = true;
@@ -147,19 +165,19 @@ class RobotContainer {
     frc2::cmd::Sequence(
       frc2::cmd::RunOnce([this] {
         // if(!tagOverrideDisable) {
-          m_drive.ResetFromJetson();
+          drive.ResetFromJetson();
         // }
       }, {}),
       frc2::cmd::Wait(5.0_s)
     )};
 
   frc2::CommandPtr autonOdomSet{frc2::cmd::RunOnce([this]{
-      m_drive.ResetOdometry(AutoConstants::kDefaultStartingPose);
-    },{&m_drive}
+      drive.ResetOdometry(AutoConstants::kDefaultStartingPose);
+    },{&drive}
   )};
 
   frc2::CommandPtr odomReset{frc2::cmd::RunOnce([this]{
-      m_drive.ResetOdometry({7.5_m, 4.3_m, 180_deg});
+      drive.ResetOdometry({7.5_m, 4.3_m, 180_deg});
   },{})};
 
   // Command to repetitively call odom update
@@ -176,7 +194,7 @@ class RobotContainer {
 
   frc2::CommandPtr toggleOmegaOverride{frc2::cmd::RunOnce([this] { 
       omegaOverride = !omegaOverride;
-      m_drive.SetOmegaOverride(omegaOverride);
+      drive.SetOmegaOverride(omegaOverride);
     }, {})
   };
 
@@ -207,14 +225,14 @@ class RobotContainer {
   };
 
   frc2::CommandPtr driveOff{frc2::cmd::RunOnce([this] { 
-      m_drive.Drive({0_mps, 0_mps, 0_deg_per_s});
-    }, {&m_drive})
+      drive.Drive({0_mps, 0_mps, 0_deg_per_s});
+    }, {&drive})
   };
 
   frc2::CommandPtr autonTrackingDisable{frc2::cmd::RunOnce([this] { 
       TrackingTarget = GlobalConstants::kArbitrary;
-      m_drive.SetOmegaOverride(false);
-    }, {&m_drive})  
+      drive.SetOmegaOverride(false);
+    }, {&drive})  
   };
 
   // funny rumble Commands

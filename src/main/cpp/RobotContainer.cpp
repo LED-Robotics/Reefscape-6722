@@ -63,7 +63,7 @@ RobotContainer::RobotContainer() {
   controller.LeftStick().OnTrue(std::move(toggleOmegaOverride));
 
   // Uncomment for actual use to prevent dumbass
-  // controller.A().OnTrue(std::move(m_drive.FollowPathCommand("Example Path")));
+  // controller.A().OnTrue(std::move(drive.FollowPathCommand("Example Path")));
 
   // Controller rumble commands 
   // controller.Start().OnTrue(std::move(rumblePrimaryOn));
@@ -130,6 +130,10 @@ RobotContainer::RobotContainer() {
         }
       }, {}
   ));
+
+  controller.B().OnTrue(frc2::cmd::RunOnce([this]() {
+    drive.SetTransAdjust(!drive.GetTransAdjust());
+  }, {}));
   
   // Change global target to coral
   controller.LeftBumper().OnTrue(std::move(targetCoral)); 
@@ -143,7 +147,7 @@ RobotContainer::RobotContainer() {
   controller.Y().OnTrue(std::move(toggleFieldCentric));
   
   /*******Subsystem DEFAULT Commands*******/
-  m_drive.SetDefaultCommand(frc2::cmd::Run(
+  drive.SetDefaultCommand(frc2::cmd::Run(
     [this] {
       SmartDashboard::PutNumber("Subsystem Target", TrackingTarget);
       // store control inputs for driving
@@ -167,9 +171,9 @@ RobotContainer::RobotContainer() {
       float turn = 0.95 * pow(turnX, 3) + (1 - 0.95) * turnX;
       // pass filtered inputs to Drive function
       // inputs will be between -1.0 to 1.0, multiply by intended speed range in mps/deg_per_s when passing
-      m_drive.Drive({xSpeed * DriveConstants::kDriveTranslationLimit, ySpeed * DriveConstants::kDriveTranslationLimit, 
+      drive.Drive({xSpeed * DriveConstants::kDriveTranslationLimit, ySpeed * DriveConstants::kDriveTranslationLimit, 
       turn * -270.0_deg_per_s}, true, fieldCentric);
-    }, {&m_drive}));
+    }, {&drive}));
 
   intake.SetDefaultCommand(frc2::cmd::Run(
     [this] {
@@ -198,10 +202,105 @@ RobotContainer::RobotContainer() {
   // {&climb}));
 
   // funnel.SetDefaultCommand(frc2::cmd::Run(
-  //   [this] {
+  //  [this] {
 
   //   },  
   // {&funnel}));
+
+  xTransAdjust.SetSetpoint(0.0);
+  yTransAdjust.SetSetpoint(0.0);
+
+  jetson.SetDefaultCommand(frc2::cmd::Run(
+    [this] {
+      auto dets = jetson.GetMLDetections();
+      int detSize = dets.size();
+      SmartDashboard::PutNumber("numDets", detSize);
+      std::vector<int> algaeIndexes;
+      std::vector<int> coralIndexes;
+      std::vector<int> reefIndexes;
+
+      for(int i = 0; i < detSize; i++) {
+        switch(dets[i].label) {
+        case MLLabels::Algae:
+            algaeIndexes.push_back(i);
+            break;
+        case MLLabels::Coral:
+            coralIndexes.push_back(i);
+            break;
+        case MLLabels::Reef:
+            reefIndexes.push_back(i);
+            break;
+        }
+      }
+
+      for(int i = 0; i < algaeIndexes.size(); i++) {
+        auto target = dets[algaeIndexes[i]];
+        SmartDashboard::PutNumber("algaeTx", target.x);
+        SmartDashboard::PutNumber("algaeTy", target.y);
+        SmartDashboard::PutNumber("algaeTw", target.w);
+        SmartDashboard::PutNumber("algaeTh", target.h);
+        SmartDashboard::PutNumber("algaeArea", target.w * target.h);
+
+      }
+
+      std::vector<JetsonSubsystem::MLDetectionFrame> validReefs;
+
+      for(int i = 0; i < reefIndexes.size(); i++) {
+        auto reef = dets[reefIndexes[i]];
+        bool taller = reef.w / reef.h < 0.9;
+        bool lower = reef.y + (reef.h / 2) > 240;
+        bool bigEnough = reef.w * reef.h > 5000;
+        if(taller && lower && bigEnough) {
+          validReefs.push_back(reef);
+        }
+        /*if(reefTargetDirection != ReefTargetStates::Unset) {*/
+        /*  double center = reef.x + (reef.w / 2);*/
+        /*  if(ReefTargetStates::Left && center > 320) {*/
+        /*    continue;*/
+        /*  } else if(ReefTargetStates::Right && center > 320) {*/
+        /*    continue;*/
+        /*  }*/
+        /*}*/
+      }
+      JetsonSubsystem::MLDetectionFrame targetReef;
+      double closestToCenter = 1000.0;
+      for(int i = 0; i < validReefs.size(); i++) {
+        auto reef = validReefs[i];
+        double dCenter = reef.x + (reef.w / 2);
+        dCenter = fabs(dCenter - 320.0);
+        if(dCenter > closestToCenter) continue; 
+        closestToCenter = dCenter;
+        targetReef = reef;
+      }
+      if(targetReef.label == MLLabels::Reef) {
+        auto target = targetReef;
+        double dCenter = target.x + (target.w / 2);
+        dCenter = dCenter - 320.0;
+        auto yAdjust = units::meters_per_second_t{yTransAdjust.Calculate(dCenter)};
+
+        drive.SetTransAdjustSpeeds(units::meters_per_second_t{0.0}, {yAdjust});
+        SmartDashboard::PutNumber("yVelAdjust", yAdjust.value());
+
+        /*if(reefTargetDirection == ReefTargetStates::Unset) {*/
+        /*  reefTargetDirection = target.x + (target.w / 2) <= 320 ? ReefTargetStates::Left : ReefTargetStates::Right;*/
+        /*}*/
+        SmartDashboard::PutNumber("reefTx", target.x);
+        SmartDashboard::PutNumber("reefTy", target.y);
+        SmartDashboard::PutNumber("reefTw", target.w);
+        SmartDashboard::PutNumber("reefTh", target.h);
+        SmartDashboard::PutNumber("reefArea", target.w * target.h);
+        SmartDashboard::PutNumber("reefDelta", closestToCenter);
+      } else {
+        drive.SetTransAdjustSpeeds(units::meters_per_second_t{0.0}, units::meters_per_second_t{0.0});
+      }
+
+
+      SmartDashboard::PutNumber("numAlgae", algaeIndexes.size());
+      SmartDashboard::PutNumber("numCoral", coralIndexes.size());
+      SmartDashboard::PutNumber("numReef", reefIndexes.size());
+      SmartDashboard::PutNumber("validReef", validReefs.size());
+    },
+  {&jetson}));
 
   led.SetDefaultCommand(frc2::cmd::Run(
     [this] {
@@ -222,7 +321,7 @@ frc2::CommandPtr RobotContainer::SetAllKinematics(RobotContainer::KinematicsPose
 }
 
 void RobotContainer::SetDriveBrakes(bool state) {
-  m_drive.SetBrakeMode(state);
+  drive.SetBrakeMode(state);
 }
 
 void RobotContainer::DisableTagTracking() {
@@ -236,5 +335,5 @@ void RobotContainer::EnableTagTracking() {
 }
 
 void RobotContainer::SetSlew(bool state) {
-  m_drive.SetLimiting(state);
+  drive.SetLimiting(state);
 }
