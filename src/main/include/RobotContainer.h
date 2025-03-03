@@ -272,6 +272,41 @@ class RobotContainer {
 
   void ManuallySchedule(frc2::CommandPtr&& cmd);
 
+  int camFrameHeight = 480;
+  int camFrameWidth = 640;
+
+  int mlTrackingTarget = MLLabels::Reef;
+  // Persistance variables
+  bool persistenceDataSet = false;
+  double mlLastX = 0.0;
+  double mlLastY = 0.0;
+  double mlLastWidth = 0.0;
+  double mlLastHeight = 0.0;
+  double mlLastHeightRatio = 0.0;
+  uint32_t mlLastCaptureTime = 0;
+  // Persistance variables
+
+  // Reef filter parameters
+  double reefHeightRatioThreshold = 1.1;
+  double reefYPosMax = 240;
+  double reefAreaMin = 5000.0;
+  // Reef filter parameters
+
+  // Reef persistence parameters
+  double maxWidthDrift = 50.0;
+  double maxHeightDrift = 50.0;
+  double maxXDrift = 20.0;
+  double maxYDrift = 20.0;
+  double timeMultiplier = 0.0;
+  // The X/Y comments are not typos
+  double xSpeedMultiplier = 0.0; // Matched to robot Y speed
+  double ySpeedMultiplier = 0.0; // Matched to robot X speed
+  // Reef persistence parameters
+
+  bool IsReefDisqualified(JetsonSubsystem::MLDetectionFrame reef);
+  bool IsViablePersistenceTarget(JetsonSubsystem::MLDetectionFrame reef);
+  JetsonSubsystem::MLDetectionFrame GetReefTrackingTarget(std::vector<JetsonSubsystem::MLDetectionFrame> dets);
+
   // The chooser for the autonomous routines
   frc::SendableChooser<std::string> autonChooser;
   // frc::SendableChooser<frc2::Command*> autonChooser;

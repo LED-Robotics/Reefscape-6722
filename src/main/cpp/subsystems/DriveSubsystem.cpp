@@ -152,6 +152,10 @@ void DriveSubsystem::Drive(frc::ChassisSpeeds speeds,
   SetModuleStates(states, applyLimits);
 }
 
+frc::ChassisSpeeds DriveSubsystem::GetChassisSpeeds() {
+  return kDriveKinematics.ToChassisSpeeds(GetModuleStates());
+}
+
 void DriveSubsystem::SetModuleStates(
   wpi::array<frc::SwerveModuleState, 4> desiredStates, bool desaturate) {
   if(desaturate) kDriveKinematics.DesaturateWheelSpeeds(&desiredStates, kDriveTranslationLimit);

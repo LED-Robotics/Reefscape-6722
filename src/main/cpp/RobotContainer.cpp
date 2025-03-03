@@ -47,6 +47,106 @@ void RobotContainer::ManuallySchedule(frc2::CommandPtr&& cmd) {
   frc2::CommandScheduler::GetInstance().Schedule(cmd);
 }
 
+// Helper to disqualify nonviable reef detections
+bool RobotContainer::IsReefDisqualified(JetsonSubsystem::MLDetectionFrame reef) {
+  // Calculate relevant data
+  double heightRatio = reef.h / reef.w;
+  double centerY = reef.y + (reef.h / 2.0);
+  double area = reef.h * reef.w;
+  
+  // Disqualifying conditions for a reef detection
+  bool taller = heightRatio > reefHeightRatioThreshold;
+  bool lower = centerY > reefYPosMax;
+  bool bigEnough = area > reefAreaMin;
+  if(!taller || !lower || !bigEnough) return true;
+  else return false;
+}
+
+// Check if detection is within persistence deadzones
+bool RobotContainer::IsViablePersistenceTarget(JetsonSubsystem::MLDetectionFrame reef) {
+  if(!persistenceDataSet) return true;
+  
+  // Width/height persistence threshold check
+  if(fabs(reef.w - mlLastWidth) > maxWidthDrift) return false;
+  if(fabs(reef.h - mlLastHeight) > maxHeightDrift) return false;
+  
+  // Current drivetrain speed
+  auto speeds = drive.GetChassisSpeeds();
+  double timePassed =  (reef.timeCaptured - mlLastCaptureTime) / 1000.0;
+
+  // X coordinate persistence check
+  double allowableXDrift = maxXDrift;
+  // Scale drift by chassis speed and camera latency
+  allowableXDrift += (speeds.vy.value() * timePassed) * xSpeedMultiplier;
+  if(fabs(reef.x - mlLastX) > allowableXDrift) return false;
+
+  // Y coordinate persistence check
+  double allowableYDrift = maxYDrift;
+  // Scale drift by chassis speed and camera latency
+  allowableYDrift += (speeds.vx.value() * timePassed) * ySpeedMultiplier;
+  if(fabs(reef.y - mlLastY) > allowableYDrift) return false;
+
+  // Congrats! You were not filtered
+  return true;
+}
+
+// Select reef tracking target using confidence and persistence data
+JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vector<JetsonSubsystem::MLDetectionFrame> dets) {
+  int detSize = dets.size();
+  // Pointer array to sort detections
+  std::vector<JetsonSubsystem::MLDetectionFrame*> sorted(detSize, nullptr);
+  for(int i = 0; i < detSize; i++) {
+    sorted[i] = &dets[i];
+  }
+  int numViable = detSize;
+  // Move everything past index to the left by one
+  auto pop = [&] (int index) {
+    for(int i = index; i < numViable; i++) {
+      if(i + 1 < numViable) { // Out of bounds prevention
+        sorted[i] = sorted[i + 1];
+      }
+    }
+    // Duh
+    numViable--;
+  };
+
+  for(int i = 0; i < numViable; i++) {
+    auto reef = *sorted[i];
+    // Clear non-viable reefs
+    if(!IsReefDisqualified(reef)) {
+      pop(i--); // Next index is now current index
+      continue;
+    }
+    if(persistenceDataSet && !IsViablePersistenceTarget(reef)) {
+      pop(i--); // Next index is now current index
+    }
+  }
+  
+  // Find reef closest to target x coordinate
+  double closest = 10000.0;
+  double centerTarget = camFrameWidth / 2.0;
+  JetsonSubsystem::MLDetectionFrame *target = sorted[0];
+  for(int i = 0; i < numViable; i++) {
+    auto reef = *sorted[i];
+    double centerX = reef.x + (reef.w / 2.0);
+
+    double dCenter = fabs(centerX - centerTarget);
+    if(dCenter > closest) continue;
+    closest = dCenter;
+    target = &reef;
+  }
+
+  // Store persistence data from selection
+  persistenceDataSet = true;
+  mlLastX = target->x;
+  mlLastY = target->y;
+  mlLastWidth = target->w;
+  mlLastHeight = target->h;
+  mlLastHeightRatio = target->h / target->w;
+
+  return *target;
+}
+
 RobotContainer::RobotContainer() {
   // Autonomous selector configuration
   autonChooser.SetDefaultOption("None", "None");
@@ -215,90 +315,34 @@ RobotContainer::RobotContainer() {
       auto dets = jetson.GetMLDetections();
       int detSize = dets.size();
       SmartDashboard::PutNumber("numDets", detSize);
-      std::vector<int> algaeIndexes;
-      std::vector<int> coralIndexes;
-      std::vector<int> reefIndexes;
+      if(mlTrackingTarget == MLLabels::Algae) {
 
-      for(int i = 0; i < detSize; i++) {
-        switch(dets[i].label) {
-        case MLLabels::Algae:
-            algaeIndexes.push_back(i);
-            break;
-        case MLLabels::Coral:
-            coralIndexes.push_back(i);
-            break;
-        case MLLabels::Reef:
-            reefIndexes.push_back(i);
-            break;
+      } else if(mlTrackingTarget == MLLabels::Coral) {
+
+      } else if(mlTrackingTarget == MLLabels::Reef) {
+        std::vector<JetsonSubsystem::MLDetectionFrame> reefDets;
+        for(int i = 0; i < detSize; i++) {
+          if(dets[i].label == MLLabels::Reef) {
+            reefDets.push_back(dets[i]);
+          }
         }
-      }
 
-      for(int i = 0; i < algaeIndexes.size(); i++) {
-        auto target = dets[algaeIndexes[i]];
-        SmartDashboard::PutNumber("algaeTx", target.x);
-        SmartDashboard::PutNumber("algaeTy", target.y);
-        SmartDashboard::PutNumber("algaeTw", target.w);
-        SmartDashboard::PutNumber("algaeTh", target.h);
-        SmartDashboard::PutNumber("algaeArea", target.w * target.h);
-
-      }
-
-      std::vector<JetsonSubsystem::MLDetectionFrame> validReefs;
-
-      for(int i = 0; i < reefIndexes.size(); i++) {
-        auto reef = dets[reefIndexes[i]];
-        bool taller = reef.w / reef.h < 0.9;
-        bool lower = reef.y + (reef.h / 2) > 240;
-        bool bigEnough = reef.w * reef.h > 5000;
-        if(taller && lower && bigEnough) {
-          validReefs.push_back(reef);
-        }
-        /*if(reefTargetDirection != ReefTargetStates::Unset) {*/
-        /*  double center = reef.x + (reef.w / 2);*/
-        /*  if(ReefTargetStates::Left && center > 320) {*/
-        /*    continue;*/
-        /*  } else if(ReefTargetStates::Right && center > 320) {*/
-        /*    continue;*/
-        /*  }*/
-        /*}*/
-      }
-      JetsonSubsystem::MLDetectionFrame targetReef;
-      double closestToCenter = 1000.0;
-      for(int i = 0; i < validReefs.size(); i++) {
-        auto reef = validReefs[i];
-        double dCenter = reef.x + (reef.w / 2);
-        dCenter = fabs(dCenter - 320.0);
-        if(dCenter > closestToCenter) continue; 
-        closestToCenter = dCenter;
-        targetReef = reef;
-      }
-      if(targetReef.label == MLLabels::Reef) {
-        auto target = targetReef;
-        double dCenter = target.x + (target.w / 2);
-        dCenter = dCenter - 320.0;
+        auto target = GetReefTrackingTarget(reefDets);
+        double dCenter = target.x + (target.w / 2.0);
+        dCenter = dCenter - (camFrameWidth / 2.0);
         auto yAdjust = units::meters_per_second_t{yTransAdjust.Calculate(dCenter)};
 
         drive.SetTransAdjustSpeeds(units::meters_per_second_t{0.0}, {yAdjust});
         SmartDashboard::PutNumber("yVelAdjust", yAdjust.value());
 
-        /*if(reefTargetDirection == ReefTargetStates::Unset) {*/
-        /*  reefTargetDirection = target.x + (target.w / 2) <= 320 ? ReefTargetStates::Left : ReefTargetStates::Right;*/
-        /*}*/
         SmartDashboard::PutNumber("reefTx", target.x);
         SmartDashboard::PutNumber("reefTy", target.y);
         SmartDashboard::PutNumber("reefTw", target.w);
         SmartDashboard::PutNumber("reefTh", target.h);
         SmartDashboard::PutNumber("reefArea", target.w * target.h);
-        SmartDashboard::PutNumber("reefDelta", closestToCenter);
-      } else {
-        drive.SetTransAdjustSpeeds(units::meters_per_second_t{0.0}, units::meters_per_second_t{0.0});
+        SmartDashboard::PutNumber("reefDelta", dCenter);
+
       }
-
-
-      SmartDashboard::PutNumber("numAlgae", algaeIndexes.size());
-      SmartDashboard::PutNumber("numCoral", coralIndexes.size());
-      SmartDashboard::PutNumber("numReef", reefIndexes.size());
-      SmartDashboard::PutNumber("validReef", validReefs.size());
     },
   {&jetson}));
 

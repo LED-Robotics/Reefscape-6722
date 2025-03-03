@@ -71,6 +71,11 @@ class DriveSubsystem : public frc2::SubsystemBase {
   void SetInverted(bool inverted);
 
   /**
+   * Gets current chassis speeds (real, not target)
+   */
+  frc::ChassisSpeeds GetChassisSpeeds();
+
+  /**
    * Sets the swerve modules to a SwerveModuleState.
    */
   void SetModuleStates(wpi::array<frc::SwerveModuleState, 4> desiredStates, bool desaturate = true);
