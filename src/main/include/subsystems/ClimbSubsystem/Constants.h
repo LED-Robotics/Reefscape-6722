@@ -10,7 +10,7 @@ namespace ClimbConstants {
 
     constexpr units::time::second_t kRampSeconds = 0.5_s;
 
-    constexpr int kDefaultPower = 1.0;
+    constexpr int kDefaultPower = 0.0;
     //  states
     enum ClimbStates {
       kOff,

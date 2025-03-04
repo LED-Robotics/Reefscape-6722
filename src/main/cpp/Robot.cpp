@@ -47,8 +47,8 @@ void Robot::DisabledPeriodic() {
 void Robot::AutonomousInit() {
   // m_container.DisableTagTracking();   // auton uses odom relative to start, not based on AprilTags
   // m_autonomousCommand = m_container.GetAutonomousCommand();
-  // m_container.SetDriveBrakes(true);
-  // m_container.SetSlew(false);
+  m_container.SetDriveBrakes(true);
+  m_container.SetSlew(false);
   // m_container.SetAutoIndex(true);
   // if(DriverStation::IsFMSAttached()) {
   //   m_container.SetRecording(true);
@@ -65,8 +65,8 @@ void Robot::AutonomousPeriodic() {}
 
 void Robot::TeleopInit() {
   m_container.EnableTagTracking();  // station auto-align uses AprilTag tracking 
-  // m_container.SetDriveBrakes(true);
-  // m_container.SetSlew(true);
+  m_container.SetDriveBrakes(true);
+  m_container.SetSlew(true);
 
   // if (m_autonomousCommand) {
   //   m_autonomousCommand->Cancel();

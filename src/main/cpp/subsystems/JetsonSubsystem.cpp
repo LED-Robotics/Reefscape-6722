@@ -23,11 +23,11 @@ void JetsonSubsystem::Periodic() {
   parsedTagData = ParseRawTagInfo(GetRawTagInfo());
   mlDetections = ParseDetections(GetMLInfo());
 
-  for(auto& det : mlDetections) {
-    std::cout << "Found label: " << (int)det.label << std::endl;
-    std::cout << "At: " << det.x << ", " << det.y << std::endl;
-    std::cout << "W: " << det.w << "H: " << det.h << std::endl;
-  }
+  /*for(auto& det : mlDetections) {*/
+  /*  std::cout << "Found label: " << (int)det.label << std::endl;*/
+  /*  std::cout << "At: " << det.x << ", " << det.y << std::endl;*/
+  /*  std::cout << "W: " << det.w << "H: " << det.h << std::endl;*/
+  /*}*/
   jetsonTagDetections = CreateTagVector(parsedTagData);
   fieldRelativePose = AverageRobotPose();  
   
@@ -55,49 +55,51 @@ std::vector<uint8_t> JetsonSubsystem::GetMLInfo() {
   return mlBuf;
 }
 
-std::vector<AprilTagFrame> JetsonSubsystem::ParseRawTagInfo(std::vector<uint8_t> rawBuf) {
-  std::vector<AprilTagFrame> tagData = {};
+std::vector<JetsonSubsystem::AprilTagFrame> JetsonSubsystem::ParseRawTagInfo(std::vector<uint8_t> rawBuf) {
+  std::vector<JetsonSubsystem::AprilTagFrame> tagData = {};
   int bufSize = 2;
   if(rawBuf.size() > 2){
     uint8_t* arrayData = &rawBuf[0]; //Turn the recieved vector into an array for memcpy
     bufSize = arrayData[0] + (arrayData[1] << 8); //Bit shift the first two pieces of data which represent the int of how long the buffer is
       for(int i = 2; i < bufSize && i + 1 < bufSize; i++) {
         if(arrayData[i] == 0x69 && arrayData[i + 1] == 0x69) {
-          AprilTagFrame parsedData;
+          JetsonSubsystem::AprilTagFrame parsedData;
           memcpy(&parsedData, arrayData + i + 2, TAG_FRAME_SIZE);
           tagData.push_back(parsedData);
+          i += TAG_FRAME_SIZE - 1;
         }
-        i += TAG_FRAME_SIZE - 1;
       }
   }
     // SmartDashboard::PutNumber("Buffer Length", bufSize);
     return tagData;
 }
 
-std::vector<MLDetectionFrame> JetsonSubsystem::ParseDetections(std::vector<uint8_t> rawBuf) {
-  std::vector<MLDetectionFrame> detData = {};
+std::vector<JetsonSubsystem::MLDetectionFrame> JetsonSubsystem::ParseDetections(std::vector<uint8_t> rawBuf) {
+  std::vector<JetsonSubsystem::MLDetectionFrame> detData = {};
   int bufSize = 2;
   if(rawBuf.size() > 2){
     uint8_t* arrayData = &rawBuf[0]; //Turn the recieved vector into an array for memcpy
     bufSize = arrayData[0] + (arrayData[1] << 8); //Bit shift the first two pieces of data which represent the int of how long the buffer is
+    int foundML = 0;
       for(int i = 2; i < bufSize && i + 1 < bufSize; i++) {
         if(arrayData[i] == 0x69 && arrayData[i + 1] == 0x69) {
-          MLDetectionFrame parsedData;
+          JetsonSubsystem::MLDetectionFrame parsedData;
           memcpy(&parsedData, arrayData + i + 2, ML_FRAME_SIZE);
           detData.push_back(parsedData);
-        }
+          foundML++;
         i += ML_FRAME_SIZE - 1;
+        }
       }
   }
     // SmartDashboard::PutNumber("Buffer Length", bufSize);
     return detData;
 }
 
-std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<AprilTagFrame> parsedData) {
+std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<JetsonSubsystem::AprilTagFrame> parsedData) {
   std::vector<TagDetections> finalResult;
   poseAvailable = false;
   for(int i = 0; i < (int)parsedData.size(); i++) {
-    AprilTagFrame tag = parsedData.at(i);
+    JetsonSubsystem::AprilTagFrame tag = parsedData.at(i);
     // Detection confidence calculation
     double angRaw = fabs(tag.rz) / kAngularConfThresh;
     double angularConf = Constrain(1 - pow(fabs(angRaw), kAngularConfCurveExtent), 0.0, 1.0);
@@ -211,6 +213,10 @@ frc::Pose2d JetsonSubsystem::AverageRobotPose() {
 
 bool JetsonSubsystem::IsPoseAvailable() {
   return poseAvailable;
+}
+
+std::vector<JetsonSubsystem::MLDetectionFrame> JetsonSubsystem::GetMLDetections() {
+  return mlDetections;
 }
 
 double JetsonSubsystem::Min(double val, double min) {

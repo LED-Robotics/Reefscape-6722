@@ -22,28 +22,7 @@
 
 using namespace frc;
 
-// Struct format for ML detection
-struct MLDetectionFrame {
-  uint8_t label = 0;
-  uint8_t camId = 0;
-  uint32_t timeCaptured;
-  double x;
-  double y;
-  double w;
-  double h;
-};
 
-struct AprilTagFrame {
-  uint8_t tagId = -1;
-  uint8_t camId = -1;
-  uint32_t timeCaptured;
-  double tx;
-  double ty;
-  double tz;
-  double rx;
-  double ry;
-  double rz;
-};
 
 struct TagDetections {
   int tagId;
@@ -61,6 +40,29 @@ struct CameraInformation {
 class JetsonSubsystem : public frc2::SubsystemBase {
  public:
   JetsonSubsystem();
+
+  // Struct format for ML detection
+  struct MLDetectionFrame {
+    uint8_t label = 0;
+    uint8_t camId = 0;
+    uint32_t timeCaptured;
+    double x;
+    double y;
+    double w;
+    double h;
+  };
+
+  struct AprilTagFrame {
+    uint8_t tagId = -1;
+    uint8_t camId = -1;
+    uint32_t timeCaptured;
+    double tx;
+    double ty;
+    double tz;
+    double rx;
+    double ry;
+    double rz;
+  };
 
   /**
    * Will be called periodically whenever the CommandScheduler runs.
@@ -114,6 +116,8 @@ class JetsonSubsystem : public frc2::SubsystemBase {
    * Grab the average robot pos from all tags detected on field 
    */
   frc::Pose2d AverageRobotPose();
+
+  std::vector<MLDetectionFrame> GetMLDetections();
 
   bool IsPoseAvailable();
 

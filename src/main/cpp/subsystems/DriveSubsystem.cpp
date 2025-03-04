@@ -48,7 +48,7 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
 
       //Odometry
       odometry{kDriveKinematics, {GetRotation()}, {s_frontLeft.GetPosition(), s_frontRight.GetPosition(), s_backLeft.GetPosition(),
-      s_backRight.GetPosition()}, frc::Pose2d{{0.0_m, 0.0_m}, {0_deg}}},
+      s_backRight.GetPosition()}, frc::Pose2d{{0.0_m, 0.0_m}, {180_deg}}},
       
       xAccel{kDriveAccelerationLimit},
       yAccel{kDriveAccelerationLimit},
@@ -134,15 +134,26 @@ void DriveSubsystem::Drive(frc::ChassisSpeeds speeds,
   SmartDashboard::PutNumber("targetYVel", y.value());
   SmartDashboard::PutNumber("targetOmega", rot.value());
   SmartDashboard::PutBoolean("fieldCentric", fieldRelative);
-  auto states = kDriveKinematics.ToSwerveModuleStates(
-    fieldRelative ? frc::ChassisSpeeds::FromFieldRelativeSpeeds(
-        x, y, rot, GetPose().Rotation()
-        .RotateBy(DriverStation::GetAlliance() == DriverStation::Alliance::kRed ? 180_deg : 0_deg))
-      : frc::ChassisSpeeds{x, y, rot});
+  auto chassisSpeeds = fieldRelative ? 
+      frc::ChassisSpeeds::FromFieldRelativeSpeeds(x, y, rot, GetPose().Rotation()
+      .RotateBy(DriverStation::GetAlliance() == DriverStation::Alliance::kRed ? 180_deg : 0_deg))
+      : 
+      frc::ChassisSpeeds{x, y, rot};
+  
+  if(transAdjust) {
+    chassisSpeeds.vx += txAdjust; 
+    chassisSpeeds.vy += tyAdjust; 
+  }
+
+  auto states = kDriveKinematics.ToSwerveModuleStates(chassisSpeeds);
 
   if(!applyLimits) kDriveKinematics.DesaturateWheelSpeeds(&states, kDriveTranslationLimit);
 
   SetModuleStates(states, applyLimits);
+}
+
+frc::ChassisSpeeds DriveSubsystem::GetChassisSpeeds() {
+  return kDriveKinematics.ToChassisSpeeds(GetModuleStates());
 }
 
 void DriveSubsystem::SetModuleStates(
@@ -295,6 +306,19 @@ bool DriveSubsystem::GetOmegaOverride(){
 
 void DriveSubsystem::SetOmegaOverride(bool state){
   omegaOverride = state;
+}
+
+bool DriveSubsystem::GetTransAdjust() {
+  return transAdjust;
+}
+
+void DriveSubsystem::SetTransAdjust(bool state) {
+  transAdjust = state;
+}
+
+void DriveSubsystem::SetTransAdjustSpeeds(units::meters_per_second_t vx, units::meters_per_second_t vy) {
+  txAdjust = vx;
+  tyAdjust = vy;
 }
 
 bool DriveSubsystem::GetYOverride(){

@@ -107,7 +107,7 @@ class ClimbSubsystem : public frc2::SubsystemBase {
     
  private:
   // While the state is kOn the Climb will run on the angle mode.
-  int state = ClimbConstants::ClimbStates::kAngleMode;
+  int state = ClimbConstants::ClimbStates::kPowerMode;
   double power = ClimbConstants::kDefaultPower;
   units::angle::degree_t angle = ClimbConstants::kStartAngle;
 

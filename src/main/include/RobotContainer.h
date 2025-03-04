@@ -52,6 +52,18 @@ class RobotContainer {
  public:
   RobotContainer();
 
+  enum MLLabels {
+    Algae,
+    Coral,
+    Reef
+  };
+
+  enum ReefTargetStates {
+    Unset,
+    Left,
+    Right
+  };
+
   static struct KinematicsPoses {
     units::length::meter_t cascadePose;
     //Angle of wrist
@@ -100,17 +112,19 @@ class RobotContainer {
   
   // Starting tracking target
   int TrackingTarget = GlobalConstants::kCoralMode;
+
+  int ReefTarget = 0;
   
   // The robot's subsystems
   AlgaeSubsystem algae{};
 
   JetsonSubsystem jetson{};
 
-  DriveSubsystem m_drive{&jetson, &TrackingTarget};
+  DriveSubsystem drive{&jetson, &TrackingTarget};
   
   CascadeSubsystem cascade{};
 
-  // ClimbSubsystem climb{};
+  ClimbSubsystem climb{};
 
   CoralSubsystem coral{};
 
@@ -124,6 +138,12 @@ class RobotContainer {
 
   // used for AprilTag odom updates
   units::degree_t startOffset{180.0};
+
+  int reefTargetDirection = ReefTargetStates::Unset;
+
+  frc::PIDController xTransAdjust{0.006, 0.0, 0.0003};
+
+  frc::PIDController yTransAdjust{0.006, 0.0, 0.0003};
 
   // flag to drive using field-centric positions
   bool fieldCentric = true;
@@ -149,19 +169,19 @@ class RobotContainer {
     frc2::cmd::Sequence(
       frc2::cmd::RunOnce([this] {
         // if(!tagOverrideDisable) {
-          m_drive.ResetFromJetson();
+          drive.ResetFromJetson();
         // }
       }, {}),
       frc2::cmd::Wait(5.0_s)
     )};
 
   frc2::CommandPtr autonOdomSet{frc2::cmd::RunOnce([this]{
-      m_drive.ResetOdometry(AutoConstants::kDefaultStartingPose);
-    },{&m_drive}
+      drive.ResetOdometry(AutoConstants::kDefaultStartingPose);
+    },{&drive}
   )};
 
   frc2::CommandPtr odomReset{frc2::cmd::RunOnce([this]{
-      m_drive.ResetOdometry({7.5_m, 4.3_m, 180_deg});
+      drive.ResetOdometry({7.5_m, 4.3_m, 180_deg});
   },{})};
 
   // Command to repetitively call odom update
@@ -178,7 +198,7 @@ class RobotContainer {
 
   frc2::CommandPtr toggleOmegaOverride{frc2::cmd::RunOnce([this] { 
       omegaOverride = !omegaOverride;
-      m_drive.SetOmegaOverride(omegaOverride);
+      drive.SetOmegaOverride(omegaOverride);
     }, {})
   };
 
@@ -209,14 +229,14 @@ class RobotContainer {
   };
 
   frc2::CommandPtr driveOff{frc2::cmd::RunOnce([this] { 
-      m_drive.Drive({0_mps, 0_mps, 0_deg_per_s});
-    }, {&m_drive})
+      drive.Drive({0_mps, 0_mps, 0_deg_per_s});
+    }, {&drive})
   };
 
   frc2::CommandPtr autonTrackingDisable{frc2::cmd::RunOnce([this] { 
       TrackingTarget = GlobalConstants::kArbitrary;
-      m_drive.SetOmegaOverride(false);
-    }, {&m_drive})  
+      drive.SetOmegaOverride(false);
+    }, {&drive})  
   };
 
   // funny rumble Commands
@@ -231,6 +251,25 @@ class RobotContainer {
 
   frc2::CommandPtr rumbleSecondaryOff{frc2::cmd::RunOnce([this] { controller2.GetHID().SetRumble(GenericHID::kBothRumble, 0.0); },
                                         {})};
+  
+  const frc::Pose2d blueReef[6] = {
+    {6.5_m, 4.0_m, {180_deg}}, 
+    {5.5_m, 2.25_m, {120_deg}}, 
+    {3.5_m, 2.25_m, {60_deg}}, 
+    {2.5_m, 4.0_m, {0_deg}}, 
+    {3.5_m, 5.75_m, {-60_deg}}, 
+    {5.5_m, 5.75_m, {-120_deg}}
+  };
+
+  const frc::Pose2d redReef[6] = {
+    {11.0_m, 4.0_m, {180_deg}}, 
+    {12.0_m, 5.75_m, {-60_deg}}, 
+    {14.1_m, 5.75_m, {-120_deg}}, 
+    {15.1_m, 4.0_m, {0_deg}}, 
+    {14.15_m, 2.25_m, {120_deg}}, 
+    {12.0_m, 2.25_m, {60_deg}}
+  };
+
   /**
    * Find whether the robot is on the blue or red alliance as set by the FMS/DriverStation.
    *
@@ -255,6 +294,41 @@ class RobotContainer {
   frc2::CommandPtr SetMultijoint(units::length::meter_t cascadeHeight, units::angle::degree_t algaeAngle);
 
   void ManuallySchedule(frc2::CommandPtr&& cmd);
+
+  int camFrameHeight = 480;
+  int camFrameWidth = 640;
+
+  int mlTrackingTarget = MLLabels::Reef;
+  // Persistance variables
+  bool persistenceDataSet = false;
+  double mlLastX = 0.0;
+  double mlLastY = 0.0;
+  double mlLastWidth = 0.0;
+  double mlLastHeight = 0.0;
+  double mlLastHeightRatio = 0.0;
+  uint32_t mlLastCaptureTime = 0;
+  // Persistance variables
+
+  // Reef filter parameters
+  double reefHeightRatioThreshold = 1.1;
+  double reefYPosMax = 240;
+  double reefAreaMin = 5000.0;
+  // Reef filter parameters
+
+  // Reef persistence parameters
+  double maxWidthDrift = 50.0;
+  double maxHeightDrift = 50.0;
+  double maxXDrift = 20.0;
+  double maxYDrift = 20.0;
+  double timeMultiplier = 0.0;
+  // The X/Y comments are not typos
+  double xSpeedMultiplier = 0.0; // Matched to robot Y speed
+  double ySpeedMultiplier = 0.0; // Matched to robot X speed
+  // Reef persistence parameters
+
+  bool IsReefDisqualified(JetsonSubsystem::MLDetectionFrame reef);
+  bool IsViablePersistenceTarget(JetsonSubsystem::MLDetectionFrame reef);
+  JetsonSubsystem::MLDetectionFrame GetReefTrackingTarget(std::vector<JetsonSubsystem::MLDetectionFrame> dets);
 
   // The chooser for the autonomous routines
   frc::SendableChooser<std::string> autonChooser;

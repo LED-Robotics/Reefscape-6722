@@ -71,6 +71,11 @@ class DriveSubsystem : public frc2::SubsystemBase {
   void SetInverted(bool inverted);
 
   /**
+   * Gets current chassis speeds (real, not target)
+   */
+  frc::ChassisSpeeds GetChassisSpeeds();
+
+  /**
    * Sets the swerve modules to a SwerveModuleState.
    */
   void SetModuleStates(wpi::array<frc::SwerveModuleState, 4> desiredStates, bool desaturate = true);
@@ -205,6 +210,21 @@ class DriveSubsystem : public frc2::SubsystemBase {
   void SetOmegaOverride(bool state);
 
   /**
+   * Get whether translation adjust is enabled.
+   */
+  bool GetTransAdjust();
+  
+  /**
+   * Set whether translation adjust is enabled.
+   */
+  void SetTransAdjust(bool state);
+
+  /**
+   * Set the translation adjustment speeds
+   */
+  void SetTransAdjustSpeeds(units::meters_per_second_t vx, units::meters_per_second_t vy);
+
+  /**
    * Get whether Y override is enabled.
    */
   bool GetYOverride();
@@ -244,6 +264,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
   int *thetaTarget;
 
   bool omegaOverride = false;
+  bool transAdjust = false;
   bool yOverride = false;
   bool targetUsingLimelight = true;
   bool isAtTarget = false;
@@ -254,6 +275,8 @@ class DriveSubsystem : public frc2::SubsystemBase {
   frc::Pose2d poseToHold{}; // var to contain target pose
   // PID controllers for turn holding
   frc::PIDController thetaHoldController{0.13, 0.0, 0.0};
+  units::meters_per_second_t txAdjust{0.0_mps};
+  units::meters_per_second_t tyAdjust{0.0_mps};
   int lastTarget = GlobalConstants::kArbitrary;
 
   // Components (e.g. motor controllers and sensors) should generally be
