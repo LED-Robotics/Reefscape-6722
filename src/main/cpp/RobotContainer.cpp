@@ -160,7 +160,7 @@ RobotContainer::RobotContainer() {
   /*controller.POVLeft().OnTrue(std::move(targetArbitrary));*/
 
   //Turn lock toggles
-  controller.LeftStick().OnTrue(std::move(toggleOmegaOverride));
+  /*controller.LeftStick().OnTrue(std::move(toggleOmegaOverride));*/
 
   // Uncomment for actual use to prevent dumbass
   // controller.A().OnTrue(std::move(drive.FollowPathCommand("Example Path")));
@@ -171,15 +171,7 @@ RobotContainer::RobotContainer() {
 
   controller.Start().OnTrue(SetMultijoint(0.0_m, 80_deg));
 
-  /*controller.Back().OnTrue(cascade.GetMoveCommand(0.2475_m));*/
-
-  /*mainBack.OnTrue(frc2::cmd::Either(*/
-  /*      SetMultijoint(0.0_m, -45_deg),*/
-  /*      SetMultijoint(0.07_m, 80_deg),*/
-  /*      [&]() { return TrackingTarget == GlobalConstants::kAlgaeMode; }*/
-  /*));*/
-
-  mainBack.OnTrue(frc2::cmd::RunOnce([this]() {
+  controller.Back().OnTrue(frc2::cmd::RunOnce([this]() {
         if(TrackingTarget == GlobalConstants::kAlgaeMode) {
           ManuallySchedule(std::move(SetMultijoint(0.0_m, -60_deg)));
         } else {
@@ -189,7 +181,6 @@ RobotContainer::RobotContainer() {
   ));
 
   // Level 1
-  /*mainDpadDown.OnTrue(cascade.GetMoveCommand(0.435_m)); */
   mainDpadDown.OnTrue(frc2::cmd::RunOnce([this]() {
         if(TrackingTarget == GlobalConstants::kAlgaeMode) {
           ManuallySchedule(std::move(SetMultijoint(0.0_m, -15.0_deg)));
@@ -200,7 +191,6 @@ RobotContainer::RobotContainer() {
   ));
 
   // Level 2
-  /*mainDpadRight.OnTrue(cascade.GetMoveCommand(0.623_m)); */
   mainDpadRight.OnTrue(frc2::cmd::RunOnce([this]() {
         if(TrackingTarget == GlobalConstants::kAlgaeMode) {
           ManuallySchedule(std::move(SetMultijoint(0.13_m, -5_deg)));
@@ -211,7 +201,6 @@ RobotContainer::RobotContainer() {
   ));
 
   // Level 3
-  /*mainDpadLeft.OnTrue(cascade.GetMoveCommand(0.998_m)); */
   mainDpadLeft.OnTrue(frc2::cmd::RunOnce([this]() {
         if(TrackingTarget == GlobalConstants::kAlgaeMode) {
           ManuallySchedule(std::move(SetMultijoint(0.51_m, -5_deg)));
@@ -220,8 +209,8 @@ RobotContainer::RobotContainer() {
         }
       }, {}
   ));
+
   // Level 4
-  /*mainDpadUp.OnTrue(cascade.GetMoveCommand(1.47_m));*/
   mainDpadUp.OnTrue(frc2::cmd::RunOnce([this]() {
         if(TrackingTarget == GlobalConstants::kAlgaeMode) {
           ManuallySchedule(std::move(SetMultijoint(1.3_m, 60.0_deg)));
@@ -231,8 +220,23 @@ RobotContainer::RobotContainer() {
       }, {}
   ));
 
+  drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
+
   controller.B().OnTrue(frc2::cmd::RunOnce([this]() {
     drive.SetTransAdjust(!drive.GetTransAdjust());
+    drive.SetOmegaOverride(!drive.GetTransAdjust());
+  }, {}));
+
+  controller.Y().OnTrue(frc2::cmd::RunOnce([this]() {
+    if(--ReefTarget < 0) ReefTarget = 5; 
+    drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
+    SmartDashboard::PutNumber("reefTarget", ReefTarget);
+  }, {}));
+
+  controller.A().OnTrue(frc2::cmd::RunOnce([this]() {
+    if(++ReefTarget > 5) ReefTarget = 0; 
+    drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
+    SmartDashboard::PutNumber("reefTarget", ReefTarget);
   }, {}));
   
   // Change global target to coral
@@ -295,11 +299,13 @@ RobotContainer::RobotContainer() {
     }, 
   {&algae}));
 
-  // climb.SetDefaultCommand(frc2::cmd::Run(
-  //   [this] {
-          
-  //   }, 
-  // {&climb}));
+  climb.SetDefaultCommand(frc2::cmd::Run(
+    [this] {
+      double power = controller2.GetLeftTriggerAxis() - controller2.GetRightTriggerAxis();
+      if(fabs(power) < 0.15) power = 0.0;
+      climb.SetPower(power);
+    }, 
+  {&climb}));
 
   // funnel.SetDefaultCommand(frc2::cmd::Run(
   //  [this] {
