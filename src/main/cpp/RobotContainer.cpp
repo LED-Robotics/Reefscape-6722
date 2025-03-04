@@ -37,10 +37,7 @@ frc2::Command* RobotContainer::GetEmptyCommand() {
 }
 
 frc2::CommandPtr RobotContainer::SetMultijoint(units::length::meter_t cascadeHeight, units::angle::degree_t algaeAngle) {
-  return frc2::cmd::Parallel(
-    cascade.GetMoveCommand(cascadeHeight),
-    algae.GetMoveCommand(algaeAngle)
-  );
+    return cascade.GetMoveCommand(cascadeHeight);
 }
 
 void RobotContainer::ManuallySchedule(frc2::CommandPtr&& cmd) {
@@ -279,15 +276,15 @@ RobotContainer::RobotContainer() {
       turn * -270.0_deg_per_s}, true, fieldCentric);
     }, {&drive}));
 
-  intake.SetDefaultCommand(frc2::cmd::Run(
+  coral.SetDefaultCommand(frc2::cmd::Run(
     [this] {
       if(TrackingTarget == GlobalConstants::kCoralMode || TrackingTarget == GlobalConstants::kArbitrary){
         double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
-        intake.SetPower(power);
+        coral.SetPower(power);
       }
     },
-  {&intake}));
+  {&coral}));
 
   algae.SetDefaultCommand(frc2::cmd::Run(
     [this] {
