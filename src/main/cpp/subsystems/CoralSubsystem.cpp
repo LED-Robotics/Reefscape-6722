@@ -12,7 +12,8 @@ using namespace CoralConstants;
 using namespace frc;
 
 CoralSubsystem::CoralSubsystem()
-    : intake{kIntakePort},
+    : intake1{kIntake1Port},
+      intake2{kIntake2Port},
       beamBreak{kBeamBreakPort} {
       ConfigMotors();
       previousVal = IsCoralIndexed();
@@ -25,11 +26,13 @@ void CoralSubsystem::Periodic() {
   SmartDashboard::PutNumber("Coral Previous", previousVal);
   SmartDashboard::PutNumber("Coral powerOff", powerOff);
   if(state == CoralStates::kOff) {
-    intake.Set(0.0);
+    intake1.Set(0.0);
+    intake2.Set(0.0);
   } else if(state == CoralStates::kPowerMode) {
     // power limiting 
     // if(intakeMotor.GetOutputCurrent() < kCurrentLimit && power > 0.0) intakeMotor.Set(power);
-    intake.Set(power);
+    intake1.Set(power);
+    intake2.Set(power);
     // else intakeMotor.Set(0.0);
   } else if(state == CoralStates::kSensorMode) {
     bool indexed = IsCoralIndexed();
@@ -50,9 +53,11 @@ void CoralSubsystem::Periodic() {
       power = 0.0;
     }
     if(powerOff) {
-      intake.Set(0);
+      intake1.Set(0);
+      intake2.Set(0);
     } else {
-      intake.Set(power * 0.3);
+      intake1.Set(power * 0.3);
+      intake2.Set(power * 0.3);
     }
 
     previousVal = indexed;
@@ -120,7 +125,8 @@ void CoralSubsystem::ConfigMotors() {
 
   // coralConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
   
-  intake.GetConfigurator().Apply(coralConfig);
+  intake1.GetConfigurator().Apply(coralConfig);
+  intake2.GetConfigurator().Apply(coralConfig);
 }
 
 bool CoralSubsystem::IsCoralIndexed() {

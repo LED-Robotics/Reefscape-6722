@@ -2,7 +2,8 @@
 
 namespace CoralConstants {
     // Ports
-    constexpr int kIntakePort = 2;
+    constexpr int kIntake1Port = 10;
+    constexpr int kIntake2Port = 11;
     constexpr int kBeamBreakPort = 1;
 
     // States

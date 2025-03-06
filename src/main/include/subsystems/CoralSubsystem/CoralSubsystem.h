@@ -93,6 +93,7 @@ class CoralSubsystem : public frc2::SubsystemBase {
   /*hardware::TalonFX left;*/
   /*hardware::TalonFX right;*/
 
-  hardware::TalonFX intake;
+  hardware::TalonFX intake1;
+  hardware::TalonFX intake2;
   DigitalInput beamBreak;
 };
