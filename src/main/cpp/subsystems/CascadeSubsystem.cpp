@@ -26,7 +26,7 @@ CascadeSubsystem::CascadeSubsystem()
 
 void CascadeSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
-  /*SetTargetPosition(units::length::meter_t{SmartDashboard::GetNumber("Cascade Position", position.value())});*/
+  SetTargetPosition(units::length::meter_t{SmartDashboard::GetNumber("Cascade Position", position.value())});
   /*SetPower(SmartDashboard::GetNumber("Cascade Power", power));*/
   /*SmartDashboard::PutNumber("Cascade Voltage", left.GetMotorVoltage().GetValueAsDouble());*/
   SmartDashboard::PutNumber("Left Actual Cascade", GetLeftPosition().value());

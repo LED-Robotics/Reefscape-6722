@@ -27,9 +27,9 @@
 #include "subsystems/DriveSubsystem/DriveSubsystem.h"
 #include "subsystems/CascadeSubsystem/CascadeSubsystem.h"
 #include "subsystems/ClimbSubsystem/ClimbSubsystem.h"
-#include "subsystems/IntakeSubsystem/IntakeSubsystem.h"
-#include "subsystems/FunnelSubsystem/FunnelSubsystem.h"
+#include "subsystems/CoralSubsystem/CoralSubsystem.h"
 #include "subsystems/LEDSubsystem/LEDSubsystem.h"
+#include "subsystems/PivotSubsystem/PivotSubsystem.h"
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/WaitCommand.h>
 #include "iostream"
@@ -64,15 +64,10 @@ class RobotContainer {
     Right
   };
 
-  static struct KinematicsPoses {
+  struct KinematicsPose {
     units::length::meter_t cascadePose;
-    //Angle of wrist
-    //More will be added
-  } kinematicsInfo;
-  /**
-   * Return the command pointer that sets all subsystem kinematics.
-   */
-  frc2::CommandPtr SetAllKinematics(KinematicsPoses kinInfoRef);
+    units::angle::degree_t pivotAngle;
+  };
 
   /**
    * Return the command pointer to the autonomous command. 
@@ -116,21 +111,27 @@ class RobotContainer {
   int ReefTarget = 0;
   
   // The robot's subsystems
-  AlgaeSubsystem algae{};
-
   JetsonSubsystem jetson{};
 
   DriveSubsystem drive{&jetson, &TrackingTarget};
   
   CascadeSubsystem cascade{};
 
-  ClimbSubsystem climb{};
+  units::length::meter_t minCoralSweepHeight{0.3_m};
+  units::angle::degree_t coralSweepRange[2] = {-135_deg, -45_deg};
 
-  IntakeSubsystem intake{};
+  units::length::meter_t minAlgaeSweepHeight{0.5_m};
+  units::angle::degree_t algaeSweepRange[2] = {45_deg, 135_deg};
 
-  // FunnelSubsystem funnel{};
+  KinematicsPose startingPose{0.0_m, 0_deg};
 
-  // FloorSubsystem floor{};
+  PivotSubsystem pivot{};
+
+  // ClimbSubsystem climb{};
+
+  CoralSubsystem coral{};
+
+  AlgaeSubsystem algae{};
 
   LEDSubsystem led{};
 
@@ -289,7 +290,11 @@ class RobotContainer {
    */
   frc2::Command* GetEmptyCommand();
 
-  frc2::CommandPtr SetMultijoint(units::length::meter_t cascadeHeight, units::angle::degree_t algaeAngle);
+  /**
+   * Return the command pointer that sets all subsystem kinematics.
+   */
+  frc2::CommandPtr SetAllKinematics(KinematicsPose pose);
+
 
   void ManuallySchedule(frc2::CommandPtr&& cmd);
 

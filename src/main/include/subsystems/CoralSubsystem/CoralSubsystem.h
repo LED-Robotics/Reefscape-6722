@@ -18,9 +18,9 @@ using namespace frc;
 using namespace ctre::phoenix6;
 using namespace rev::spark;
 
-class IntakeSubsystem : public frc2::SubsystemBase {
+class CoralSubsystem : public frc2::SubsystemBase {
  public:
-  IntakeSubsystem();
+  CoralSubsystem();
 
   /**
    * Will be called periodically whenever the CommandScheduler runs.
@@ -64,7 +64,7 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   void SetState(int newState);
 
   /**
-   * Sets Intake brake mode.
+   * Sets Coral brake mode.
    */
   void SetBrakeMode(bool state);
 
@@ -79,7 +79,7 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   bool IsCoralIndexed();
     
  private:
-  int state = IntakeConstants::IntakeStates::kSensorMode;
+  int state = CoralConstants::CoralStates::kSensorMode;
   double power = 0.0;
   bool previousVal = false;
   bool sensorTripped;
@@ -93,7 +93,7 @@ class IntakeSubsystem : public frc2::SubsystemBase {
   /*hardware::TalonFX left;*/
   /*hardware::TalonFX right;*/
 
-  SparkFlex left;
-  SparkFlex right;
+  hardware::TalonFX intake1;
+  hardware::TalonFX intake2;
   DigitalInput beamBreak;
 };
