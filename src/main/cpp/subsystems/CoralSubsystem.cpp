@@ -126,6 +126,7 @@ void CoralSubsystem::ConfigMotors() {
   // coralConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
   
   intake1.GetConfigurator().Apply(coralConfig);
+  coralConfig.MotorOutput.Inverted = false;
   intake2.GetConfigurator().Apply(coralConfig);
 }
 

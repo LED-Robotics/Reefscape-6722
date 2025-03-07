@@ -41,10 +41,10 @@ void PivotSubsystem::Periodic() {
     SmartDashboard::PutNumber("Angle Target", angle.value());
     units::angle::turn_t posTarget{(angle - kPivotStartAngle) / kTurnsPerDegree};
     SmartDashboard::PutNumber("wrTurnTarget", posTarget.value());
-    pivot.SetControl(pivotPosition
-      .WithPosition(units::angle::turn_t{posTarget})
-      .WithEnableFOC(true)
-      .WithFeedForward(units::volt_t{feedForward}));
+    // pivot.SetControl(pivotPosition
+    //   .WithPosition(units::angle::turn_t{posTarget})
+    //   .WithEnableFOC(true)
+    //   .WithFeedForward(units::volt_t{feedForward}));
   }
 }
 
@@ -118,7 +118,7 @@ void PivotSubsystem::ConfigPivot() {
   configs::TalonFXConfiguration pivotPivotConfig{};
 
   pivotPivotConfig.Slot0.kP = kPPivot;
-  pivotPivotConfig.MotorOutput.Inverted = true;
+  pivotPivotConfig.MotorOutput.Inverted = false;
   // pivotPivotConfig.Slot0.kS = 0.28;
   // pivotPivotConfig.Slot0.kV = 8.5;
   // pivotPivotConfig.Slot0.kA = 3.0;
@@ -130,12 +130,11 @@ void PivotSubsystem::ConfigPivot() {
   
   // pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
   pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
-  pivotPivotConfig.Feedback.RotorToSensorRatio = 
   pivotPivotConfig.Feedback.RotorToSensorRatio = kPivotRotorToGearbox;
-  pivotPivotConfig.Feedback.SensorToMechanismRatio = kPivotRotorToGearbox * kPivotGearboxToMechanism;
+  pivotPivotConfig.Feedback.SensorToMechanismRatio = kPivotGearboxToMechanism;
   pivotPivotConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
   pivotPivotConfig.MotorOutput.PeakForwardDutyCycle = 1.0;
-  pivotPivotConfig.Feedback.SensorToMechanismRatio = 1.0;
+  // pivotPivotConfig.Feedback.SensorToMechanismRatio = 1.0;
   pivotPivotConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kRampSeconds;
   pivotPivotConfig.Audio.AllowMusicDurDisable = true;
 
