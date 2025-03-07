@@ -127,7 +127,7 @@ class RobotContainer {
 
   PivotSubsystem pivot{};
 
-  ClimbSubsystem climb{};
+  // ClimbSubsystem climb{};
 
   CoralSubsystem coral{};
 

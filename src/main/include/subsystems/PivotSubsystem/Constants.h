@@ -19,20 +19,19 @@ namespace PivotConstants {
       kPivotAngleMode
     };
     // wrist min/max positions
-    constexpr units::angle::degree_t kPivotDegreeMin{-180_deg};   // encoder Turns at the Floor's minimum usable position
-    constexpr units::angle::degree_t kPivotDegreeMax{180_deg}; // meters the Floor is capable of moving 
+    constexpr units::angle::degree_t kPivotDegreeMin{0.0_deg};   // encoder Turns at the Floor's minimum usable position
+    constexpr units::angle::degree_t kPivotDegreeMax{0.0_deg}; // meters the Floor is capable of moving 
     // for arm feed forward trig
     // arm position constants
     constexpr double kPivotStartOffset = 0.0;
-    constexpr units::angle::degree_t kPivotStartAngle{90_deg};
+    constexpr units::angle::degree_t kPivotStartAngle{0.0_deg};
     // position deadzone
-    constexpr units::angle::degree_t kPivotAngleDeadzone{2_deg};
+    constexpr units::angle::degree_t kPivotAngleDeadzone{1_deg};
     // feed forward at max gravity i.e. 90 degrees off the floor
     constexpr double kMaxFeedForward = 0.352;
     // TalonFX config
     constexpr double kPPivot = 1.0;
-    constexpr double kPivotRotorToGearbox = 9.0; //Will change
-    constexpr double kPivotGearboxToMechanism = 42.0 / 18.0; //Will change
-    /*constexpr double kTurnsPerDegree = kPivotRotorToGearbox * kPivotGearboxToMechanism;*/
-    constexpr double kTurnsPerDegree = 0.05863715277778;
+    constexpr double kPivotRotorToGearbox = 136.0 / 5.0; //Will change
+    constexpr double kPivotGearboxToMechanism = 17.0 / 4.0; //Will change
+    constexpr double kTurnsPerDegree = (kPivotRotorToGearbox * kPivotGearboxToMechanism) / 360.0;
 }

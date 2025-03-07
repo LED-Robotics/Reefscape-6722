@@ -347,13 +347,13 @@ RobotContainer::RobotContainer() {
     }, 
   {&algae}));
 
-  climb.SetDefaultCommand(frc2::cmd::Run(
-    [this] {
-      double power = controller2.GetLeftTriggerAxis() - controller2.GetRightTriggerAxis();
-      if(fabs(power) < 0.15) power = 0.0;
-      climb.SetPower(power);
-    }, 
-  {&climb}));
+  // climb.SetDefaultCommand(frc2::cmd::Run(
+  //   [this] {
+  //     double power = controller2.GetLeftTriggerAxis() - controller2.GetRightTriggerAxis();
+  //     if(fabs(power) < 0.15) power = 0.0;
+  //     climb.SetPower(power);
+  //   }, 
+  // {&climb}));
 
   // funnel.SetDefaultCommand(frc2::cmd::Run(
   //  [this] {

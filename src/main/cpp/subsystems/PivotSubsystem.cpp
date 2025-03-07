@@ -26,7 +26,7 @@ PivotSubsystem::PivotSubsystem()
 void PivotSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
   // Pivot Control
-  /*SetTargetAngle(units::angle::degree_t{SmartDashboard::GetNumber("Pivot Angle", GetAngle().value())});*/
+  SetTargetAngle(units::angle::degree_t{SmartDashboard::GetNumber("Pivot Angle", GetAngle().value())});
   SmartDashboard::PutNumber("Pivot Actual", GetAngle().value());
   if(state == PivotStates::kPivotOff) {
     pivot.Set(0.0);
@@ -128,9 +128,10 @@ void PivotSubsystem::ConfigPivot() {
   // pivotPivotConfig.MotionMagic.MotionMagicAcceleration = 2.0;
   // pivotPivotConfig.MotionMagic.MotionMagicJerk = 200.0;
   
-  pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
-  // pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
-  // pivotPivotConfig.Feedback.RotorToSensorRatio = kPivotRotorToGearbox;
+  // pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
+  pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
+  pivotPivotConfig.Feedback.RotorToSensorRatio = 
+  pivotPivotConfig.Feedback.RotorToSensorRatio = kPivotRotorToGearbox;
   pivotPivotConfig.Feedback.SensorToMechanismRatio = kPivotRotorToGearbox * kPivotGearboxToMechanism;
   pivotPivotConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
   pivotPivotConfig.MotorOutput.PeakForwardDutyCycle = 1.0;
@@ -142,9 +143,10 @@ void PivotSubsystem::ConfigPivot() {
   
   pivot.GetConfigurator().Apply(pivotPivotConfig);
 
-  // configs::CANcoderConfiguration encoderConfig{};
-  // encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
-  // encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Positive;
-  // encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
-  // encoder.GetConfigurator().Apply(encoderConfig);
+  configs::CANcoderConfiguration encoderConfig{};
+  encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
+  encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Positive;
+  encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
+  
+  pivotEncoder.GetConfigurator().Apply(encoderConfig);
 }
