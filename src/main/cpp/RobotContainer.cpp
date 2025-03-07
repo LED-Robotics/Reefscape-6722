@@ -70,10 +70,7 @@ frc2::CommandPtr RobotContainer::SetAllKinematics(RobotContainer::KinematicsPose
     
     // Add an initial command to prevent collision
     if(coralSweeping || algaeSweeping) {
-      auto preventExplosion = frc2::cmd::RunOnce(
-      [&]() {
-        cascade.SetTargetPosition(coralSweeping ? minCoralSweepHeight : minAlgaeSweepHeight);
-      }, {&cascade});
+      auto preventExplosion = cascade.GetMoveCommand(coralSweeping ? minCoralSweepHeight : minAlgaeSweepHeight);
       commands.push_back(std::move(preventExplosion));
     }
   }
