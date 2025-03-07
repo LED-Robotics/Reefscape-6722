@@ -94,16 +94,16 @@ int PivotSubsystem::GetPivotState() {
 }
 
 frc2::CommandPtr PivotSubsystem::GetMoveCommand(units::angle::degree_t target) {
-  /*return frc2::cmd::Sequence(*/
-  /*    frc2::cmd::RunOnce([this, target]() {*/
-  /*      SetTargetAngle(target);*/
-  /*    }, {this}),*/
-  /*    frc2::cmd::WaitUntil([this, target](){*/
-  /*      return IsAtTarget();*/
-  /*    }));*/
-  return frc2::cmd::RunOnce([this, target]() {
+  return frc2::cmd::Sequence(
+      frc2::cmd::RunOnce([this, target]() {
         SetTargetAngle(target);
-      }, {this});
+      }, {this}),
+      frc2::cmd::WaitUntil([this, target](){
+        return IsAtTarget();
+      }));
+  /*return frc2::cmd::RunOnce([this, target]() {*/
+  /*      SetTargetAngle(target);*/
+  /*    }, {this});*/
 }
 void PivotSubsystem::SetPivotBrakeMode(bool state) {
   signals::NeutralModeValue mode;
