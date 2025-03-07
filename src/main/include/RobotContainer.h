@@ -21,6 +21,7 @@
 #include <frc2/command/ParallelCommandGroup.h>
 #include <frc2/command/RunCommand.h>
 #include "units/angle.h"
+#include <frc/Timer.h>
 
 #include "GlobalConstants.h"
 #include "subsystems/AlgaeSubsystem/AlgaeSubsystem.h"
@@ -303,6 +304,7 @@ class RobotContainer {
 
   int mlTrackingTarget = MLLabels::Reef;
   bool noReefFound = true;
+  int mlReefCamId = 0;
   // Persistance variables
   bool persistenceDataSet = false;
   int persistenceRetries = 5;
@@ -313,6 +315,7 @@ class RobotContainer {
   double mlLastHeight = 0.0;
   double mlLastHeightRatio = 0.0;
   uint32_t mlLastCaptureTime = 0;
+  units::second_t mlRioLastCaptureTime = 0_s;
   // Persistance variables
 
   // Reef filter parameters

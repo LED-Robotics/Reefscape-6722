@@ -104,10 +104,11 @@ bool RobotContainer::IsReefDisqualified(JetsonSubsystem::MLDetectionFrame &reef)
   double area = reef.h * reef.w;
   
   // Disqualifying conditions for a reef detection
+  bool wrongCamera = reef.camId != mlReefCamId;
   bool taller = heightRatio > reefHeightRatioThreshold;
   bool lower = centerY > reefYPosMax;
   bool bigEnough = area > reefAreaMin;
-  if(!taller || !lower || !bigEnough) return true;
+  if(wrongCamera || !taller || !lower || !bigEnough) return true;
   else return false;
 }
 
@@ -187,9 +188,17 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
     }
   } else if(!numViable){
     noReefFound = true;
-    return {};
+    return {
+        MLLabels::Reef,
+        mlReefCamId,
+        mlLastCaptureTime,
+        mlLastX,
+        mlLastY,
+        mlLastWidth,
+        mlLastHeight
+      };  
   } else if(numViable) {
-    noReefFound = false;
+      noReefFound = false;
   }
   
   // Find reef closest to target x coordinate
@@ -209,6 +218,7 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
 
   // Store persistence data from selection
   persistenceDataSet = true;
+  mlRioLastCaptureTime = frc::Timer::GetFPGATimestamp();
   mlLastX = target->x;
   mlLastY = target->y;
   mlLastWidth = target->w;
