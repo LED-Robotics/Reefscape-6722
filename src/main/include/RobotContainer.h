@@ -120,8 +120,8 @@ class RobotContainer {
   units::length::meter_t minCoralSweepHeight{0.3_m};
   units::angle::degree_t coralSweepRange[2] = {-135_deg, -45_deg};
 
-  units::length::meter_t minAlgaeSweepHeight{0.5_m};
-  units::angle::degree_t algaeSweepRange[2] = {45_deg, 135_deg};
+  units::length::meter_t minAlgaeSweepHeight{0.2_m};
+  units::angle::degree_t algaeSweepRange[2] = {-42_deg, 58_deg};
 
   KinematicsPose startingPose{0.0_m, 0_deg};
 
