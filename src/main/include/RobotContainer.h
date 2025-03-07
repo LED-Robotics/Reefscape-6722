@@ -297,8 +297,11 @@ class RobotContainer {
   int camFrameWidth = 640;
 
   int mlTrackingTarget = MLLabels::Reef;
+  bool noReefFound = true;
   // Persistance variables
   bool persistenceDataSet = false;
+  int persistenceRetries = 5;
+  int currentRetries = 0;
   double mlLastX = 0.0;
   double mlLastY = 0.0;
   double mlLastWidth = 0.0;
@@ -314,19 +317,19 @@ class RobotContainer {
   // Reef filter parameters
 
   // Reef persistence parameters
-  double maxWidthDrift = 50.0;
-  double maxHeightDrift = 50.0;
-  double maxXDrift = 20.0;
-  double maxYDrift = 20.0;
+  double maxWidthDrift = 20.0;
+  double maxHeightDrift = 10.0;
+  double maxXDrift = 10.0;
+  double maxYDrift = 10.0;
   double timeMultiplier = 0.0;
   // The X/Y comments are not typos
   double xSpeedMultiplier = 0.0; // Matched to robot Y speed
   double ySpeedMultiplier = 0.0; // Matched to robot X speed
   // Reef persistence parameters
 
-  bool IsReefDisqualified(JetsonSubsystem::MLDetectionFrame reef);
-  bool IsViablePersistenceTarget(JetsonSubsystem::MLDetectionFrame reef);
-  JetsonSubsystem::MLDetectionFrame GetReefTrackingTarget(std::vector<JetsonSubsystem::MLDetectionFrame> dets);
+  bool IsReefDisqualified(JetsonSubsystem::MLDetectionFrame &reef);
+  bool IsViablePersistenceTarget(JetsonSubsystem::MLDetectionFrame &reef);
+  JetsonSubsystem::MLDetectionFrame GetReefTrackingTarget(std::vector<JetsonSubsystem::MLDetectionFrame> &dets);
 
   // The chooser for the autonomous routines
   frc::SendableChooser<std::string> autonChooser;

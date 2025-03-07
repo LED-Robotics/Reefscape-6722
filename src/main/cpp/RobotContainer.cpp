@@ -48,7 +48,7 @@ void RobotContainer::ManuallySchedule(frc2::CommandPtr&& cmd) {
 }
 
 // Helper to disqualify nonviable reef detections
-bool RobotContainer::IsReefDisqualified(JetsonSubsystem::MLDetectionFrame reef) {
+bool RobotContainer::IsReefDisqualified(JetsonSubsystem::MLDetectionFrame &reef) {
   // Calculate relevant data
   double heightRatio = reef.h / reef.w;
   double centerY = reef.y + (reef.h / 2.0);
@@ -63,7 +63,7 @@ bool RobotContainer::IsReefDisqualified(JetsonSubsystem::MLDetectionFrame reef) 
 }
 
 // Check if detection is within persistence deadzones
-bool RobotContainer::IsViablePersistenceTarget(JetsonSubsystem::MLDetectionFrame reef) {
+bool RobotContainer::IsViablePersistenceTarget(JetsonSubsystem::MLDetectionFrame &reef) {
   if(!persistenceDataSet) return true;
   
   // Width/height persistence threshold check
@@ -91,8 +91,14 @@ bool RobotContainer::IsViablePersistenceTarget(JetsonSubsystem::MLDetectionFrame
 }
 
 // Select reef tracking target using confidence and persistence data
-JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vector<JetsonSubsystem::MLDetectionFrame> dets) {
+JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vector<JetsonSubsystem::MLDetectionFrame> &dets) {
   int detSize = dets.size();
+  if(!detSize) {
+    noReefFound = true;
+    return {};
+  } else {
+    noReefFound = false;
+  }
   // Pointer array to sort detections
   std::vector<JetsonSubsystem::MLDetectionFrame*> sorted(detSize, nullptr);
   for(int i = 0; i < detSize; i++) {
@@ -111,6 +117,7 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
   };
 
   for(int i = 0; i < numViable; i++) {
+    if(sorted[i] == nullptr) continue;
     auto reef = *sorted[i];
     // Clear non-viable reefs
     if(!IsReefDisqualified(reef)) {
@@ -121,12 +128,27 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
       pop(i--); // Next index is now current index
     }
   }
+
+  if(!numViable && persistenceDataSet) {
+    if(++currentRetries > persistenceRetries) {
+      persistenceDataSet = false;
+      currentRetries = 0;
+      noReefFound = true;
+      return {};
+    }
+  } else if(!numViable){
+    noReefFound = true;
+    return {};
+  } else if(numViable) {
+    noReefFound = false;
+  }
   
   // Find reef closest to target x coordinate
   double closest = 10000.0;
   double centerTarget = camFrameWidth / 2.0;
   JetsonSubsystem::MLDetectionFrame *target = sorted[0];
   for(int i = 0; i < numViable; i++) {
+    if(sorted[i] == nullptr) continue;
     auto reef = *sorted[i];
     double centerX = reef.x + (reef.w / 2.0);
 
@@ -224,7 +246,7 @@ RobotContainer::RobotContainer() {
 
   controller.B().OnTrue(frc2::cmd::RunOnce([this]() {
     drive.SetTransAdjust(!drive.GetTransAdjust());
-    drive.SetOmegaOverride(!drive.GetTransAdjust());
+    drive.SetOmegaOverride(drive.GetTransAdjust());
   }, {}));
 
   controller.Y().OnTrue(frc2::cmd::RunOnce([this]() {
@@ -327,13 +349,14 @@ RobotContainer::RobotContainer() {
 
       } else if(mlTrackingTarget == MLLabels::Reef) {
         std::vector<JetsonSubsystem::MLDetectionFrame> reefDets;
-        for(int i = 0; i < detSize; i++) {
+        for(int i = 0; i < dets.size(); i++) {
           if(dets[i].label == MLLabels::Reef) {
             reefDets.push_back(dets[i]);
           }
         }
 
         auto target = GetReefTrackingTarget(reefDets);
+        if(noReefFound) return;
         double dCenter = target.x + (target.w / 2.0);
         dCenter = dCenter - (camFrameWidth / 2.0);
         auto yAdjust = units::meters_per_second_t{yTransAdjust.Calculate(dCenter)};

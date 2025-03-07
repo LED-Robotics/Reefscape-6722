@@ -13,7 +13,7 @@ using namespace ClimbConstants;
 using namespace frc;
 
 ClimbSubsystem::ClimbSubsystem()
-  : climb{kClimbPort} {
+  : climb{kClimbPort, "canCan"} {
       // climb.SetPosition(0.0_tr);
       SmartDashboard::PutNumber("Climb Angle", GetAngle().value());
       ConfigMotor();

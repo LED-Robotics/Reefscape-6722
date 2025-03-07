@@ -3,7 +3,7 @@
 
 namespace ClimbConstants {
     // ports
-    constexpr int kClimbPort = 8;
+    constexpr int kClimbPort = 10;
     constexpr int kEncoderPort = 12;
 
     constexpr units::angle::turn_t kEncoderOffset = -0.46044921875_tr;
