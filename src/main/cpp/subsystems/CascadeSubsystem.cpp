@@ -151,7 +151,6 @@ void CascadeSubsystem::ConfigMotors() {
   // cascadeConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
   
   left.GetConfigurator().Apply(cascadeConfig);
-  cascadeConfig.MotorOutput.Inverted = false;
   // cascadeConfig.DifferentialSensors.DifferentialSensorSource = signals::DifferentialSensorSourceValue::RemoteTalonFX_Diff;
   // cascadeConfig.DifferentialSensors.DifferentialTalonFXSensorID = kLeftMotorPort;
   right.GetConfigurator().Apply(cascadeConfig);
