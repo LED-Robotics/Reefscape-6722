@@ -124,8 +124,6 @@ class RobotContainer {
   units::length::meter_t minAlgaeSweepHeight{0.2_m};
   units::angle::degree_t algaeSweepRange[2] = {-42_deg, 58_deg};
 
-  KinematicsPose startingPose{0.0_m, 0_deg};
-
   PivotSubsystem pivot{};
 
   // ClimbSubsystem climb{};
@@ -135,6 +133,23 @@ class RobotContainer {
   AlgaeSubsystem algae{};
 
   LEDSubsystem led{};
+
+  // Kinematics Poses //
+  KinematicsPose startingPose{0.0_m, 90_deg};
+  KinematicsPose loadPose{0.0_m, 90_deg};
+  KinematicsPose floorIntakePose{0.0_m, 90_deg};
+
+  KinematicsPose l1Coral{0.0_m, 90_deg};
+  KinematicsPose l2Coral{0.0_m, 90_deg};
+  KinematicsPose l3Coral{0.0_m, 90_deg};
+  KinematicsPose l4Coral{0.0_m, 90_deg};
+
+  KinematicsPose l1Algae{0.0_m, 90_deg};
+  KinematicsPose l2Algae{0.0_m, 90_deg};
+  KinematicsPose l3Algae{0.0_m, 90_deg};
+  KinematicsPose l4Algae{0.0_m, 90_deg};
+
+  // Kinematics Poses //
 
   // used for AprilTag odom updates
   units::degree_t startOffset{180.0};
@@ -282,14 +297,16 @@ class RobotContainer {
    *
    * @return The appropriate Command* based on partner controller status
    */
-  frc2::Command* HandlePartnerCommands(frc2::Command* solo, frc2::Command* partner);
+  void HandlePartnerCommands(frc2::CommandPtr&& solo, frc2::CommandPtr&& partner);
 
   /**
    * Return a pointer to an empty Command that will do nothing when run.
    *
    * @return A Command* to an empty Command
    */
-  frc2::Command* GetEmptyCommand();
+  frc2::CommandPtr GetEmptyCommand();
+
+  frc2::CommandPtr HandleModeScheduling(frc2::CommandPtr&& coral, frc2::CommandPtr&& algae);
 
   /**
    * Return the command pointer that sets all subsystem kinematics.

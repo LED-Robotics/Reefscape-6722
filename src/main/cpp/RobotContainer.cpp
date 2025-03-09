@@ -22,18 +22,29 @@ bool RobotContainer::IsBlue() {
   return frc::DriverStation::GetAlliance() == frc::DriverStation::Alliance::kBlue;
 }
 
-frc2::Command* RobotContainer::HandlePartnerCommands(frc2::Command* solo, frc2::Command* partner) {
-  return new frc2::InstantCommand(
-    [this, solo, partner]() { 
-        if(controller2.IsConnected()) partner->Schedule();
-        else solo->Schedule();
-      }, {});
+void RobotContainer::HandlePartnerCommands(frc2::CommandPtr&& solo, frc2::CommandPtr&& partner) {
+  if(controller2.IsConnected()) {
+    ManuallySchedule(std::move(partner));
+  } else {
+    ManuallySchedule(std::move(solo));
+  }
 }
 
-frc2::Command* RobotContainer::GetEmptyCommand() {
-  return new frc2::InstantCommand(
-          [this]() { 
-           }, {});
+frc2::CommandPtr RobotContainer::GetEmptyCommand() {
+  return frc2::cmd::RunOnce(
+  [&]() {
+
+  }, {});
+}
+
+frc2::CommandPtr RobotContainer::HandleModeScheduling(frc2::CommandPtr&& coral, frc2::CommandPtr&& algae) {
+  return frc2::cmd::RunOnce([&]() {
+        if(TrackingTarget == GlobalConstants::kAlgaeMode) {
+          ManuallySchedule(std::move(algae));
+        } else {
+          ManuallySchedule(std::move(coral));
+        }
+      }, {});
 }
 
 frc2::CommandPtr RobotContainer::SetAllKinematics(RobotContainer::KinematicsPose pose) {
@@ -252,54 +263,38 @@ RobotContainer::RobotContainer() {
 
   controller.Start().OnTrue(SetAllKinematics(startingPose));
 
-  controller.Back().OnTrue(frc2::cmd::RunOnce([this]() {
-        if(TrackingTarget == GlobalConstants::kAlgaeMode) {
-          ManuallySchedule(std::move(SetAllKinematics({0.0_m, 170_deg})));
-        } else {
-          ManuallySchedule(std::move(SetAllKinematics({0.07_m, 0_deg})));
-        }
-      }, {}
-  ));
+  /*controller.Back().OnTrue(frc2::cmd::RunOnce([this]() {*/
+  /*      if(TrackingTarget == GlobalConstants::kAlgaeMode) {*/
+  /*        ManuallySchedule(std::move(SetAllKinematics({0.0_m, 170_deg})));*/
+  /*      } else {*/
+  /*        ManuallySchedule(std::move(SetAllKinematics({0.07_m, 0_deg})));*/
+  /*      }*/
+  /*    }, {}*/
+  /*));*/
+  
+  controller.LeftStick().OnTrue(HandleModeScheduling(
+      SetAllKinematics(loadPose),
+      SetAllKinematics(floorIntakePose)));
 
   // Level 1
-  mainDpadDown.OnTrue(frc2::cmd::RunOnce([this]() {
-        if(TrackingTarget == GlobalConstants::kAlgaeMode) {
-          ManuallySchedule(std::move(SetAllKinematics({0.0_m, 170_deg})));
-        } else {
-          ManuallySchedule(std::move(SetAllKinematics({0.15_m, 0_deg})));
-        }
-      }, {}
-  ));
+  mainDpadDown.OnTrue(HandleModeScheduling(
+      SetAllKinematics(l1Coral),
+      SetAllKinematics(l1Algae)));
 
   // Level 2
-  mainDpadRight.OnTrue(frc2::cmd::RunOnce([this]() {
-        if(TrackingTarget == GlobalConstants::kAlgaeMode) {
-          ManuallySchedule(std::move(SetAllKinematics({0.13_m, 170_deg})));
-        } else {
-          ManuallySchedule(std::move(SetAllKinematics({0.33_m, 0_deg})));
-        }
-      }, {}
-  ));
+  mainDpadRight.OnTrue(HandleModeScheduling(
+      SetAllKinematics(l2Coral),
+      SetAllKinematics(l2Algae)));
 
   // Level 3
-  mainDpadLeft.OnTrue(frc2::cmd::RunOnce([this]() {
-        if(TrackingTarget == GlobalConstants::kAlgaeMode) {
-          ManuallySchedule(std::move(SetAllKinematics({0.51_m, 170_deg})));
-        } else {
-          ManuallySchedule(std::move(SetAllKinematics({0.71_m, 0_deg})));
-        }
-      }, {}
-  ));
+  mainDpadLeft.OnTrue(HandleModeScheduling(
+      SetAllKinematics(l3Coral),
+      SetAllKinematics(l3Algae)));
 
   // Level 4
-  mainDpadUp.OnTrue(frc2::cmd::RunOnce([this]() {
-        if(TrackingTarget == GlobalConstants::kAlgaeMode) {
-          ManuallySchedule(std::move(SetAllKinematics({1.3_m, 170_deg})));
-        } else {
-          ManuallySchedule(std::move(SetAllKinematics({1.37_m, 0_deg})));
-        }
-      }, {}
-  ));
+  mainDpadUp.OnTrue(HandleModeScheduling(
+      SetAllKinematics(l4Coral),
+      SetAllKinematics(l4Algae)));
 
   drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
 
