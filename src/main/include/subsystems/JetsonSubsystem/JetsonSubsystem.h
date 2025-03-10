@@ -121,6 +121,8 @@ class JetsonSubsystem : public frc2::SubsystemBase {
 
   bool IsPoseAvailable();
 
+  void SetRecording(bool state);
+
   double Min(double val, double min);
 
   double Max(double val, double max);

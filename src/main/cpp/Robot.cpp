@@ -34,6 +34,7 @@ void Robot::RobotPeriodic() {
  */
 void Robot::DisabledInit() {
   m_container.SetDriveBrakes(false);
+  m_container.SetRecording(false);
 }
 
 void Robot::DisabledPeriodic() {
@@ -50,9 +51,9 @@ void Robot::AutonomousInit() {
   m_container.SetDriveBrakes(true);
   m_container.SetSlew(false);
   // m_container.SetAutoIndex(true);
-  // if(DriverStation::IsFMSAttached()) {
-  //   m_container.SetRecording(true);
-  // }
+  if(DriverStation::IsFMSAttached()) {
+    m_container.SetRecording(true);
+  }
   // if(m_autonomousCommand) {
   //   m_autonomousCommand->Schedule();
   // }
@@ -67,6 +68,10 @@ void Robot::TeleopInit() {
   m_container.EnableTagTracking();  // station auto-align uses AprilTag tracking 
   m_container.SetDriveBrakes(true);
   m_container.SetSlew(true);
+
+  if(DriverStation::IsFMSAttached()) {
+    m_container.SetRecording(true);
+  }
 
   // if (m_autonomousCommand) {
   //   m_autonomousCommand->Cancel();

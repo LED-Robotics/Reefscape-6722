@@ -15,6 +15,9 @@ JetsonSubsystem::JetsonSubsystem() {
   table = nt::NetworkTableInstance::GetDefault().GetTable("jetson");
   field = AprilTagFieldLayout::LoadField(AprilTagField::k2025ReefscapeWelded);
   field.SetOrigin(AprilTagFieldLayout::OriginPosition::kBlueAllianceWallRightSide);
+
+  table->PutBoolean("recordState", false);
+  table->PutBoolean("recordLabelled", false);
   
   this->AddRequestedTags(std::vector<uint8_t> {6, 7, 8, 9, 10, 11});
 }
@@ -213,6 +216,10 @@ frc::Pose2d JetsonSubsystem::AverageRobotPose() {
 
 bool JetsonSubsystem::IsPoseAvailable() {
   return poseAvailable;
+}
+
+void JetsonSubsystem::SetRecording(bool state) {
+  table->PutBoolean("recordState", state);
 }
 
 std::vector<JetsonSubsystem::MLDetectionFrame> JetsonSubsystem::GetMLDetections() {

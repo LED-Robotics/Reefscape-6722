@@ -454,3 +454,7 @@ void RobotContainer::EnableTagTracking() {
 void RobotContainer::SetSlew(bool state) {
   drive.SetLimiting(state);
 }
+
+void RobotContainer::SetRecording(bool state) {
+  jetson.SetRecording(state);
+}
