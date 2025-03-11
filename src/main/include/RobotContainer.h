@@ -228,6 +228,11 @@ class RobotContainer {
   frc2::Trigger mainDpadLeft2{controller2.POV(270)};
   frc2::Trigger mainDpadRight2{controller2.POV(90)};
 
+  frc2::Trigger dpad2InteractedWith{[this]() {
+      return controller2.GetHID().GetPOV() != -1;
+    } 
+  }; 
+
   frc2::Trigger driverTurning{[this]() {
       return abs(controller.GetRightX()) > DriveConstants::kTurnDeadzone && !controller2.A().Get();
     }
@@ -273,10 +278,10 @@ class RobotContainer {
                                         {})};
   
   const frc::Pose2d blueReef[6] = {
-    {6.5_m, 4.0_m, {180_deg}}, 
+    {6.5_m, 4.0_m, {180_deg}}, // Away from driver station 
     {5.5_m, 2.25_m, {120_deg}}, 
     {3.5_m, 2.25_m, {60_deg}}, 
-    {2.5_m, 4.0_m, {0_deg}}, 
+    {2.5_m, 4.0_m, {0_deg}}, // Facing driverstation
     {3.5_m, 5.75_m, {-60_deg}}, 
     {5.5_m, 5.75_m, {-120_deg}}
   };

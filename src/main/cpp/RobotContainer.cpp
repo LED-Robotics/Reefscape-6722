@@ -318,22 +318,28 @@ RobotContainer::RobotContainer() {
 
   drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
 
+  dpad2InteractedWith.OnTrue(frc2::cmd::RunOnce([this]() {
+    ReefTarget = (int)(controller2.GetHID().GetPOV() / 45.0);
+    drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
+    SmartDashboard::PutNumber("reefTarget", ReefTarget);
+  }, {}));
+
   controller.B().OnTrue(frc2::cmd::RunOnce([this]() {
     drive.SetTransAdjust(!drive.GetTransAdjust());
     drive.SetOmegaOverride(drive.GetTransAdjust());
   }, {}));
 
-  controller.Y().OnTrue(frc2::cmd::RunOnce([this]() {
-    if(--ReefTarget < 0) ReefTarget = 5; 
-    drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
-    SmartDashboard::PutNumber("reefTarget", ReefTarget);
-  }, {}));
+  // controller.Y().OnTrue(frc2::cmd::RunOnce([this]() {
+  //   if(--ReefTarget < 0) ReefTarget = 5; 
+  //   drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
+  //   SmartDashboard::PutNumber("reefTarget", ReefTarget);
+  // }, {}));
 
-  controller.A().OnTrue(frc2::cmd::RunOnce([this]() {
-    if(++ReefTarget > 5) ReefTarget = 0; 
-    drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
-    SmartDashboard::PutNumber("reefTarget", ReefTarget);
-  }, {}));
+  // controller.A().OnTrue(frc2::cmd::RunOnce([this]() {
+  //   if(++ReefTarget > 5) ReefTarget = 0; 
+  //   drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
+  //   SmartDashboard::PutNumber("reefTarget", ReefTarget);
+  // }, {}));
   
   // Change global target to coral
   controller.LeftBumper().OnTrue(std::move(targetCoral)); 
