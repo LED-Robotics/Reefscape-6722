@@ -7,7 +7,7 @@ namespace PivotConstants {
 
     constexpr int kEncoderPort = 12;
 
-    constexpr units::angle::turn_t kEncoderOffset = -0.51025390625_tr;
+    constexpr units::angle::turn_t kEncoderOffset =  -0.258056640625_tr;
 
     constexpr units::time::second_t kRampSeconds = 0.25_s;
 
@@ -19,8 +19,8 @@ namespace PivotConstants {
       kPivotAngleMode
     };
     // wrist min/max positions
-    constexpr units::angle::degree_t kPivotDegreeMin{0.0_deg};   // encoder Turns at the Floor's minimum usable position
-    constexpr units::angle::degree_t kPivotDegreeMax{0.0_deg}; // meters the Floor is capable of moving 
+    constexpr units::angle::degree_t kPivotDegreeMin{-180.0_deg};   // encoder Turns at the Floor's minimum usable position
+    constexpr units::angle::degree_t kPivotDegreeMax{180.0_deg}; // meters the Floor is capable of moving 
     // for arm feed forward trig
     // arm position constants
     constexpr double kPivotStartOffset = 0.0;

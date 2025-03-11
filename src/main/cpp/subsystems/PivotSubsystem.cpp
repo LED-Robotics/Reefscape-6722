@@ -39,12 +39,12 @@ void PivotSubsystem::Periodic() {
     SmartDashboard::PutNumber("angle", GetAngle().value());  // print to Shuffleboard
     double feedForward = fabs(sin(angle.value())) * kMaxFeedForward;
     SmartDashboard::PutNumber("Angle Target", angle.value());
-    units::angle::turn_t posTarget{(angle - kPivotStartAngle) / kTurnsPerDegree};
+    units::angle::turn_t posTarget{(angle - kPivotStartAngle).value() * kTurnsPerDegree};
     SmartDashboard::PutNumber("wrTurnTarget", posTarget.value());
-    // pivot.SetControl(pivotPosition
-    //   .WithPosition(units::angle::turn_t{posTarget})Drive
-    //   .WithEnableFOC(true)
-    //   .WithFeedForward(units::volt_t{feedForward}));
+    pivot.SetControl(pivotPosition
+      .WithPosition(units::angle::turn_t{posTarget})
+      .WithEnableFOC(true));
+      /*.WithFeedForward(units::volt_t{feedForward}));*/
   }
 }
 
@@ -130,7 +130,7 @@ void PivotSubsystem::ConfigPivot() {
   
   // pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
   pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::SyncCANcoder;
-  pivotPivotConfig.ClosedLoopGeneral.ContinuousWrap = true;
+  pivotPivotConfig.ClosedLoopGeneral.ContinuousWrap = false;
   pivotPivotConfig.Feedback.RotorToSensorRatio = kPivotRotorToGearbox;
   pivotPivotConfig.Feedback.SensorToMechanismRatio = kPivotGearboxToMechanism;
   pivotPivotConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
