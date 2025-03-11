@@ -42,7 +42,7 @@ void PivotSubsystem::Periodic() {
     units::angle::turn_t posTarget{(angle - kPivotStartAngle) / kTurnsPerDegree};
     SmartDashboard::PutNumber("wrTurnTarget", posTarget.value());
     // pivot.SetControl(pivotPosition
-    //   .WithPosition(units::angle::turn_t{posTarget})
+    //   .WithPosition(units::angle::turn_t{posTarget})Drive
     //   .WithEnableFOC(true)
     //   .WithFeedForward(units::volt_t{feedForward}));
   }

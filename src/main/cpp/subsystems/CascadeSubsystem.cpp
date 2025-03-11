@@ -45,12 +45,12 @@ void CascadeSubsystem::Periodic() {
     
     SmartDashboard::PutNumber("Position Target", position.value());
     units::angle::turn_t posTarget{((position - kStartPosition) / kStageMultiplier).value() * kTurnsPerMeter};
-    left.SetControl(positionController
-      .WithPosition(units::angle::turn_t{posTarget})
-      .WithEnableFOC(true));
-    right.SetControl(positionController
-      .WithPosition(units::angle::turn_t{posTarget})
-      .WithEnableFOC(true));
+    /*left.SetControl(positionController*/
+    /*  .WithPosition(units::angle::turn_t{posTarget})*/
+    /*  .WithEnableFOC(true));*/
+    /*right.SetControl(positionController*/
+    /*  .WithPosition(units::angle::turn_t{posTarget})*/
+    /*  .WithEnableFOC(true));*/
 
     // Test Motion Magic
     // left.SetControl(position

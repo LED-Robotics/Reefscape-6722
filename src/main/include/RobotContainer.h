@@ -135,7 +135,7 @@ class RobotContainer {
   LEDSubsystem led{};
 
   // Kinematics Poses //
-  KinematicsPose startingPose{0.0_m, 90_deg};
+  KinematicsPose startingPose{0.0_m, 32.34_deg};
   KinematicsPose loadPose{0.0_m, 90_deg};
   KinematicsPose floorIntakePose{0.0_m, 90_deg};
 
@@ -222,6 +222,11 @@ class RobotContainer {
   frc2::Trigger mainDpadDown{controller.POV(180)};
   frc2::Trigger mainDpadLeft{controller.POV(270)};
   frc2::Trigger mainDpadRight{controller.POV(90)};
+
+  frc2::Trigger mainDpadUp2{controller2.POV(0)};
+  frc2::Trigger mainDpadDown2{controller2.POV(180)};
+  frc2::Trigger mainDpadLeft2{controller2.POV(270)};
+  frc2::Trigger mainDpadRight2{controller2.POV(90)};
 
   frc2::Trigger driverTurning{[this]() {
       return abs(controller.GetRightX()) > DriveConstants::kTurnDeadzone && !controller2.A().Get();

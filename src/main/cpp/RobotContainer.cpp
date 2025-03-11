@@ -276,8 +276,16 @@ RobotContainer::RobotContainer() {
       SetAllKinematics(loadPose),
       SetAllKinematics(floorIntakePose)));
 
+  controller2.A().OnTrue(HandleModeScheduling(
+      SetAllKinematics(loadPose),
+      SetAllKinematics(floorIntakePose)));
+
   // Level 1
   mainDpadDown.OnTrue(HandleModeScheduling(
+      SetAllKinematics(l1Coral),
+      SetAllKinematics(l1Algae)));
+
+  mainDpadDown2.OnTrue(HandleModeScheduling(
       SetAllKinematics(l1Coral),
       SetAllKinematics(l1Algae)));
 
@@ -286,13 +294,25 @@ RobotContainer::RobotContainer() {
       SetAllKinematics(l2Coral),
       SetAllKinematics(l2Algae)));
 
+  mainDpadRight2.OnTrue(HandleModeScheduling(
+      SetAllKinematics(l2Coral),
+      SetAllKinematics(l2Algae)));
+
   // Level 3
   mainDpadLeft.OnTrue(HandleModeScheduling(
       SetAllKinematics(l3Coral),
       SetAllKinematics(l3Algae)));
 
+  mainDpadLeft2.OnTrue(HandleModeScheduling(
+      SetAllKinematics(l3Coral),
+      SetAllKinematics(l3Algae)));
+
   // Level 4
   mainDpadUp.OnTrue(HandleModeScheduling(
+      SetAllKinematics(l4Coral),
+      SetAllKinematics(l4Algae)));
+
+  mainDpadUp2.OnTrue(HandleModeScheduling(
       SetAllKinematics(l4Coral),
       SetAllKinematics(l4Algae)));
 
