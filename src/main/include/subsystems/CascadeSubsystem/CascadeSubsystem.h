@@ -98,7 +98,7 @@ class CascadeSubsystem : public frc2::SubsystemBase {
   // while the state is kOn the Cascade will run at the current power setting
   int state = CascadeConstants::CascadeStates::kPositionMode;
   double power = CascadeConstants::kDefaultPower;
-  units::length::meter_t position{CascadeConstants::kStartPosition};
+  units::length::meter_t position{CascadeConstants::kStartPosition + 0.3_m};
 
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.

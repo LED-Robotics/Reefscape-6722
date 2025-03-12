@@ -20,7 +20,7 @@ CascadeSubsystem::CascadeSubsystem()
     SmartDashboard::PutNumber("Cascade Position", position.value());
     /*SmartDashboard::PutNumber("Cascade Power", 0.0);*/
     ConfigMotors();
-    SetTargetPosition(0.0_m);
+    SetTargetPosition(position);
 
 }
 
@@ -44,13 +44,14 @@ void CascadeSubsystem::Periodic() {
   SmartDashboard::PutNumber("cascadePosition", ((GetLeftPosition().value()) + (GetRightPosition().value())) / 2);  // print to Shuffleboard
     
     SmartDashboard::PutNumber("Position Target", position.value());
-    units::angle::turn_t posTarget{((position - kStartPosition) / kStageMultiplier).value() * kTurnsPerMeter};
-    /*left.SetControl(positionController*/
-    /*  .WithPosition(units::angle::turn_t{posTarget})*/
-    /*  .WithEnableFOC(true));*/
-    /*right.SetControl(positionController*/
-    /*  .WithPosition(units::angle::turn_t{posTarget})*/
-    /*  .WithEnableFOC(true));*/
+    units::angle::turn_t posTarget{(position - kStartPosition).value() * kTurnsPerMeter};
+    SmartDashboard::PutNumber("cascadeTargetTr", posTarget.value());
+    left.SetControl(positionController
+      .WithPosition(units::angle::turn_t{posTarget})
+      .WithEnableFOC(true));
+    right.SetControl(positionController
+      .WithPosition(units::angle::turn_t{posTarget})
+      .WithEnableFOC(true));
 
     // Test Motion Magic
     // left.SetControl(position
@@ -84,12 +85,12 @@ int CascadeSubsystem::GetState() {
 
 units::length::meter_t CascadeSubsystem::GetLeftPosition() {
   auto base = units::length::meter_t{left.GetPosition().GetValueAsDouble() / kTurnsPerMeter};
-  return base * kStageMultiplier + kStartPosition;
+  return base + kStartPosition;
 }
 
 units::length::meter_t CascadeSubsystem::GetRightPosition() {
   auto base = units::length::meter_t{right.GetPosition().GetValueAsDouble() / kTurnsPerMeter};
-  return base * kStageMultiplier + kStartPosition;
+  return base + kStartPosition;
 }
 
 units::length::meter_t CascadeSubsystem::GetPosition() {
@@ -102,6 +103,7 @@ void CascadeSubsystem::SetTargetPosition(units::length::meter_t newPosition) {
   position = newPosition;
   if(position < kCascadeMeterMin) position = kCascadeMeterMin;
   if(position > kCascadeMeterMax) position = kCascadeMeterMax;
+  SmartDashboard::PutNumber("Cascade Position", position.value());
 }
 
 bool CascadeSubsystem::IsAtTarget() {
@@ -153,6 +155,8 @@ void CascadeSubsystem::ConfigMotors() {
   left.GetConfigurator().Apply(cascadeConfig);
   // cascadeConfig.DifferentialSensors.DifferentialSensorSource = signals::DifferentialSensorSourceValue::RemoteTalonFX_Diff;
   // cascadeConfig.DifferentialSensors.DifferentialTalonFXSensorID = kLeftMotorPort;
+  cascadeConfig.MotorOutput.Inverted = false;
+
   right.GetConfigurator().Apply(cascadeConfig);
 
   // configs::CANcoderConfiguration encoderConfig{};

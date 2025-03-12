@@ -7,7 +7,7 @@ namespace PivotConstants {
 
     constexpr int kEncoderPort = 12;
 
-    constexpr units::angle::turn_t kEncoderOffset =  -0.258056640625_tr;
+    constexpr units::angle::turn_t kEncoderOffset =  -0.103515625_tr;
 
     constexpr units::time::second_t kRampSeconds = 0.25_s;
 
@@ -24,9 +24,9 @@ namespace PivotConstants {
     // for arm feed forward trig
     // arm position constants
     constexpr double kPivotStartOffset = 0.0;
-    constexpr units::angle::degree_t kPivotStartAngle{90.0_deg};
+    constexpr units::angle::degree_t kPivotStartAngle{0.0_deg};
     // position deadzone
-    constexpr units::angle::degree_t kPivotAngleDeadzone{1_deg};
+    constexpr units::angle::degree_t kPivotAngleDeadzone{7.0_deg};
     // feed forward at max gravity i.e. 90 degrees off the floor
     constexpr double kMaxFeedForward = 0.352;
     // TalonFX config

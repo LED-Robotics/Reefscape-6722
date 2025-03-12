@@ -118,11 +118,11 @@ class RobotContainer {
   
   CascadeSubsystem cascade{};
 
-  units::length::meter_t minCoralSweepHeight{0.3_m};
-  units::angle::degree_t coralSweepRange[2] = {-135_deg, -45_deg};
+  units::length::meter_t minCoralSweepHeight{0.88_m};
+  units::angle::degree_t coralSweepRange[2] = {-210.0_deg, -155.0_deg};
 
-  units::length::meter_t minAlgaeSweepHeight{0.2_m};
-  units::angle::degree_t algaeSweepRange[2] = {-42_deg, 58_deg};
+  units::length::meter_t minAlgaeSweepHeight{0.88_m};
+  units::angle::degree_t algaeSweepRange[2] = {-60.0_deg, 30.0_deg};
 
   PivotSubsystem pivot{};
 
@@ -135,19 +135,19 @@ class RobotContainer {
   LEDSubsystem led{};
 
   // Kinematics Poses //
-  KinematicsPose startingPose{0.0_m, 32.34_deg};
-  KinematicsPose loadPose{0.0_m, 90_deg};
-  KinematicsPose floorIntakePose{0.0_m, 90_deg};
+  KinematicsPose startingPose{0.9_m, 90.00_deg};
+  KinematicsPose loadPose{1.13_m, -137.55_deg};
+  KinematicsPose floorIntakePose{1.0_m, 90_deg};
 
-  KinematicsPose l1Coral{0.0_m, 90_deg};
-  KinematicsPose l2Coral{0.0_m, 90_deg};
-  KinematicsPose l3Coral{0.0_m, 90_deg};
-  KinematicsPose l4Coral{0.0_m, 90_deg};
+  KinematicsPose l1Coral{0.85_m, -163.0_deg};
+  KinematicsPose l2Coral{0.82_m, 26.52_deg};
+  KinematicsPose l3Coral{1.21_m, 26.52_deg};
+  KinematicsPose l4Coral{1.95_m, 33.69_deg};
 
-  KinematicsPose l1Algae{0.0_m, 90_deg};
-  KinematicsPose l2Algae{0.0_m, 90_deg};
-  KinematicsPose l3Algae{0.0_m, 90_deg};
-  KinematicsPose l4Algae{0.0_m, 90_deg};
+  KinematicsPose l1Algae{1.0_m, 90_deg};
+  KinematicsPose l2Algae{1.0_m, -85.78_deg};
+  KinematicsPose l3Algae{1.28_m, -85.78_deg};
+  KinematicsPose l4Algae{2.0_m, -116.0_deg};
 
   // Kinematics Poses //
 
@@ -307,7 +307,7 @@ class RobotContainer {
    *
    * @return The appropriate Command* based on partner controller status
    */
-  void HandlePartnerCommands(frc2::CommandPtr&& solo, frc2::CommandPtr&& partner);
+  void HandlePartnerCommands(frc2::CommandPtr solo, frc2::CommandPtr partner);
 
   /**
    * Return a pointer to an empty Command that will do nothing when run.
@@ -316,7 +316,7 @@ class RobotContainer {
    */
   frc2::CommandPtr GetEmptyCommand();
 
-  frc2::CommandPtr HandleModeScheduling(frc2::CommandPtr&& coral, frc2::CommandPtr&& algae);
+  frc2::CommandPtr HandleModeScheduling(frc2::CommandPtr coral, frc2::CommandPtr algae);
 
   /**
    * Return the command pointer that sets all subsystem kinematics.

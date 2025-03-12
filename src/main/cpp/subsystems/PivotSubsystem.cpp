@@ -19,7 +19,7 @@ PivotSubsystem::PivotSubsystem()
       SmartDashboard::PutNumber("Pivot Angle", 90.0);
       ConfigPivot();
 
-      SetTargetAngle(kPivotStartAngle);
+      SetTargetAngle(angle);
 
 }
 
@@ -68,6 +68,7 @@ void PivotSubsystem::SetTargetAngle(units::angle::degree_t newAngle) {
   angle = newAngle;
   if(angle < kPivotDegreeMin) angle = kPivotDegreeMin;
   if(angle > kPivotDegreeMax) angle = kPivotDegreeMax;
+  SmartDashboard::PutNumber("Pivot Angle", angle.value());
 }
 
 units::angle::degree_t PivotSubsystem::GetAngle() {
@@ -129,7 +130,8 @@ void PivotSubsystem::ConfigPivot() {
   // pivotPivotConfig.MotionMagic.MotionMagicJerk = 200.0;
   
   // pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
-  pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::SyncCANcoder;
+  pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
+  pivotPivotConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
   pivotPivotConfig.ClosedLoopGeneral.ContinuousWrap = false;
   pivotPivotConfig.Feedback.RotorToSensorRatio = kPivotRotorToGearbox;
   pivotPivotConfig.Feedback.SensorToMechanismRatio = kPivotGearboxToMechanism;
@@ -144,7 +146,7 @@ void PivotSubsystem::ConfigPivot() {
   pivot.GetConfigurator().Apply(pivotPivotConfig);
 
   configs::CANcoderConfiguration encoderConfig{};
-  encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1.0_tr;
+  encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
   encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Positive;
   encoderConfig.MagnetSensor.MagnetOffset = kEncoderOffset;
   
