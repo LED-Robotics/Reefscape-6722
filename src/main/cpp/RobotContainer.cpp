@@ -371,10 +371,10 @@ RobotContainer::RobotContainer() {
     SmartDashboard::PutNumber("reefTarget", ReefTarget);
   }, {}));
 
-  controller.B().OnTrue(frc2::cmd::RunOnce([this]() {
-    drive.SetTransAdjust(!drive.GetTransAdjust());
-    drive.SetOmegaOverride(drive.GetTransAdjust());
-  }, {}));
+  /*controller.B().OnTrue(frc2::cmd::RunOnce([this]() {*/
+  /*  drive.SetTransAdjust(!drive.GetTransAdjust());*/
+  /*  drive.SetOmegaOverride(drive.GetTransAdjust());*/
+  /*}, {}));*/
 
   // controller.Y().OnTrue(frc2::cmd::RunOnce([this]() {
   //   if(--ReefTarget < 0) ReefTarget = 5; 
@@ -390,11 +390,15 @@ RobotContainer::RobotContainer() {
   
   // Change global target to coral
   controller.LeftBumper().OnTrue(std::move(targetCoral)); 
+  controller2.LeftBumper().OnTrue(std::move(coDriverTargetCoral));
+  controller2.Back().OnTrue(std::move(coDriverIntakeCoral)); 
 
   //Later change so that clicking cycles through
   
   // Change global target to algae 
-  controller.RightBumper().OnTrue(std::move(targetAlgae)); 
+  controller.RightBumper().OnTrue(std::move(targetAlgae));
+  controller2.RightBumper().OnTrue(std::move(coDriverTargetAlgae));
+  controller2.Start().OnTrue(std::move(coDriverIntakeAlgae));
 
   //Command toggle for field centric
   controller.Y().OnTrue(std::move(toggleFieldCentric));
@@ -411,7 +415,7 @@ RobotContainer::RobotContainer() {
 
       tagOverrideDisable = SmartDashboard::GetBoolean("detectorOverride", true);
       
-      // zero out axes if they fall within deadzone
+      // zero out axes if they fall within deadzon
       if (x > -DriveConstants::kDriveDeadzone && x < DriveConstants::kDriveDeadzone)
           x = 0.0;
       if (y > -DriveConstants::kDriveDeadzone && y < DriveConstants::kDriveDeadzone)
@@ -425,28 +429,50 @@ RobotContainer::RobotContainer() {
       float turn = 0.95 * pow(turnX, 3) + (1 - 0.95) * turnX;
       // pass filtered inputs to Drive function
       // inputs will be between -1.0 to 1.0, multiply by intended speed range in mps/deg_per_s when passing
-      double cascadeAdjust = 1.0 - ((cascade.GetPosition() - CascadeConstants::kStartPosition) / 2.0);
-      drive.Drive({xSpeed * DriveConstants::kDriveTranslationLimit * cascadeAdjust, ySpeed * DriveConstants::kDriveTranslationLimit * cascadeAdjust, 
-      turn * -270.0_deg_per_s}, true, fieldCentric);
+      int paddleAdjust = controller.GetHID().GetXButton() - controller.GetHID().GetBButton();
+      drive.SetTransAdjustSpeeds(paddleAdjust * 0.3_mps, 0.0_mps);
+      
+      if(paddleAdjust != 0) drive.SetTransAdjust(true);
+      else drive.SetTransAdjust(false);
+
+      double cascadeAdjust = 1.0 - ((cascade.GetPosition() - 0.2_m).value() / 2.0);
+      if(cascadeAdjust < 0.0) cascadeAdjust = 0.0;
+      if(cascadeAdjust > 1.0) cascadeAdjust = 1.0;
+      SmartDashboard::PutNumber("cascadeAdjust", cascadeAdjust);
+      drive.Drive({
+          units::velocity::meters_per_second_t {xSpeed * cascadeAdjust * DriveConstants::kDriveTranslationLimit.value()}, 
+          units::velocity::meters_per_second_t {ySpeed * cascadeAdjust * DriveConstants::kDriveTranslationLimit.value()}, 
+          turn * -270.0_deg_per_s}, 
+          true, fieldCentric);
     }, {&drive}));
 
   coral.SetDefaultCommand(frc2::cmd::Run(
     [this] {
-      if(TrackingTarget == GlobalConstants::kCoralMode || TrackingTarget == GlobalConstants::kArbitrary){
-        double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
+      double power = 0.0;
+      if(TrackingTarget == GlobalConstants::kCoralMode){
+        power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
-        coral.SetPower(power);
       }
+      if(CodriverIntakeTarget == GlobalConstants::kCoralMode) {
+        if(power == 0.0) power = controller2.GetLeftTriggerAxis() - controller2.GetRightTriggerAxis();
+        if(fabs(power) < 0.1) power = 0.0;
+      }
+      coral.SetPower(power);
     },
   {&coral}));
 
   algae.SetDefaultCommand(frc2::cmd::Run(
     [this] {
-      if(TrackingTarget == GlobalConstants::kAlgaeMode || TrackingTarget == GlobalConstants::kArbitrary) {
-        double power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
+      double power = 0.0;
+      if(TrackingTarget == GlobalConstants::kAlgaeMode) {
+        power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
-        algae.SetIntakePower(power);
       }
+      if(CodriverIntakeTarget == GlobalConstants::kAlgaeMode) {
+        if(power == 0.0) power = controller2.GetLeftTriggerAxis() - controller2.GetRightTriggerAxis();
+        if(fabs(power) < 0.1) power = 0.0;
+      }
+      algae.SetIntakePower(power);
     }, 
   {&algae}));
 
@@ -506,7 +532,17 @@ RobotContainer::RobotContainer() {
 
   led.SetDefaultCommand(frc2::cmd::Run(
     [this] {
-    
+      switch(TrackingTarget) {
+        case GlobalConstants::kCoralMode:
+          led.SetPower(LEDConstants::kCoralPreset);
+          break;
+        case GlobalConstants::kAlgaeMode:
+          led.SetPower(LEDConstants::kAlgaePreset);
+          break;
+        default:
+          led.SetPower(LEDConstants::kIdlePreset);
+          break;
+      }
     },
   {&led}));
 

@@ -108,6 +108,7 @@ class RobotContainer {
   
   // Starting tracking target
   int TrackingTarget = GlobalConstants::kCoralMode;
+  int CodriverIntakeTarget = GlobalConstants::kAlgaeMode;
 
   int ReefTarget = 0;
   
@@ -136,18 +137,18 @@ class RobotContainer {
 
   // Kinematics Poses //
   KinematicsPose startingPose{0.9_m, 90.00_deg};
-  KinematicsPose loadPose{1.13_m, -137.55_deg};
-  KinematicsPose floorIntakePose{1.0_m, 90_deg};
+  KinematicsPose loadPose{1.18_m, -137.55_deg};
+  KinematicsPose floorIntakePose{0.69_m, -48.56_deg};
 
   KinematicsPose l1Coral{0.85_m, -163.0_deg};
-  KinematicsPose l2Coral{0.82_m, 26.52_deg};
-  KinematicsPose l3Coral{1.21_m, 26.52_deg};
-  KinematicsPose l4Coral{1.95_m, 33.69_deg};
+  KinematicsPose l2Coral{0.7_m, 26.52_deg};
+  KinematicsPose l3Coral{1.11_m, 26.52_deg};
+  KinematicsPose l4Coral{1.95_m, 46.36_deg};
 
   KinematicsPose l1Algae{1.0_m, 90_deg};
-  KinematicsPose l2Algae{1.0_m, -85.78_deg};
-  KinematicsPose l3Algae{1.28_m, -85.78_deg};
-  KinematicsPose l4Algae{2.0_m, -116.0_deg};
+  KinematicsPose l2Algae{1.0_m, -84.45_deg};
+  KinematicsPose l3Algae{1.28_m, -101.2_deg};
+  KinematicsPose l4Algae{2.0_m, -216.06_deg};
 
   // Kinematics Poses //
 
@@ -243,13 +244,33 @@ class RobotContainer {
     }, {})
   };
   
-  frc2::CommandPtr targetCoral{frc2::cmd::RunOnce([this] { 
+   frc2::CommandPtr targetCoral{frc2::cmd::RunOnce([this] { 
       TrackingTarget = GlobalConstants::kCoralMode;
     }, {})
   };
   
   frc2::CommandPtr targetAlgae{frc2::cmd::RunOnce([this] { 
       TrackingTarget = GlobalConstants::kAlgaeMode;
+    }, {})
+  };
+
+ frc2::CommandPtr coDriverTargetCoral{frc2::cmd::RunOnce([this] { 
+      TrackingTarget = GlobalConstants::kCoralMode;
+    }, {})
+  };
+  
+  frc2::CommandPtr coDriverTargetAlgae{frc2::cmd::RunOnce([this] { 
+      TrackingTarget = GlobalConstants::kAlgaeMode;
+    }, {})
+  };
+
+  frc2::CommandPtr coDriverIntakeCoral{frc2::cmd::RunOnce([this] { 
+      CodriverIntakeTarget = GlobalConstants::kCoralMode;
+    }, {})
+  };
+  
+  frc2::CommandPtr coDriverIntakeAlgae{frc2::cmd::RunOnce([this] { 
+      CodriverIntakeTarget = GlobalConstants::kAlgaeMode;
     }, {})
   };
 

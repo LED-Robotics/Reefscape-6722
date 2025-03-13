@@ -66,7 +66,7 @@ namespace DriveConstants {
     constexpr double kTurnDeadzone = 0.1;
     constexpr double kDriveCurveExtent = 0.6;
     constexpr auto kDriveAccelerationLimit = 9.0_mps_sq;
-    constexpr auto kDriveDecelerationLimit = 25.0_mps_sq;
+    constexpr auto kDriveDecelerationLimit = 12.0_mps_sq;
     constexpr auto kDriveTranslationLimit = 7.7_mps;
     constexpr double kTxAdjust = 0.5;
     constexpr double kAlignP = 0.5;

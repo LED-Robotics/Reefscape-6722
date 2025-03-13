@@ -119,6 +119,7 @@ void PivotSubsystem::ConfigPivot() {
   configs::TalonFXConfiguration pivotPivotConfig{};
 
   pivotPivotConfig.Slot0.kP = kPPivot;
+  pivotPivotConfig.Slot0.kD = kDPivot;
   pivotPivotConfig.MotorOutput.Inverted = false;
   // pivotPivotConfig.Slot0.kS = 0.28;
   // pivotPivotConfig.Slot0.kV = 8.5;
