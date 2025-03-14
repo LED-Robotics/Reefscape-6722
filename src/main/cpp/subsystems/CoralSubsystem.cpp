@@ -36,31 +36,18 @@ void CoralSubsystem::Periodic() {
     // else intakeMotor.Set(0.0);
   } else if(state == CoralStates::kSensorMode) {
     bool indexed = IsCoralIndexed();
-    if(indexed && !previousVal) {
-      powerOff = true;
-      trippedPower = fabs(power);
-    } 
-    SmartDashboard::PutNumber("tripped", trippedPower);
-
-    if(powerOff && fabs(power) < trippedPower) {
-      trippedPower = fabs(power);
-    }
-    SmartDashboard::PutNumber("power", fabs(power));
-    SmartDashboard::PutNumber("Skibidi", fabs(power) - trippedPower);
-
-    if(fabs(power) < 0.10 && powerOff) {
-      powerOff = false;
-      power = 0.0;
-    }
-    if(powerOff) {
-      intake1.Set(0);
-      intake2.Set(0);
+    if(indexed) {
+      if(power < 0.2) {
+        intake1.Set(kHoldingPower);
+        intake2.Set(kHoldingPower);
+      } else {
+        intake1.Set(power);
+        intake2.Set(power);
+      }
     } else {
-      intake1.Set(power * 0.3);
-      intake2.Set(power * 0.3);
+      intake1.Set(power);
+      intake2.Set(power);
     }
-
-    previousVal = indexed;
   }
 }
 
