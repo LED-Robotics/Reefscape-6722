@@ -9,6 +9,7 @@
 #include <ctre/phoenix6/CANcoder.hpp>
 #include <frc2/command/Command.h>
 #include <frc2/command/Commands.h>
+#include <frc/AnalogInput.h>
 
 #include "Constants.h"
 
@@ -89,4 +90,5 @@ class AlgaeSubsystem : public frc2::SubsystemBase {
 
   // The motor controllers
   hardware::TalonFX intakeMotor;
+  frc::AnalogInput detector;
 };

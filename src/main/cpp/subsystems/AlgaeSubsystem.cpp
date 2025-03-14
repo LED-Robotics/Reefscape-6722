@@ -13,17 +13,30 @@ using namespace AlgaeConstants;
 using namespace frc;
 
 AlgaeSubsystem::AlgaeSubsystem()
-  : intakeMotor{kIntakePort} {
+  : intakeMotor{kIntakePort},
+    detector{kUltrasonicPort}  {
       ConfigIntake();
 }
 
 void AlgaeSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
   //Intake Control
+  double voltage = detector.GetVoltage();
+  SmartDashboard::PutNumber("Ultrasonic", voltage);
+  bool sensorTrip = detector.GetVoltage() < kUltrasonicThreshold;
+
   if(intakeState == IntakeStates::kIntakeOff) {
     intakeMotor.Set(0.0);
   } else {
-    intakeMotor.Set(intakePower);
+    if(sensorTrip) {
+      if(intakePower < 0.2) {
+        intakeMotor.Set(kHoldingPower);
+      } else {
+        intakeMotor.Set(intakePower);
+      }
+    } else {
+      intakeMotor.Set(intakePower);
+    }
   }
 }
 
