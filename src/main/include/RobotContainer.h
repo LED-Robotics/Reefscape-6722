@@ -22,6 +22,7 @@
 #include <frc2/command/RunCommand.h>
 #include "units/angle.h"
 #include <frc/Timer.h>
+#include <math.h>
 
 #include "GlobalConstants.h"
 #include "subsystems/AlgaeSubsystem/AlgaeSubsystem.h"
@@ -234,6 +235,12 @@ class RobotContainer {
     } 
   }; 
 
+  frc2::Trigger reefTargetChanged{[this]() {
+      double magnitude = sqrt(pow(controller2.GetLeftX(), 2) + pow(controller2.GetLeftY(), 2)); // Length of vector for trigger
+      return magnitude > 0.50 ? true : false;
+    }
+  };
+
   frc2::Trigger driverTurning{[this]() {
       return abs(controller.GetRightX()) > DriveConstants::kTurnDeadzone && !controller2.A().Get();
     }
@@ -299,21 +306,21 @@ class RobotContainer {
                                         {})};
   
   const frc::Pose2d blueReef[6] = {
-    {6.5_m, 4.0_m, {180_deg}}, // Away from driver station 
-    {5.5_m, 2.25_m, {120_deg}}, 
-    {3.5_m, 2.25_m, {60_deg}}, 
-    {2.5_m, 4.0_m, {0_deg}}, // Facing driverstation
-    {3.5_m, 5.75_m, {-60_deg}}, 
-    {5.5_m, 5.75_m, {-120_deg}}
+    {6.5_m, 4.0_m, {180_deg}}, // Away from driver station, 0_deg
+    {5.5_m, 2.25_m, {120_deg}}, // 45_deg
+    {3.5_m, 2.25_m, {60_deg}}, // 135_deg
+    {2.5_m, 4.0_m, {0_deg}}, // Facing driverstation, 180_deg
+    {3.5_m, 5.75_m, {-60_deg}}, // 215_deg
+    {5.5_m, 5.75_m, {-120_deg}} //305_deg
   };
 
   const frc::Pose2d redReef[6] = {
-    {11.0_m, 4.0_m, {180_deg}}, 
-    {12.0_m, 5.75_m, {-60_deg}}, 
-    {14.1_m, 5.75_m, {-120_deg}}, 
-    {15.1_m, 4.0_m, {0_deg}}, 
-    {14.15_m, 2.25_m, {120_deg}}, 
-    {12.0_m, 2.25_m, {60_deg}}
+    {11.0_m, 4.0_m, {90_deg}}, 
+    {12.0_m, 5.75_m, {30_deg}}, 
+    {14.1_m, 5.75_m, {-30_deg}}, 
+    {15.1_m, 4.0_m, {-90_deg}}, 
+    {14.15_m, 2.25_m, {-150_deg}}, 
+    {12.0_m, 2.25_m, {150_deg}}
   };
 
   /**

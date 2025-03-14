@@ -274,7 +274,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
  
   frc::Pose2d poseToHold{}; // var to contain target pose
   // PID controllers for turn holding
-  frc::PIDController thetaHoldController{0.13, 0.0, 0.0};
+  frc::PIDController thetaHoldController{0.10, 0.0, 0.0};
   units::meters_per_second_t txAdjust{0.0_mps};
   units::meters_per_second_t tyAdjust{0.0_mps};
   int lastTarget = GlobalConstants::kArbitrary;

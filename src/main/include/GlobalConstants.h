@@ -40,6 +40,8 @@ namespace GlobalConstants {
       kCoralMode,
       kAlgaeMode
     };
+    // Misc
+    constexpr double reefTargChangeThresh = 0.50;
 }
 
 namespace AutoConstants {

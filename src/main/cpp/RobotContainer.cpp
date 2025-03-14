@@ -365,16 +365,36 @@ RobotContainer::RobotContainer() {
 
   drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
 
-  dpad2InteractedWith.OnTrue(frc2::cmd::RunOnce([this]() {
-    ReefTarget = (int)(controller2.GetHID().GetPOV() / 45.0);
+  reefTargetChanged.WhileTrue(frc2::cmd::RunOnce([this]() {
+    double xDist = controller2.GetLeftX();
+    double yDist = -controller2.GetLeftY();
+    
+    double reefControlAngle = -atan2(yDist, xDist) * (180 / M_PI);
+
+    if(reefControlAngle < 0) reefControlAngle += 360; // Makes this between 0 and 359
+
+    reefControlAngle += 90;
+    
+    // if(reefControlAngle < 0) reefControlAngle = 270 - reefControlAngle; //If the shift sends the angle below 0, put back into 0-360 scope
+
+    // reefControlAngle = abs(reefControlAngle - 360.0);
+
+    // SmartDashboard::PutNumber("reefTargAngle", reefControlAngle);
+
+    reefControlAngle /= 60.0;
+
+    ReefTarget = round(reefControlAngle);
+
+    if(ReefTarget >= 6) ReefTarget -= 6;
+
     drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
     SmartDashboard::PutNumber("reefTarget", ReefTarget);
-  }, {}));
+  }, {}).Repeatedly());
 
-  /*controller.B().OnTrue(frc2::cmd::RunOnce([this]() {*/
-  /*  drive.SetTransAdjust(!drive.GetTransAdjust());*/
-  /*  drive.SetOmegaOverride(drive.GetTransAdjust());*/
-  /*}, {}));*/
+  controller.A().OnTrue(frc2::cmd::RunOnce([this]() {
+    // drive.SetTransAdjust(!drive.GetTransAdjust());
+    drive.SetOmegaOverride(!drive.GetOmegaOverride());
+  }, {}));
 
   // controller.Y().OnTrue(frc2::cmd::RunOnce([this]() {
   //   if(--ReefTarget < 0) ReefTarget = 5; 
