@@ -116,35 +116,37 @@ void PivotSubsystem::SetPivotBrakeMode(bool state) {
 }
 
 void PivotSubsystem::ConfigPivot() {
-  configs::TalonFXConfiguration pivotPivotConfig{};
+  configs::TalonFXConfiguration pivotConfig{};
 
-  pivotPivotConfig.Slot0.kP = kPPivot;
-  pivotPivotConfig.Slot0.kD = kDPivot;
-  pivotPivotConfig.MotorOutput.Inverted = false;
-  // pivotPivotConfig.Slot0.kS = 0.28;
-  // pivotPivotConfig.Slot0.kV = 8.5;
-  // pivotPivotConfig.Slot0.kA = 3.0;
-  // pivotPivotConfig.Slot0.kP = 8.0;
+  pivotConfig.Slot0.kP = kPPivot;
+  pivotConfig.Slot0.kD = kDPivot;
+  pivotConfig.MotorOutput.Inverted = false;
+  // pivotConfig.Slot0.kS = 0.28;
+  // pivotConfig.Slot0.kV = 8.5;
+  // pivotConfig.Slot0.kA = 3.0;
+  // pivotConfig.Slot0.kP = 8.0;
 
-  // pivotPivotConfig.MotionMagic.MotionMagicCruiseVelocity = 6.0;
-  // pivotPivotConfig.MotionMagic.MotionMagicAcceleration = 2.0;
-  // pivotPivotConfig.MotionMagic.MotionMagicJerk = 200.0;
+  // pivotConfig.MotionMagic.MotionMagicCruiseVelocity = 6.0;
+  // pivotConfig.MotionMagic.MotionMagicAcceleration = 2.0;
+  // pivotConfig.MotionMagic.MotionMagicJerk = 200.0;
   
-  // pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
-  pivotPivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
-  pivotPivotConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
-  pivotPivotConfig.ClosedLoopGeneral.ContinuousWrap = false;
-  pivotPivotConfig.Feedback.RotorToSensorRatio = kPivotRotorToGearbox;
-  pivotPivotConfig.Feedback.SensorToMechanismRatio = kPivotGearboxToMechanism;
-  pivotPivotConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
-  pivotPivotConfig.MotorOutput.PeakForwardDutyCycle = 1.0;
-  // pivotPivotConfig.Feedback.SensorToMechanismRatio = 1.0;
-  pivotPivotConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kRampSeconds;
-  pivotPivotConfig.Audio.AllowMusicDurDisable = true;
+  // pivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
+  pivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
+  pivotConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
+  pivotConfig.ClosedLoopGeneral.ContinuousWrap = false;
+  pivotConfig.Feedback.RotorToSensorRatio = kPivotRotorToGearbox;
+  pivotConfig.Feedback.SensorToMechanismRatio = kPivotGearboxToMechanism;
+  pivotConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
+  pivotConfig.MotorOutput.PeakForwardDutyCycle = 1.0;
+  // pivotConfig.Feedback.SensorToMechanismRatio = 1.0;
+  pivotConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+  pivotConfig.CurrentLimits.SupplyCurrentLimit = kCurrentLimit;
+  pivotConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kRampSeconds;
+  pivotConfig.Audio.AllowMusicDurDisable = true;
 
-  pivotPivotConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
+  pivotConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
   
-  pivot.GetConfigurator().Apply(pivotPivotConfig);
+  pivot.GetConfigurator().Apply(pivotConfig);
 
   configs::CANcoderConfiguration encoderConfig{};
   encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;

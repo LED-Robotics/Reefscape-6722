@@ -112,6 +112,11 @@ class RobotContainer {
   int CodriverIntakeTarget = GlobalConstants::kAlgaeMode;
 
   int ReefTarget = 0;
+  int ReefHeightLevel = 0;
+  int LoadTarget = 0;
+  bool rerunThetaSet = false;
+  bool autonCoralLoad = false;
+  bool autonReefLineup = false;
   
   // The robot's subsystems
   JetsonSubsystem jetson{};
@@ -138,18 +143,18 @@ class RobotContainer {
 
   // Kinematics Poses //
   KinematicsPose startingPose{0.9_m, 90.00_deg};
-  KinematicsPose loadPose{1.18_m, -137.55_deg};
+  KinematicsPose loadPose{1.15_m, -137.55_deg};
   KinematicsPose floorIntakePose{0.69_m, -48.56_deg};
 
   KinematicsPose l1Coral{0.85_m, -163.0_deg};
   KinematicsPose l2Coral{0.7_m, 26.52_deg};
   KinematicsPose l3Coral{1.11_m, 26.52_deg};
-  KinematicsPose l4Coral{1.95_m, 46.36_deg};
+  KinematicsPose l4Coral{1.87_m, 46.36_deg};
 
   KinematicsPose l1Algae{1.0_m, 90_deg};
   KinematicsPose l2Algae{1.0_m, -84.45_deg};
   KinematicsPose l3Algae{1.28_m, -101.2_deg};
-  KinematicsPose l4Algae{2.0_m, -216.06_deg};
+  KinematicsPose l4Algae{2.05_m, -216.06_deg};
 
   // Kinematics Poses //
 
@@ -161,6 +166,7 @@ class RobotContainer {
   frc::PIDController xTransAdjust{0.006, 0.0, 0.0003};
 
   frc::PIDController yTransAdjust{0.006, 0.0, 0.0003};
+  frc::PIDController coralAdjust{0.004, 0.0, 0.0006};
 
   // flag to drive using field-centric positions
   bool fieldCentric = true;
@@ -237,12 +243,12 @@ class RobotContainer {
 
   frc2::Trigger reefTargetChanged{[this]() {
       double magnitude = sqrt(pow(controller2.GetLeftX(), 2) + pow(controller2.GetLeftY(), 2)); // Length of vector for trigger
-      return magnitude > 0.50 ? true : false;
+      return rerunThetaSet || magnitude > 0.50;
     }
   };
 
   frc2::Trigger driverTurning{[this]() {
-      return abs(controller.GetRightX()) > DriveConstants::kTurnDeadzone && !controller2.A().Get();
+      return abs(controller.GetRightX()) > DriveConstants::kTurnDeadzone;
     }
   };
 
@@ -253,21 +259,25 @@ class RobotContainer {
   
    frc2::CommandPtr targetCoral{frc2::cmd::RunOnce([this] { 
       TrackingTarget = GlobalConstants::kCoralMode;
+      rerunThetaSet = true;
     }, {})
   };
   
   frc2::CommandPtr targetAlgae{frc2::cmd::RunOnce([this] { 
       TrackingTarget = GlobalConstants::kAlgaeMode;
+      rerunThetaSet = true;
     }, {})
   };
 
  frc2::CommandPtr coDriverTargetCoral{frc2::cmd::RunOnce([this] { 
       TrackingTarget = GlobalConstants::kCoralMode;
+      rerunThetaSet = true;
     }, {})
   };
   
   frc2::CommandPtr coDriverTargetAlgae{frc2::cmd::RunOnce([this] { 
       TrackingTarget = GlobalConstants::kAlgaeMode;
+      rerunThetaSet = true;
     }, {})
   };
 
@@ -323,6 +333,18 @@ class RobotContainer {
     {12.0_m, 2.25_m, {150_deg}}
   };
 
+  const frc::Pose2d blueLoading[2] = {
+    {11.0_m, 4.0_m, {-54_deg}}, 
+    {12.0_m, 5.75_m, {54_deg}}
+  };
+
+  const frc::Pose2d redLoading[2] = {
+    {11.0_m, 4.0_m, {-54_deg}}, 
+    {12.0_m, 5.75_m, {54_deg}}
+  };
+
+  const frc::Pose2d processorLoading {11.0_m, 4.0_m, {-180_deg}};
+
   /**
    * Find whether the robot is on the blue or red alliance as set by the FMS/DriverStation.
    *
@@ -357,12 +379,13 @@ class RobotContainer {
   int camFrameHeight = 480;
   int camFrameWidth = 640;
 
-  int mlTrackingTarget = MLLabels::Reef;
+  int mlTrackingTarget = MLLabels::Coral;
+  bool noCoralFound = true;
   bool noReefFound = true;
-  int mlReefCamId = 0;
+  int mlReefCamId = 4;
   // Persistance variables
   bool persistenceDataSet = false;
-  int persistenceRetries = 5;
+  int persistenceRetries = 10;
   int currentRetries = 0;
   double mlLastX = 0.0;
   double mlLastY = 0.0;
@@ -378,21 +401,41 @@ class RobotContainer {
   double reefYPosMax = 240;
   double reefAreaMin = 5000.0;
   // Reef filter parameters
+  //
+  // Coral filter parameters
+  double coralAreaMin = 1000.0;
+  // Coral filter parameters
 
   // Reef persistence parameters
-  double maxWidthDrift = 20.0;
-  double maxHeightDrift = 10.0;
-  double maxXDrift = 10.0;
-  double maxYDrift = 10.0;
-  double timeMultiplier = 0.0;
+  double reefMaxWidthDrift = 20.0;
+  double reefMaxHeightDrift = 10.0;
+  double reefMaxXDrift = 10.0;
+  double reefMaxYDrift = 10.0;
+  double reefTimeMultiplier = 0.0;
   // The X/Y comments are not typos
-  double xSpeedMultiplier = 0.0; // Matched to robot Y speed
-  double ySpeedMultiplier = 0.0; // Matched to robot X speed
+  double reefXSpeedMultiplier = 0.0; // Matched to robot Y speed
+  double reefYSpeedMultiplier = 0.0; // Matched to robot X speed
   // Reef persistence parameters
+
+  // Coral persistence parameters
+  double coralMaxWidthDrift = 80.0;
+  double coralMaxHeightDrift = 80.0;
+  double coralMaxXDrift = 160.0;
+  double coralMaxYDrift = 60.0;
+  double coralTimeMultiplier = 0.0;
+  // The X/Y comments are not typos
+  double coralXSpeedMultiplier = 0.0; // Matched to robot Y speed
+  double coralYSpeedMultiplier = 0.0; // Matched to robot X speed
+  // Reef persistence parameters
+
 
   bool IsReefDisqualified(JetsonSubsystem::MLDetectionFrame &reef);
-  bool IsViablePersistenceTarget(JetsonSubsystem::MLDetectionFrame &reef);
+  bool IsViableReefPersistenceTarget(JetsonSubsystem::MLDetectionFrame &reef);
   JetsonSubsystem::MLDetectionFrame GetReefTrackingTarget(std::vector<JetsonSubsystem::MLDetectionFrame> &dets);
+
+  bool IsCoralDisqualified(JetsonSubsystem::MLDetectionFrame &coral);
+  bool IsViableCoralPersistenceTarget(JetsonSubsystem::MLDetectionFrame &coral);
+  JetsonSubsystem::MLDetectionFrame GetCoralTrackingTarget(std::vector<JetsonSubsystem::MLDetectionFrame> &dets);
 
   // The chooser for the autonomous routines
   frc::SendableChooser<std::string> autonChooser;

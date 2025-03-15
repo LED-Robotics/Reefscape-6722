@@ -37,12 +37,12 @@ void CoralSubsystem::Periodic() {
   } else if(state == CoralStates::kSensorMode) {
     bool indexed = IsCoralIndexed();
     if(indexed) {
-      if(power < 0.2) {
+      if(power < 0.1) {
         intake1.Set(kHoldingPower);
         intake2.Set(kHoldingPower);
       } else {
         intake1.Set(power);
-        intake2.Set(power);
+        intake2.Set(power * 0.2);
       }
     } else {
       intake1.Set(power);

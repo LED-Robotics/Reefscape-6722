@@ -318,6 +318,8 @@ class DriveSubsystem : public frc2::SubsystemBase {
   SlewRateLimiter<units::meters_per_second> yAccel;
   SlewRateLimiter<units::meters_per_second> xDecel;
   SlewRateLimiter<units::meters_per_second> yDecel;
+  SlewRateLimiter<units::meters_per_second> xTransSlewLimiter;
+  SlewRateLimiter<units::meters_per_second> yTransSlewLimiter;
   double lastX = 0.0;
   double lastY = 0.0;
 

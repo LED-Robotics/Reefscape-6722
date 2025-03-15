@@ -1,4 +1,5 @@
 #include <units/length.h>
+#include <units/current.h>
 
 namespace CascadeConstants {
     // ports
@@ -30,7 +31,8 @@ namespace CascadeConstants {
     // constexpr double kTurnsPerMeter = 6.066743827160493;
     constexpr double kTurnsPerMeter = 2.46056189903846;
     // position deadzone
-    constexpr units::length::meter_t kPositionDeadzone{3.0_cm};
+    constexpr units::length::meter_t kPositionDeadzone{10.0_cm};
+    constexpr units::current::ampere_t kCurrentLimit = 30.0_A;
     // TalonFX config
     constexpr double kP = 13.0;
     constexpr double kD = 2.1;

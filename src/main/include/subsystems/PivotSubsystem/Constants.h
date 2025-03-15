@@ -1,5 +1,6 @@
 #include <units/angle.h>
 #include <units/time.h>
+#include <units/current.h>
 
 namespace PivotConstants {
     // ports
@@ -7,7 +8,7 @@ namespace PivotConstants {
 
     constexpr int kEncoderPort = 12;
 
-    constexpr units::angle::turn_t kEncoderOffset =  0.125976565_tr;
+    constexpr units::angle::turn_t kEncoderOffset =  0.1240234375_tr;
 
     constexpr units::time::second_t kRampSeconds = 0.25_s;
 
@@ -26,7 +27,9 @@ namespace PivotConstants {
     constexpr double kPivotStartOffset = 0.0;
     constexpr units::angle::degree_t kPivotStartAngle{10.0_deg};
     // position deadzone
-    constexpr units::angle::degree_t kPivotAngleDeadzone{7.0_deg};
+    constexpr units::angle::degree_t kPivotAngleDeadzone{10.0_deg};
+    constexpr units::current::ampere_t kCurrentLimit = 30.0_A;
+
     // feed forward at max gravity i.e. 90 degrees off the floor
     constexpr double kMaxFeedForward = 0.352;
     // TalonFX config

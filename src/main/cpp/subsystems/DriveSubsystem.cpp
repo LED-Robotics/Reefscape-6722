@@ -53,7 +53,9 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
       xAccel{kDriveAccelerationLimit},
       yAccel{kDriveAccelerationLimit},
       xDecel{kDriveDecelerationLimit},
-      yDecel{kDriveDecelerationLimit} {
+      yDecel{kDriveDecelerationLimit},
+      xTransSlewLimiter{kTransAdjustLimiter}, 
+      yTransSlewLimiter{kTransAdjustLimiter} {
         jetson = jetRef;
         thetaTarget = targetRef;
 
@@ -141,8 +143,8 @@ void DriveSubsystem::Drive(frc::ChassisSpeeds speeds,
       frc::ChassisSpeeds{x, y, rot};
   
   if(transAdjust) {
-    chassisSpeeds.vx += txAdjust; 
-    chassisSpeeds.vy += tyAdjust; 
+    chassisSpeeds.vx += xTransSlewLimiter.Calculate(txAdjust); 
+    chassisSpeeds.vy += yTransSlewLimiter.Calculate(tyAdjust); 
   }
 
   auto states = kDriveKinematics.ToSwerveModuleStates(chassisSpeeds);

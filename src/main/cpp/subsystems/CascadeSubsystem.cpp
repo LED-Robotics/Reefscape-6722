@@ -141,6 +141,8 @@ void CascadeSubsystem::ConfigMotors() {
   // cascadeConfig.MotionMagic.MotionMagicAcceleration = 2.0;
   // cascadeConfig.MotionMagic.MotionMagicJerk = 200.0;
   
+  cascadeConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+  cascadeConfig.CurrentLimits.SupplyCurrentLimit = kCurrentLimit;
   cascadeConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
   cascadeConfig.Feedback.RotorToSensorRatio = kRotorToGearbox;
   cascadeConfig.MotorOutput.PeakReverseDutyCycle = -1.0;
