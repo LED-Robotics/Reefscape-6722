@@ -16,6 +16,8 @@ JetsonSubsystem::JetsonSubsystem() {
   field = AprilTagFieldLayout::LoadField(AprilTagField::k2025ReefscapeWelded);
   field.SetOrigin(AprilTagFieldLayout::OriginPosition::kBlueAllianceWallRightSide);
 
+  
+
   table->PutBoolean("recordState", false);
   table->PutBoolean("recordLabelled", false);
   
@@ -35,6 +37,9 @@ void JetsonSubsystem::Periodic() {
   fieldRelativePose = AverageRobotPose();  
   
   table->PutRaw("rqsted", requestedTags);
+  table->PutRaw("mlOff", mlIDsDisabled);
+  table->PutRaw("aprTagOff", tagIDsDisabled);
+
   SmartDashboard::PutBoolean("IsPoseAvailable", IsPoseAvailable());
 
   // Debug printouts

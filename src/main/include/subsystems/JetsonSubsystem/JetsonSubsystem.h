@@ -145,11 +145,11 @@ class JetsonSubsystem : public frc2::SubsystemBase {
   frc::Transform3d camTrans;
   AprilTagFieldLayout field;
 
-  CameraInformation testCam0{0, {0.0_m, -0.371_m, 0.089_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
-  CameraInformation testCam1{1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
-  CameraInformation testCam2{2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
+  CameraInformation staticATagCam{2, {0.253_m, -0.165_m, 0.274_m, {0.0_deg, 0.0_deg, 90.0_deg}}};
+  // CameraInformation testCam1{1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
+  // CameraInformation testCam2{2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
 
-  std::vector<CameraInformation> cams{testCam0, testCam1, testCam2};
+  std::vector<CameraInformation> cams{staticATagCam};
 
   Pose2d fieldRelativePose;
 };
