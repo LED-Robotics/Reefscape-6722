@@ -143,17 +143,17 @@ class RobotContainer {
 
   // Kinematics Poses //
   KinematicsPose startingPose{0.9_m, 90.00_deg};
-  KinematicsPose loadPose{1.15_m, -137.55_deg};
+  KinematicsPose loadPose{1.18_m, -137.55_deg};
   KinematicsPose floorIntakePose{0.69_m, -48.56_deg};
 
-  KinematicsPose l1Coral{0.85_m, -163.0_deg};
+  KinematicsPose l1Coral{0.85_m, -145.0_deg};
   KinematicsPose l2Coral{0.86_m, 51.78_deg};
   KinematicsPose l3Coral{1.33_m, 53.16_deg};
   KinematicsPose l4Coral{1.95_m, 60.06_deg};
 
   KinematicsPose l1Algae{1.0_m, 90_deg};
-  KinematicsPose l2Algae{1.0_m, -84.45_deg};
-  KinematicsPose l3Algae{1.28_m, -101.2_deg};
+  KinematicsPose l2Algae{1.0_m, -60.45_deg};
+  KinematicsPose l3Algae{1.28_m, -80.2_deg};
   KinematicsPose l4Algae{2.05_m, -192.3_deg};
 
   // Kinematics Poses //

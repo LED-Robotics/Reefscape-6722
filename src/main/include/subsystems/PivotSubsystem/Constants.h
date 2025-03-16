@@ -8,7 +8,7 @@ namespace PivotConstants {
 
     constexpr int kEncoderPort = 12;
 
-    constexpr units::angle::turn_t kEncoderOffset =  0.47412109375_tr;
+    constexpr units::angle::turn_t kEncoderOffset =  -0.236083984375_tr;
 
     constexpr units::time::second_t kRampSeconds = 0.25_s;
 

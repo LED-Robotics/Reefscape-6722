@@ -40,14 +40,15 @@ void CascadeSubsystem::Periodic() {
     right.Set(power);
   } else if(state == CascadeStates::kPositionMode) {
 
-    double microAdjust = units::angle::degree_t microAdjust{SmartDashboard::GetNumber("microAdjustCascade", 0.0)};  // print to Shuffleboard
+    units::length::meter_t microAdjust{SmartDashboard::GetNumber("microAdjustCascade", 0.0)};  // print to Shuffleboard
     SmartDashboard::PutNumber("leftCascadeTr", left.GetPosition().GetValue().value());
     SmartDashboard::PutNumber("rightCascadeTr", right.GetPosition().GetValue().value());
     SmartDashboard::PutNumber("cascadePosition", ((GetLeftPosition().value()) + (GetRightPosition().value())) / 2);  // print to Shuffleboard
     
     SmartDashboard::PutNumber("Position Target", position.value());
-    SmartDashboard::PutNumber("cascadeTargetTr", posTarget.value());
     units::angle::turn_t posTarget{(position + microAdjust - kStartPosition).value() * kTurnsPerMeter};
+    SmartDashboard::PutNumber("cascadeTargetTr", posTarget.value());
+    
     left.SetControl(positionController
       .WithPosition(units::angle::turn_t{posTarget})
       .WithEnableFOC(true));
