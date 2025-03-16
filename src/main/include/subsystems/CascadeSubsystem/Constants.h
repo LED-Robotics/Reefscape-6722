@@ -7,7 +7,7 @@ namespace CascadeConstants {
     constexpr int kRightMotorPort = 13;
     constexpr int kEncoderPort = 14;
 
-    constexpr units::angle::turn_t kEncoderOffset = -0.46044921875_tr;
+    constexpr units::angle::turn_t kEncoderOffset = 0.498291015625_tr;
 
     constexpr units::time::second_t kRampSeconds = 0.5_s;
 
