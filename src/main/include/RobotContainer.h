@@ -147,14 +147,14 @@ class RobotContainer {
   KinematicsPose floorIntakePose{0.69_m, -48.56_deg};
 
   KinematicsPose l1Coral{0.85_m, -163.0_deg};
-  KinematicsPose l2Coral{0.7_m, 26.52_deg};
-  KinematicsPose l3Coral{1.11_m, 26.52_deg};
-  KinematicsPose l4Coral{1.87_m, 46.36_deg};
+  KinematicsPose l2Coral{0.86_m, 51.78_deg};
+  KinematicsPose l3Coral{1.33_m, 53.16_deg};
+  KinematicsPose l4Coral{1.95_m, 60.06_deg};
 
   KinematicsPose l1Algae{1.0_m, 90_deg};
   KinematicsPose l2Algae{1.0_m, -84.45_deg};
   KinematicsPose l3Algae{1.28_m, -101.2_deg};
-  KinematicsPose l4Algae{2.05_m, -216.06_deg};
+  KinematicsPose l4Algae{2.05_m, -192.3_deg};
 
   // Kinematics Poses //
 
@@ -167,6 +167,7 @@ class RobotContainer {
 
   frc::PIDController yTransAdjust{0.006, 0.0, 0.0003};
   frc::PIDController coralAdjust{0.004, 0.0, 0.0006};
+  frc::PIDController reefAdjust{0.004, 0.0, 0.0006};
 
   // flag to drive using field-centric positions
   bool fieldCentric = true;
@@ -375,6 +376,7 @@ class RobotContainer {
 
 
   void ManuallySchedule(frc2::CommandPtr&& cmd);
+  void SetMLTarget(int label);
 
   int camFrameHeight = 480;
   int camFrameWidth = 640;
@@ -404,6 +406,7 @@ class RobotContainer {
   //
   // Coral filter parameters
   double coralAreaMin = 1000.0;
+  double coralAreaMax = 15000.0;
   // Coral filter parameters
 
   // Reef persistence parameters
@@ -433,7 +436,7 @@ class RobotContainer {
   bool IsViableReefPersistenceTarget(JetsonSubsystem::MLDetectionFrame &reef);
   JetsonSubsystem::MLDetectionFrame GetReefTrackingTarget(std::vector<JetsonSubsystem::MLDetectionFrame> &dets);
 
-  bool IsCoralDisqualified(JetsonSubsystem::MLDetectionFrame &coral);
+ bool IsCoralDisqualified(JetsonSubsystem::MLDetectionFrame &coral);
   bool IsViableCoralPersistenceTarget(JetsonSubsystem::MLDetectionFrame &coral);
   JetsonSubsystem::MLDetectionFrame GetCoralTrackingTarget(std::vector<JetsonSubsystem::MLDetectionFrame> &dets);
 

@@ -5,7 +5,7 @@ namespace CoralConstants {
     constexpr int kIntake1Port = 10;
     constexpr int kIntake2Port = 11;
     constexpr int kBeamBreakPort = 1;
-    constexpr double kHoldingPower = -0.03;
+    constexpr double kHoldingPower = -0.4;
 
     // States
     enum CoralStates {

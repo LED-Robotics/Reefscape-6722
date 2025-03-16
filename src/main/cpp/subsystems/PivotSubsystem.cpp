@@ -131,7 +131,7 @@ void PivotSubsystem::ConfigPivot() {
   // pivotConfig.MotionMagic.MotionMagicJerk = 200.0;
   
   // pivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::RotorSensor;
-  pivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::FusedCANcoder;
+  pivotConfig.Feedback.FeedbackSensorSource = signals::FeedbackSensorSourceValue::SyncCANcoder;
   pivotConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
   pivotConfig.ClosedLoopGeneral.ContinuousWrap = false;
   pivotConfig.Feedback.RotorToSensorRatio = kPivotRotorToGearbox;
