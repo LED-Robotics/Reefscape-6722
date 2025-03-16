@@ -17,6 +17,7 @@ PivotSubsystem::PivotSubsystem()
     pivotEncoder{kEncoderPort} {
       /*pivot.SetPosition(0.0_tr);*/
       SmartDashboard::PutNumber("Pivot Angle", 90.0);
+      SmartDashboard::PutNumber("microAdjustPivot", 0.0);  // print to Shuffleboard
       ConfigPivot();
 
       SetTargetAngle(angle);
@@ -35,11 +36,12 @@ void PivotSubsystem::Periodic() {
   } else if(state == PivotStates::kPivotAngleMode) {
     // feed forwards should be a changing constant that increases as the pivot moves further. It should be a static amount of power to overcome gravity.
 
+    units::angle::degree_t microAdjust{SmartDashboard::GetNumber("microAdjustPivot", 0.0)};  // print to Shuffleboard
     SmartDashboard::PutNumber("pivotPivotTr", pivot.GetPosition().GetValue().value());  // print to Shuffleboard
     SmartDashboard::PutNumber("angle", GetAngle().value());  // print to Shuffleboard
     double feedForward = fabs(sin(angle.value())) * kMaxFeedForward;
     SmartDashboard::PutNumber("Angle Target", angle.value());
-    units::angle::turn_t posTarget{(angle - kPivotStartAngle).value() * kTurnsPerDegree};
+    units::angle::turn_t posTarget{(angle + microAdjust - kPivotStartAngle).value() * kTurnsPerDegree};
     SmartDashboard::PutNumber("wrTurnTarget", posTarget.value());
     pivot.SetControl(pivotPosition
       .WithPosition(units::angle::turn_t{posTarget})

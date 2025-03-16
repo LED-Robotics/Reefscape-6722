@@ -18,6 +18,7 @@ CascadeSubsystem::CascadeSubsystem()
   // encoder{kEncoderPort} 
   {
     SmartDashboard::PutNumber("Cascade Position", position.value());
+    SmartDashboard::PutNumber("microAdjustCascade", 0.0);  // print to Shuffleboard
     /*SmartDashboard::PutNumber("Cascade Power", 0.0);*/
     ConfigMotors();
     SetTargetPosition(position);
@@ -39,13 +40,14 @@ void CascadeSubsystem::Periodic() {
     right.Set(power);
   } else if(state == CascadeStates::kPositionMode) {
 
-  SmartDashboard::PutNumber("leftCascadeTr", left.GetPosition().GetValue().value());
-  SmartDashboard::PutNumber("rightCascadeTr", right.GetPosition().GetValue().value());
-  SmartDashboard::PutNumber("cascadePosition", ((GetLeftPosition().value()) + (GetRightPosition().value())) / 2);  // print to Shuffleboard
+    double microAdjust = units::angle::degree_t microAdjust{SmartDashboard::GetNumber("microAdjustCascade", 0.0)};  // print to Shuffleboard
+    SmartDashboard::PutNumber("leftCascadeTr", left.GetPosition().GetValue().value());
+    SmartDashboard::PutNumber("rightCascadeTr", right.GetPosition().GetValue().value());
+    SmartDashboard::PutNumber("cascadePosition", ((GetLeftPosition().value()) + (GetRightPosition().value())) / 2);  // print to Shuffleboard
     
     SmartDashboard::PutNumber("Position Target", position.value());
-    units::angle::turn_t posTarget{(position - kStartPosition).value() * kTurnsPerMeter};
     SmartDashboard::PutNumber("cascadeTargetTr", posTarget.value());
+    units::angle::turn_t posTarget{(position + microAdjust - kStartPosition).value() * kTurnsPerMeter};
     left.SetControl(positionController
       .WithPosition(units::angle::turn_t{posTarget})
       .WithEnableFOC(true));
