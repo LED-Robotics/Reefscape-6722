@@ -550,6 +550,10 @@ RobotContainer::RobotContainer() {
 
   drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
 
+  controller.RightStick().OnTrue(frc2::cmd::RunOnce([this]() {
+        std::move(drive.PathGenCommand(IsBlue() ? blueReef[ReefTarget] : redReef[ReefTarget]));
+      }, {}));
+
   reefTargetChanged.WhileTrue(frc2::cmd::RunOnce([this]() {
     rerunThetaSet = false;
     double xDist = controller2.GetLeftX();

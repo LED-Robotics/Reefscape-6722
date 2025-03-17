@@ -13,6 +13,9 @@
 #include <pathplanner/lib/config/RobotConfig.h>
 #include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
 #include <pathplanner/lib/path/PathPlannerPath.h>
+#include <units/velocity.h>
+#include <units/acceleration.h>
+
 
 using namespace frc;
 using namespace rev;
@@ -178,6 +181,14 @@ wpi::array<SwerveModuleState, 4> DriveSubsystem::GetModuleStates() const {
 frc2::CommandPtr DriveSubsystem::FollowPathCommand(std::string path){
   auto useablePath = PathPlannerPath::fromPathFile(path);
   return AutoBuilder::followPath(useablePath);
+}
+
+frc2::CommandPtr DriveSubsystem::PathGenCommand(frc::Pose2d targetPose) {
+  return AutoBuilder::pathfindToPose(
+    targetPose,
+    pathplanner::PathConstraints(1.0_mps, 1.0_mps_sq, 360.0_deg_per_s, 720_deg_per_s_sq),
+    0_mps
+  );
 }
 
 void DriveSubsystem::SetDrivePower(double power) {
