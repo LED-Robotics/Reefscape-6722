@@ -1,7 +1,7 @@
 namespace JetsonConstants {
-    const double kDistanceConfThresh = 2.0;
+    const double kDistanceConfThresh = 0.8;
     const double kDistanceConfCurveExtent = 2.5;
-    const double kAngularConfThresh = 15.0;
+    const double kAngularConfThresh = 8.0;
     const double kAngularConfCurveExtent = 2.5;
     // Weights for distance/angle.
     // THESE SHOULD ADD UP TO 1.0

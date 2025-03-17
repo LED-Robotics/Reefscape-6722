@@ -186,7 +186,7 @@ frc2::CommandPtr DriveSubsystem::FollowPathCommand(std::string path){
 frc2::CommandPtr DriveSubsystem::PathGenCommand(frc::Pose2d targetPose) {
   return AutoBuilder::pathfindToPose(
     targetPose,
-    pathplanner::PathConstraints(1.0_mps, 1.0_mps_sq, 360.0_deg_per_s, 720_deg_per_s_sq),
+    pathplanner::PathConstraints(3.0_mps, 3.0_mps_sq, 360.0_deg_per_s, 720_deg_per_s_sq),
     0_mps
   );
 }

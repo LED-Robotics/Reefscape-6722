@@ -216,7 +216,7 @@ class RobotContainer {
 
   // Trigger odom update on flag
   frc2::Trigger odomTrigger{[this]() { 
-    return jetson.IsPoseAvailable(); }};
+    return !tagOverrideDisable && jetson.IsPoseAvailable(); }};
 
   frc2::CommandPtr toggleFieldCentric{frc2::cmd::RunOnce([this] {
       fieldCentric = !fieldCentric;

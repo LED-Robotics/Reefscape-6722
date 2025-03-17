@@ -567,9 +567,16 @@ RobotContainer::RobotContainer() {
 
   drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
 
-  controller.RightStick().OnTrue(frc2::cmd::RunOnce([this]() {
-        std::move(drive.PathGenCommand(IsBlue() ? blueReef[ReefTarget] : redReef[ReefTarget]));
-      }, {}));
+  controller.RightStick().ToggleOnTrue(frc2::cmd::RunOnce([this]() {
+    ManuallySchedule(std::move(frc2::cmd::Sequence(
+      frc2::cmd::RunOnce([this](){
+        DisableTagTracking();
+      }, {}),
+      drive.PathGenCommand(IsBlue() ? blueReef[ReefTarget] : redReef[ReefTarget]),
+      frc2::cmd::RunOnce([this]() {
+        EnableTagTracking();
+      }, {}))));
+  }, {}));
 
   reefTargetChanged.WhileTrue(frc2::cmd::RunOnce([this]() {
     rerunThetaSet = false;

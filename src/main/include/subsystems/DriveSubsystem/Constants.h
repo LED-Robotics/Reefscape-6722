@@ -33,9 +33,9 @@ namespace DriveConstants {
     constexpr int kFrontRightEncoderPort = 7;
     
     constexpr units::angle::turn_t kBLeftMagPos = 0.118408203125_tr;
-    constexpr units::angle::turn_t kFLeftMagPos = 0.10693359375_tr;
+    constexpr units::angle::turn_t kFLeftMagPos = -0.180908203125_tr;
     constexpr units::angle::turn_t kBRightMagPos = -0.36279296875_tr;
-    constexpr units::angle::turn_t kFRightMagPos = -0.263671875_tr;
+    constexpr units::angle::turn_t kFRightMagPos = -0.3642578125_tr;
     
     // info for odometry
     constexpr int kEncoderResolution = 4096;
