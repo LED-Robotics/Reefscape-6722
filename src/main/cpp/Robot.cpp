@@ -25,6 +25,8 @@ void Robot::RobotInit() {
  */
 void Robot::RobotPeriodic() {
   frc2::CommandScheduler::GetInstance().Run();
+
+  m_container.ChangeCoralCamID(SmartDashboard::GetNumber("ML Camera ID", -1));
 }
 
 /**

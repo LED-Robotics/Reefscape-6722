@@ -75,6 +75,9 @@ class RobotContainer {
    * Return the command pointer to the autonomous command. 
    */
   frc2::CommandPtr GetAutonomousCommand();
+
+  void ChangeCoralCamID(int newId);
+
   /**
    * Set the brake mode of most robot motors.
    */  
@@ -166,8 +169,8 @@ class RobotContainer {
   frc::PIDController xTransAdjust{0.006, 0.0, 0.0003};
 
   frc::PIDController yTransAdjust{0.006, 0.0, 0.0003};
-  frc::PIDController coralAdjust{0.004, 0.0, 0.0006};
-  frc::PIDController reefAdjust{0.004, 0.0, 0.0006};
+  frc::PIDController coralAdjust{0.0016137, 0.0, 0.0};
+  frc::PIDController reefAdjust{0.0016137, 0.0, 0.0};
 
   // flag to drive using field-centric positions
   bool fieldCentric = true;
@@ -374,12 +377,12 @@ class RobotContainer {
    */
   frc2::CommandPtr SetAllKinematics(KinematicsPose pose);
 
-
   void ManuallySchedule(frc2::CommandPtr&& cmd);
   void SetMLTarget(int label);
 
   int camFrameHeight = 480;
   int camFrameWidth = 640;
+  int camFrameCenterOffset = 50;
 
   int mlTrackingTarget = MLLabels::Coral;
   bool noCoralFound = true;
@@ -399,14 +402,16 @@ class RobotContainer {
   // Persistance variables
 
   // Reef filter parameters
-  double reefHeightRatioThreshold = 1.1;
+  double reefL4HeightRatioThreshold = 1.7;
+  double reefHeightRatioThreshold = 0.8;
   double reefYPosMax = 240;
-  double reefAreaMin = 5000.0;
+  double reefL4AreaMin = 10000.0;
+  double reefAreaMin = 2000.0;
   // Reef filter parameters
   //
   // Coral filter parameters
   double coralAreaMin = 1000.0;
-  double coralAreaMax = 15000.0;
+  double coralAreaMax = 200000.0;
   // Coral filter parameters
 
   // Reef persistence parameters
