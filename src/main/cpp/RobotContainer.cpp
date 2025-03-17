@@ -137,11 +137,11 @@ bool RobotContainer::IsReefDisqualified(JetsonSubsystem::MLDetectionFrame &reef)
   
   // Disqualifying conditions for a reef detection
   bool wrongCamera = reef.camId != mlReefCamId;
-  bool taller = heightRatio > reefHeightRatioThreshold;
+  bool taller = heightRatio > (ReefHeightLevel == 4 ? reefL4HeightRatioThreshold : reefHeightRatioThreshold);
   /*bool lower = centerY > reefYPosMax;*/
   bool lower = true;
-  bool bigEnough = area > reefAreaMin;
-  if(!wrongCamera || !taller || !lower || !bigEnough) return true;
+  bool bigEnough = area > (ReefHeightLevel == 4 ? reefL4AreaMin : reefAreaMin);
+  if(wrongCamera || !taller || !lower || !bigEnough) return true;
   else return false;
 }
 
@@ -335,14 +335,29 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
     /*}*/
   }
 
-  if(!numViable && persistenceDataSet) {
-    if(++currentRetries > persistenceRetries) {
-      persistenceDataSet = false;
-      currentRetries = 0;
-      noReefFound = true;
-      return {};
-    }
-  } else if(!numViable){
+  /*if(!numViable && persistenceDataSet) {*/
+  /*  if(++currentRetries > persistenceRetries) {*/
+  /*    persistenceDataSet = false;*/
+  /*    currentRetries = 0;*/
+  /*    noReefFound = true;*/
+  /*    return {};*/
+  /*  }*/
+  /*} else if(!numViable){*/
+  /*  noReefFound = true;*/
+  /*  return {*/
+  /*      MLLabels::Reef,*/
+  /*      mlReefCamId,*/
+  /*      mlLastCaptureTime,*/
+  /*      mlLastX,*/
+  /*      mlLastY,*/
+  /*      mlLastWidth,*/
+  /*      mlLastHeight*/
+  /*    };  */
+  /*} else if(numViable) {*/
+  /*    noReefFound = false;*/
+  /*}*/
+
+  if(!numViable){
     noReefFound = true;
     return {
         MLLabels::Reef,
@@ -352,7 +367,7 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
         mlLastY,
         mlLastWidth,
         mlLastHeight
-      };  
+      };
   } else if(numViable) {
       noReefFound = false;
   }
@@ -373,13 +388,13 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
   }
 
   // Store persistence data from selection
-  persistenceDataSet = true;
-  mlRioLastCaptureTime = frc::Timer::GetFPGATimestamp();
-  mlLastX = target->x;
-  mlLastY = target->y;
-  mlLastWidth = target->w;
-  mlLastHeight = target->h;
-  mlLastHeightRatio = target->h / target->w;
+  /*persistenceDataSet = true;*/
+  /*mlRioLastCaptureTime = frc::Timer::GetFPGATimestamp();*/
+  /*mlLastX = target->x;*/
+  /*mlLastY = target->y;*/
+  /*mlLastWidth = target->w;*/
+  /*mlLastHeight = target->h;*/
+  /*mlLastHeightRatio = target->h / target->w;*/
 
   return *target;
 }
@@ -387,6 +402,8 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
 RobotContainer::RobotContainer() {
   // Autonomous selector configuration
   autonChooser.SetDefaultOption("None", "None");
+
+  SmartDashboard::PutNumber("ML Camera ID", mlReefCamId);
 
   SmartDashboard::PutData(std::move(&autonChooser));  // send auton selector to Shuffleboard
 
@@ -706,7 +723,7 @@ RobotContainer::RobotContainer() {
       if(mlTrackingTarget == MLLabels::Algae) {
 
       } else if(mlTrackingTarget == MLLabels::Coral) {
-        return;
+        /*return;*/
         std::vector<JetsonSubsystem::MLDetectionFrame> coralDets;
         for(int i = 0; i < dets.size(); i++) {
           if(dets[i].label == MLLabels::Coral) {
@@ -714,14 +731,14 @@ RobotContainer::RobotContainer() {
           }
         }
 
-      SmartDashboard::PutNumber("numCoral", coralDets.size());
+        SmartDashboard::PutNumber("numCoral", coralDets.size());
         auto target = GetCoralTrackingTarget(coralDets);
         if(noCoralFound) {
           drive.SetTransAdjustSpeeds(0.0_mps, 0.0_mps);
           return;
         }
         double dCenter = target.x + (target.w / 2.0);
-        dCenter = dCenter - (camFrameWidth / 2.0);
+        dCenter = dCenter - (camFrameWidth / 2.0) - camFrameCenterOffset;
         auto yAdjust = units::meters_per_second_t{coralAdjust.Calculate(dCenter)};
 
         drive.SetTransAdjustSpeeds({yAdjust}, units::meters_per_second_t{0.0});
@@ -734,7 +751,7 @@ RobotContainer::RobotContainer() {
         SmartDashboard::PutNumber("coralDelta", dCenter);
 
       } else if(mlTrackingTarget == MLLabels::Reef) {
-        return;
+        if(ReefHeightLevel != 4) return;
         std::vector<JetsonSubsystem::MLDetectionFrame> reefDets;
         for(int i = 0; i < dets.size(); i++) {
           if(dets[i].label == MLLabels::Reef) {
@@ -742,24 +759,26 @@ RobotContainer::RobotContainer() {
           }
         }
 
+        SmartDashboard::PutNumber("numReef", reefDets.size());
         auto target = GetReefTrackingTarget(reefDets);
-        if(noReefFound) {
-          /*drive.SetTransAdjustSpeeds(0.0_mps, 0.0_mps);*/
-          return;
-        }
-        double dCenter = target.x + (target.w / 2.0);
-        dCenter = dCenter - (camFrameWidth / 2.0);
-        auto yAdjust = units::meters_per_second_t{yTransAdjust.Calculate(dCenter)};
-
-        /*drive.SetTransAdjustSpeeds({yAdjust}, units::meters_per_second_t{0.0});*/
-        SmartDashboard::PutNumber("yVelAdjust", yAdjust.value());
-
         SmartDashboard::PutNumber("reefTx", target.x);
         SmartDashboard::PutNumber("reefTy", target.y);
         SmartDashboard::PutNumber("reefTw", target.w);
         SmartDashboard::PutNumber("reefTh", target.h);
         SmartDashboard::PutNumber("reefArea", target.w * target.h);
+
+        if(noReefFound) {
+          drive.SetTransAdjustSpeeds(0.0_mps, 0.0_mps);
+          return;
+        }
+        double dCenter = target.x + (target.w / 2.0);
+        dCenter = dCenter - (camFrameWidth / 2.0) - camFrameCenterOffset;
+        auto yAdjust = units::meters_per_second_t{reefAdjust.Calculate(dCenter)};
+
+        drive.SetTransAdjustSpeeds({yAdjust}, units::meters_per_second_t{0.0});
         SmartDashboard::PutNumber("reefDelta", dCenter);
+        SmartDashboard::PutNumber("yVelAdjust", yAdjust.value());
+
 
       }
     },
@@ -804,3 +823,9 @@ void RobotContainer::SetSlew(bool state) {
 void RobotContainer::SetRecording(bool state) {
   jetson.SetRecording(state);
 }
+
+void RobotContainer::ChangeCoralCamID(int newId) {
+  if(newId != -1) return;
+  mlReefCamId = newId;
+}
+

@@ -30,7 +30,11 @@ void AlgaeSubsystem::Periodic() {
   } else {
     if(sensorTrip) {
       if(intakePower < 0.2) {
-        intakeMotor.Set(kHoldingPower);
+        if(intakePower < kHoldingPower) {
+          intakeMotor.Set(intakePower);
+        } else {
+          intakeMotor.Set(kHoldingPower);
+        }
       } else {
         intakeMotor.Set(intakePower);
       }
