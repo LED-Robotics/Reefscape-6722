@@ -573,6 +573,7 @@ RobotContainer::RobotContainer() {
         DisableTagTracking();
       }, {}),
       drive.PathGenCommand(IsBlue() ? blueReef[ReefTarget] : redReef[ReefTarget]),
+      // drive.FollowPathCommand("1_meter"),
       frc2::cmd::RunOnce([this]() {
         EnableTagTracking();
       }, {}))));

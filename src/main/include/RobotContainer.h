@@ -192,6 +192,7 @@ class RobotContainer {
   int omegaTempDisabled = 0;
 
   // update odom based on Nvdia Jetson estimation
+
   frc2::CommandPtr updateOdometry {
     frc2::cmd::Sequence(
       frc2::cmd::RunOnce([this] {
@@ -349,6 +350,14 @@ class RobotContainer {
 
   const frc::Pose2d processorLoading {11.0_m, 4.0_m, {-180_deg}};
 
+  // AUTON ROUTINES
+
+  frc2::CommandPtr testRoutine{frc2::cmd::Sequence(
+    frc2::cmd::RunOnce([this]() {
+      drive.ResetOdometry();
+    }, {})
+  )};
+
   /**
    * Find whether the robot is on the blue or red alliance as set by the FMS/DriverStation.
    *
@@ -387,7 +396,7 @@ class RobotContainer {
   int mlTrackingTarget = MLLabels::Coral;
   bool noCoralFound = true;
   bool noReefFound = true;
-  int mlReefCamId = 4;
+  int mlReefCamId = 2;
   // Persistance variables
   bool persistenceDataSet = false;
   int persistenceRetries = 10;
@@ -400,7 +409,6 @@ class RobotContainer {
   uint32_t mlLastCaptureTime = 0;
   units::second_t mlRioLastCaptureTime = 0_s;
   // Persistance variables
-
   // Reef filter parameters
   double reefL4HeightRatioThreshold = 1.7;
   double reefHeightRatioThreshold = 0.8;

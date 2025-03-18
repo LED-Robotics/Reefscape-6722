@@ -51,7 +51,7 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
 
       //Odometry
       odometry{kDriveKinematics, {GetRotation()}, {s_frontLeft.GetPosition(), s_frontRight.GetPosition(), s_backLeft.GetPosition(),
-      s_backRight.GetPosition()}, frc::Pose2d{{0.0_m, 0.0_m}, {0_deg}}},
+      s_backRight.GetPosition()}, frc::Pose2d{{7.0_m, 4.0_m}, {0_deg}}},
       
       xAccel{kDriveAccelerationLimit},
       yAccel{kDriveAccelerationLimit},
@@ -424,7 +424,7 @@ void DriveSubsystem::ConfigAutonController() {
 
           auto alliance = DriverStation::GetAlliance();
           if (alliance) {
-              return alliance.value() == DriverStation::Alliance::kRed;
+              return false; // Disabled auto path flipping
           }
           return false;
       },

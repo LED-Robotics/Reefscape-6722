@@ -40,7 +40,7 @@ namespace DriveConstants {
     // info for odometry
     constexpr int kEncoderResolution = 4096;
     constexpr auto kDriveBaseRadius = 0.319786_m;
-    constexpr double kWheelRadius = .0508;
+    constexpr double kWheelRadius = .0498;
     constexpr double kDriveRatio = 1 / 4.125;
     constexpr double kTurnRatio = 1 / 10.29;
     constexpr double kDriveDistancePerRev = (2 * std::numbers::pi * kWheelRadius) * kDriveRatio;
