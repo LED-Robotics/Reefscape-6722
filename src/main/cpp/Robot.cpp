@@ -27,6 +27,7 @@ void Robot::RobotPeriodic() {
   frc2::CommandScheduler::GetInstance().Run();
 
   m_container.ChangeCoralCamID(SmartDashboard::GetNumber("ML Camera ID", -1));
+  m_container.ChangeAprilTagCamID(SmartDashboard::GetNumber("AprilTag Camera ID", -1));
 }
 
 /**
@@ -49,24 +50,22 @@ void Robot::DisabledPeriodic() {
  */
 void Robot::AutonomousInit() {
   // m_container.DisableTagTracking();   // auton uses odom relative to start, not based on AprilTags
-  // m_autonomousCommand = m_container.GetAutonomousCommand();
   m_container.SetDriveBrakes(true);
-  m_container.SetSlew(false);
+  m_container.SetSlew(true);
   // m_container.SetAutoIndex(true);
   if(DriverStation::IsFMSAttached()) {
     m_container.SetRecording(true);
   }
-  // if(m_autonomousCommand) {
-  //   m_autonomousCommand->Schedule();
-  // }
-  // frc2::CommandScheduler::GetInstance().Schedule(m_autonomousCommand);
-  // frc2::CommandScheduler::GetInstance().Schedule(m_autonomousCommand.get());
-  // m_autonomousCommand->Schedule();
+  autonomousCommand = m_container.GetAutonomousCommand();
+  if(autonomousCommand.has_value()) {
+    frc2::CommandScheduler::GetInstance().Schedule(autonomousCommand.value());
+  }
 }
 
 void Robot::AutonomousPeriodic() {}
 
 void Robot::TeleopInit() {
+  m_container.ZeroDriveAdjustments();
   m_container.EnableTagTracking();  // station auto-align uses AprilTag tracking 
   m_container.SetDriveBrakes(true);
   m_container.SetSlew(true);

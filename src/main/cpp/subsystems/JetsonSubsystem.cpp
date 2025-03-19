@@ -18,10 +18,11 @@ JetsonSubsystem::JetsonSubsystem() {
 
   
 
+  SmartDashboard::PutNumber("AprilTag Camera ID", tempCamId);
   table->PutBoolean("recordState", false);
   table->PutBoolean("recordLabelled", false);
   
-  this->AddRequestedTags(std::vector<uint8_t> {6, 7, 8, 9, 10, 11});
+  this->AddRequestedTags(std::vector<uint8_t> {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22});
 }
 
 void JetsonSubsystem::Periodic() {
@@ -241,4 +242,9 @@ double JetsonSubsystem::Max(double val, double max) {
 
 double JetsonSubsystem::Constrain(double val, double floor, double ceiling) {
   return Min(Max(val, ceiling), floor);
+}
+
+void JetsonSubsystem::ChangeTempCamId(int id) {
+  tempCamId = id;
+  staticATagCam.camId = tempCamId;
 }

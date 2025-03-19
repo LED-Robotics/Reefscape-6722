@@ -1,6 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
 
 #include "subsystems/DriveSubsystem/DriveSubsystem.h"
 
@@ -49,6 +46,8 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
       //Gryo
       gyro{0, "canCan"},
 
+      wallSensor{kWallSensorPort},
+
       //Odometry
       odometry{kDriveKinematics, {GetRotation()}, {s_frontLeft.GetPosition(), s_frontRight.GetPosition(), s_backLeft.GetPosition(),
       s_backRight.GetPosition()}, frc::Pose2d{{7.0_m, 4.0_m}, {0_deg}}},
@@ -88,7 +87,7 @@ void DriveSubsystem::Periodic() {
 
   // SetThetaToHold({units::angle::degree_t{SmartDashboard::GetNumber("Theta Target", 0.0)}});
   SmartDashboard::PutBoolean("Omega Override State", omegaOverride);
-  targetUsingLimelight = SmartDashboard::GetBoolean("Limelight Targeting", targetUsingLimelight);
+  SmartDashboard::PutNumber("wallSensor", GetWallDistance());
 
   odometry.Update(GetRotation(),
               {s_frontLeft.GetPosition(), s_frontRight.GetPosition(),
@@ -186,7 +185,7 @@ frc2::CommandPtr DriveSubsystem::FollowPathCommand(std::string path){
 frc2::CommandPtr DriveSubsystem::PathGenCommand(frc::Pose2d targetPose) {
   return AutoBuilder::pathfindToPose(
     targetPose,
-    pathplanner::PathConstraints(3.0_mps, 3.0_mps_sq, 360.0_deg_per_s, 720_deg_per_s_sq),
+    pathplanner::PathConstraints(2.2_mps, 2.6_mps_sq, 360.0_deg_per_s, 720_deg_per_s_sq),
     0_mps
   );
 }
@@ -329,10 +328,27 @@ void DriveSubsystem::SetTransAdjust(bool state) {
   transAdjust = state;
 }
 
-void DriveSubsystem::SetTransAdjustSpeeds(units::meters_per_second_t vx, units::meters_per_second_t vy) {
+units::meters_per_second_t DriveSubsystem::GetTransXAdjust() {
+  return txAdjust;
+}
+
+units::meters_per_second_t DriveSubsystem::GetTransYAdjust() {
+  return tyAdjust;
+}
+
+void DriveSubsystem::SetTransXAdjustSpeeds(units::meters_per_second_t vx) {
   txAdjust = vx;
+}
+
+void DriveSubsystem::SetTransYAdjustSpeeds(units::meters_per_second_t vy) {
   tyAdjust = vy;
 }
+/*void DriveSubsystem::SetTransAdjustSpeeds(units::meters_per_second_t vx, units::meters_per_second_t vy) {*/
+/*  txAdjust = vx;*/
+/*  tyAdjust = vy;*/
+/*}*/
+
+
 
 bool DriveSubsystem::GetYOverride(){
   return yOverride;
@@ -349,6 +365,11 @@ bool DriveSubsystem::IsAtTarget() {
   // if(lastTarget != *thetaTarget) isAtTarget = false;
   // lastTarget = *thetaTarget;
   return isAtTarget;
+}
+
+
+double DriveSubsystem::GetWallDistance() {
+  return wallSensor.GetVoltage();
 }
 
 units::length::meter_t DriveSubsystem::GetDistToTarget() {

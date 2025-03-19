@@ -129,6 +129,8 @@ class JetsonSubsystem : public frc2::SubsystemBase {
 
   double Constrain(double val, double floor, double ceiling);
 
+  void ChangeTempCamId(int id);
+
  private:
   const size_t TAG_FRAME_SIZE = sizeof(AprilTagFrame);
   const size_t ML_FRAME_SIZE = sizeof(MLDetectionFrame);
@@ -145,7 +147,8 @@ class JetsonSubsystem : public frc2::SubsystemBase {
   frc::Transform3d camTrans;
   AprilTagFieldLayout field;
 
-  CameraInformation staticATagCam{2, {0.253_m, -0.165_m, 0.274_m, {0.0_deg, 0.0_deg, 90.0_deg}}};
+  int tempCamId = 0;
+  CameraInformation staticATagCam{tempCamId, {0.253_m, -0.165_m, 0.274_m, {0.0_deg, 0.0_deg, 90.0_deg}}};
   // CameraInformation testCam1{1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
   // CameraInformation testCam2{2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
 

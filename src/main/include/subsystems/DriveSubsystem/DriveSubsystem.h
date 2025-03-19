@@ -20,6 +20,7 @@
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/Pigeon2.hpp>
 #include <ctre/phoenix6/CANcoder.hpp>
+#include <frc/AnalogInput.h>
 
 #include <frc/DriverStation.h>
 
@@ -220,10 +221,15 @@ class DriveSubsystem : public frc2::SubsystemBase {
    */
   void SetTransAdjust(bool state);
 
+  units::meters_per_second_t GetTransXAdjust();
+
+  units::meters_per_second_t GetTransYAdjust();
+
   /**
    * Set the translation adjustment speeds
    */
-  void SetTransAdjustSpeeds(units::meters_per_second_t vx, units::meters_per_second_t vy);
+  void SetTransXAdjustSpeeds(units::meters_per_second_t vx);
+  void SetTransYAdjustSpeeds(units::meters_per_second_t vy);
 
   /**
    * Get whether Y override is enabled.
@@ -236,6 +242,8 @@ class DriveSubsystem : public frc2::SubsystemBase {
   void SetYOverride(bool state);
 
   bool IsAtTarget();
+
+  double GetWallDistance();
 
   units::length::meter_t GetDistToTarget();
 
@@ -310,6 +318,8 @@ class DriveSubsystem : public frc2::SubsystemBase {
   
   // The gyro sensor
   hardware::Pigeon2 gyro;
+
+  frc::AnalogInput wallSensor;
 
   // Odometry class for tracking robot pose
   frc::SwerveDriveOdometry<4> odometry;

@@ -31,6 +31,8 @@ namespace DriveConstants {
     constexpr int kFrontLeftEncoderPort = 5;
     constexpr int kBackRightEncoderPort = 6;
     constexpr int kFrontRightEncoderPort = 7;
+
+    constexpr int kWallSensorPort = 1;
     
     constexpr units::angle::turn_t kBLeftMagPos = 0.118408203125_tr;
     constexpr units::angle::turn_t kFLeftMagPos = -0.180908203125_tr;
