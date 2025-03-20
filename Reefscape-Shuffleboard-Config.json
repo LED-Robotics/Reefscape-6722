@@ -597,24 +597,6 @@
               "Visuals/Orientation": "HORIZONTAL"
             }
           },
-          "5,2": {
-            "size": [
-              4,
-              1
-            ],
-            "content": {
-              "_type": "Number Slider",
-              "_source0": "network_table:///SmartDashboard/Algae Angle",
-              "_title": "SmartDashboard/Algae Angle",
-              "_glyph": 148,
-              "_showGlyph": false,
-              "Slider Settings/Min": -45.0,
-              "Slider Settings/Max": 90.0,
-              "Slider Settings/Block increment": 0.0625,
-              "Visuals/Display value": true,
-              "Visuals/Orientation": "HORIZONTAL"
-            }
-          },
           "4,0": {
             "size": [
               1,
@@ -785,6 +767,24 @@
               "_glyph": 148,
               "_showGlyph": false
             }
+          },
+          "5,2": {
+            "size": [
+              4,
+              1
+            ],
+            "content": {
+              "_type": "Number Slider",
+              "_source0": "network_table:///SmartDashboard/Pivot Angle",
+              "_title": "SmartDashboard/Pivot Angle",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Slider Settings/Min": -180.0,
+              "Slider Settings/Max": 180.0,
+              "Slider Settings/Block increment": 0.0625,
+              "Visuals/Display value": true,
+              "Visuals/Orientation": "HORIZONTAL"
+            }
           }
         }
       }
@@ -799,7 +799,29 @@
         "hgap": 16.0,
         "vgap": 16.0,
         "titleType": 0,
-        "tiles": {}
+        "tiles": {
+          "1,0": {
+            "size": [
+              10,
+              6
+            ],
+            "content": {
+              "_type": "Camera Stream",
+              "_source0": "camera_server://urce",
+              "_title": "Camera Stream",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Crosshair/Show crosshair": true,
+              "Crosshair/Crosshair color": "#FFFFFFFF",
+              "Controls/Show controls": true,
+              "Controls/Rotation": "NONE",
+              "compression": -1.0,
+              "fps": -1,
+              "imageWidth": 0,
+              "imageHeight": 0
+            }
+          }
+        }
       }
     },
     {
@@ -842,11 +864,41 @@
               "_title": "SmartDashboard/microAdjustPivot",
               "_glyph": 148,
               "_showGlyph": false,
-              "Slider Settings/Min": -20.0,
-              "Slider Settings/Max": 20.0,
+              "Slider Settings/Min": -90.0,
+              "Slider Settings/Max": 90.0,
               "Slider Settings/Block increment": 0.0625,
               "Visuals/Display value": true,
               "Visuals/Orientation": "HORIZONTAL"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Tab 4",
+      "autoPopulate": false,
+      "autoPopulatePrefix": "",
+      "widgetPane": {
+        "gridSize": 128.0,
+        "showGrid": true,
+        "hgap": 16.0,
+        "vgap": 16.0,
+        "titleType": 0,
+        "tiles": {
+          "0,0": {
+            "size": [
+              12,
+              6
+            ],
+            "content": {
+              "_type": "Field",
+              "_source0": "network_table:///SmartDashboard/Field",
+              "_title": "SmartDashboard/Field",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Game/Game": "k2025Reefscape",
+              "Visuals/Robot Icon Size": 50.0,
+              "Visuals/Show Outside Circles": false
             }
           }
         }

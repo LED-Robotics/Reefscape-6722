@@ -156,13 +156,13 @@ class RobotContainer {
   KinematicsPose floorIntakePose{0.69_m, -48.56_deg};
 
   KinematicsPose l1Coral{0.85_m, -145.0_deg};
-  KinematicsPose l2Coral{0.86_m, 51.78_deg};
-  KinematicsPose l3Coral{1.33_m, 53.16_deg};
-  KinematicsPose l4Coral{1.95_m, 60.06_deg};
+  KinematicsPose l2Coral{0.76_m, 51.78_deg};
+  KinematicsPose l3Coral{1.23_m, 53.16_deg};
+  KinematicsPose l4Coral{1.85_m, 60.06_deg};
 
-  KinematicsPose l1Algae{1.0_m, 90_deg};
-  KinematicsPose l2Algae{1.0_m, -60.45_deg};
-  KinematicsPose l3Algae{1.28_m, -80.2_deg};
+  KinematicsPose l1Algae{0.9_m, 90_deg};
+  KinematicsPose l2Algae{0.9_m, -60.45_deg};
+  KinematicsPose l3Algae{1.18_m, -80.2_deg};
   KinematicsPose l4Algae{2.05_m, -192.3_deg};
 
   // Kinematics Poses //
@@ -593,8 +593,8 @@ class RobotContainer {
   bool noReefFound = true;
   double mlDCenter = 99999.0;
   double mlAutoScoreThreshold = 20.0;
-  int mlReefCamId = 2;
-  int aprilTagCamId = 0;
+  int mlReefCamId = 4;
+  int aprilTagCamId = 6;
   // Persistance variables
   bool persistenceDataSet = false;
   int persistenceRetries = 10;
