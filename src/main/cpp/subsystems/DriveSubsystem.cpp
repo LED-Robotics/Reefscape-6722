@@ -443,10 +443,10 @@ void DriveSubsystem::ConfigAutonController() {
           // This will flip the path being followed to the red side of the field.
           // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
-          auto alliance = DriverStation::GetAlliance();
-          if (alliance) {
-              return false; // Disabled auto path flipping
-          }
+          /*auto alliance = DriverStation::GetAlliance();*/
+          /*if (alliance) {*/
+          /*    return false; // Disabled auto path flipping*/
+          /*}*/
           return false;
       },
       this // Reference to this subsystem to set requirements

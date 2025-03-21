@@ -31,6 +31,11 @@ frc::Pose2d RobotContainer::HandleAlliancePose(frc::Pose2d pose) {
   }
 }
 
+// INPUT A BLUE POSE
+frc::Pose2d RobotContainer::SwapToRed(frc::Pose2d pose) {
+  return pose.RotateAround(fieldMiddle, 180_deg);
+}
+
 void RobotContainer::HandlePartnerCommands(frc2::CommandPtr solo, frc2::CommandPtr partner) {
   if(controller2.IsConnected()) {
     ManuallySchedule(std::move(partner));
@@ -486,10 +491,17 @@ frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
 RobotContainer::RobotContainer() {
   // Autonomous selector configuration
   autonChooser.SetDefaultOption("None", EmptyAuto.get());
-  autonChooser.AddOption("1PieceMiddle", OnePieceMiddle.get());
-  autonChooser.AddOption("2PieceLeft", TwoPieceLeft.get());
+  autonChooser.AddOption("1PieceMiddleBlue", OnePieceMiddleBlue.get());
+  autonChooser.AddOption("1PieceMiddleRed", OnePieceMiddleRed.get());
+  autonChooser.AddOption("2PieceLeftBlue", TwoPieceLeftBlue.get());
+  autonChooser.AddOption("2PieceLeftRed", TwoPieceLeftRed.get());
+  autonChooser.AddOption("2PieceRightBlue", TwoPieceRightBlue.get());
+  autonChooser.AddOption("2PieceRightRed", TwoPieceRightRed.get());
 
   SmartDashboard::PutNumber("ML Camera ID", mlReefCamId);
+
+  cascade.SetTargetPosition(startingPose.cascadePose);
+  pivot.SetTargetAngle(startingPose.pivotAngle);
 
   SmartDashboard::PutData(std::move(&autonChooser));  // send auton selector to Shuffleboard
 
@@ -717,6 +729,8 @@ RobotContainer::RobotContainer() {
   controller2.RightBumper().OnTrue(std::move(coDriverTargetAlgae));
   controller2.Start().OnTrue(std::move(coDriverIntakeAlgae));
 
+  controller2.X().OnTrue(std::move(kerblooey));
+
   //Command toggle for field centric
   controller.Y().OnTrue(std::move(toggleFieldCentric));
   SmartDashboard::PutBoolean("preventedExplosion", false);
@@ -778,7 +792,7 @@ RobotContainer::RobotContainer() {
         if(power == 0.0) power = controller2.GetLeftTriggerAxis() - controller2.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
       }
-      if(power > 0.0) power *= 0.25;
+      if(power > 0.0) power *= 0.1;
       coral.SetPower(power);
     },
   {&coral}));

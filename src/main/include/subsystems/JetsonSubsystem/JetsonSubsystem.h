@@ -147,7 +147,7 @@ class JetsonSubsystem : public frc2::SubsystemBase {
   frc::Transform3d camTrans;
   AprilTagFieldLayout field;
 
-  int tempCamId = 0;
+  int tempCamId = 2;
   CameraInformation staticATagCam{tempCamId, {0.253_m, -0.165_m, 0.274_m, {0.0_deg, 0.0_deg, 90.0_deg}}};
   // CameraInformation testCam1{1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
   // CameraInformation testCam2{2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
