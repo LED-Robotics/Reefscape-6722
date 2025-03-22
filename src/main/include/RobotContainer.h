@@ -157,7 +157,7 @@ class RobotContainer {
 
   KinematicsPose l1Coral{0.71_m, -116.7_deg};
   KinematicsPose l2Coral{0.83_m, 51.78_deg};
-  KinematicsPose l3Coral{1.23_m, 53.16_deg};
+  KinematicsPose l3Coral{1.28_m, 53.16_deg};
   KinematicsPose l4Coral{1.95_m, 60.06_deg};
 
   KinematicsPose l1Algae{0.9_m, 90_deg};
@@ -456,8 +456,7 @@ class RobotContainer {
 
           return mlDCenter < 40 && !noReefFound && dist < 0.33;
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::Parallel(
         frc2::cmd::RunOnce([this]() {
@@ -491,8 +490,7 @@ class RobotContainer {
 
           return coral.IsCoralIndexed();
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::RunOnce([this]() {
         coral.SetPower(0.0);
@@ -522,8 +520,7 @@ class RobotContainer {
 
           return mlDCenter < 40 && !noReefFound && dist < 0.33;
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::Parallel(
         frc2::cmd::RunOnce([this]() {
@@ -575,8 +572,7 @@ class RobotContainer {
 
           return mlDCenter < 40 && !noReefFound && dist < 0.33;
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::Parallel(
         frc2::cmd::RunOnce([this]() {
@@ -610,8 +606,7 @@ class RobotContainer {
 
           return coral.IsCoralIndexed();
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::RunOnce([this]() {
         coral.SetPower(0.0);
@@ -641,8 +636,7 @@ class RobotContainer {
 
           return mlDCenter < 40 && !noReefFound && dist < 0.33;
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::Parallel(
         frc2::cmd::RunOnce([this]() {
@@ -693,8 +687,7 @@ class RobotContainer {
 
           return mlDCenter < 40 && !noReefFound && dist < 0.33;
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::Parallel(
         frc2::cmd::RunOnce([this]() {
@@ -743,8 +736,7 @@ class RobotContainer {
 
           return mlDCenter < 40 && !noReefFound && dist < 0.33;
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::Parallel(
         frc2::cmd::RunOnce([this]() {
@@ -778,8 +770,7 @@ class RobotContainer {
 
           return coral.IsCoralIndexed();
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::RunOnce([this]() {
         coral.SetPower(0.0);
@@ -809,8 +800,7 @@ class RobotContainer {
 
           return mlDCenter < 40 && !noReefFound && dist < 0.33;
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::Parallel(
         frc2::cmd::RunOnce([this]() {
@@ -860,8 +850,7 @@ class RobotContainer {
 
           return mlDCenter < 40 && !noReefFound && dist < 0.33;
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::Parallel(
         frc2::cmd::RunOnce([this]() {
@@ -895,8 +884,7 @@ class RobotContainer {
 
           return coral.IsCoralIndexed();
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::RunOnce([this]() {
         coral.SetPower(0.0);
@@ -926,8 +914,7 @@ class RobotContainer {
 
           return mlDCenter < 40 && !noReefFound && dist < 0.33;
         }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
+        GetMLFollowCommand()
       ),
       frc2::cmd::Parallel(
         frc2::cmd::RunOnce([this]() {
