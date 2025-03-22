@@ -40,7 +40,7 @@ void CascadeSubsystem::Periodic() {
     right.Set(power);
   } else if(state == CascadeStates::kPositionMode) {
 
-    units::length::meter_t microAdjust{SmartDashboard::GetNumber("microAdjustCascade", 0.0)};  // print to Shuffleboard
+    microAdjust = units::length::meter_t{SmartDashboard::GetNumber("microAdjustCascade", 0.0)};  // print to Shuffleboard
     SmartDashboard::PutNumber("leftCascadeTr", left.GetPosition().GetValue().value());
     SmartDashboard::PutNumber("rightCascadeTr", right.GetPosition().GetValue().value());
     SmartDashboard::PutNumber("cascadePosition", ((GetLeftPosition().value()) + (GetRightPosition().value())) / 2);  // print to Shuffleboard
@@ -110,9 +110,10 @@ void CascadeSubsystem::SetTargetPosition(units::length::meter_t newPosition) {
 }
 
 bool CascadeSubsystem::IsAtTarget() {
-  auto target = position;
+  auto target = position + microAdjust;
   auto leftPos = GetLeftPosition();
   auto rightPos = GetRightPosition();
+  
   bool leftAtTarget = leftPos > target - (kPositionDeadzone / 2) && leftPos < target + (kPositionDeadzone / 2);
   bool rightAtTarget = rightPos > target - (kPositionDeadzone / 2) && rightPos < target + (kPositionDeadzone / 2);
   return leftAtTarget && rightAtTarget;

@@ -36,7 +36,7 @@ void PivotSubsystem::Periodic() {
   } else if(state == PivotStates::kPivotAngleMode) {
     // feed forwards should be a changing constant that increases as the pivot moves further. It should be a static amount of power to overcome gravity.
 
-    units::angle::degree_t microAdjust{SmartDashboard::GetNumber("microAdjustPivot", 0.0)};  // print to Shuffleboard
+    microAdjust = units::angle::degree_t{SmartDashboard::GetNumber("microAdjustPivot", 0.0)};  // print to Shuffleboard
     SmartDashboard::PutNumber("pivotPivotTr", pivot.GetPosition().GetValue().value());  // print to Shuffleboard
     SmartDashboard::PutNumber("angle", GetAngle().value());  // print to Shuffleboard
     double feedForward = fabs(sin(angle.value())) * kMaxFeedForward;
@@ -82,7 +82,7 @@ double PivotSubsystem::GetPivotPosition() {
 }
 
 bool PivotSubsystem::IsAtTarget() {
-  auto target = angle;
+  auto target = angle + microAdjust;
   auto angle = GetAngle();
   bool atTarget = angle > target - (kPivotAngleDeadzone / 2) && angle < target + (kPivotAngleDeadzone / 2);
   return atTarget;

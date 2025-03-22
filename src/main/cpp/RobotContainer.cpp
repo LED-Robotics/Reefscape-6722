@@ -739,6 +739,7 @@ RobotContainer::RobotContainer() {
   drive.SetDefaultCommand(frc2::cmd::Run(
     [this] {
       SmartDashboard::PutNumber("Subsystem Target", TrackingTarget);
+      SmartDashboard::PutBoolean("ManipAtTarget", ManipulatorIsAtTarget());
       // store control inputs for driving
       double x = -controller.GetLeftY();
       double y = -controller.GetLeftX();

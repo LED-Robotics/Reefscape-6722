@@ -114,6 +114,7 @@ class PivotSubsystem : public frc2::SubsystemBase {
   int state = PivotConstants::PivotStates::kPivotAngleMode;
   double power = PivotConstants::kPivotDefaultPower;
   units::angle::degree_t angle{90_deg};
+  units::angle::degree_t microAdjust{0_deg};
 
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.

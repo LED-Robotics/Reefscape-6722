@@ -155,7 +155,7 @@ class RobotContainer {
   KinematicsPose loadPose{1.08_m, -129.27_deg};
   KinematicsPose floorIntakePose{0.59_m, -48.56_deg};
 
-  KinematicsPose l1Coral{0.85_m, -145.0_deg};
+  KinematicsPose l1Coral{0.71_m, -116.7_deg};
   KinematicsPose l2Coral{0.83_m, 51.78_deg};
   KinematicsPose l3Coral{1.23_m, 53.16_deg};
   KinematicsPose l4Coral{1.95_m, 60.06_deg};
