@@ -5,7 +5,6 @@
 #include "RobotContainer.h"
 #include <utility>
 
-#include <iostream>
 #include <frc/controller/PIDController.h>
 #include <frc/shuffleboard/Shuffleboard.h>
 #include <frc/smartdashboard/SmartDashboard.h>
@@ -16,6 +15,7 @@
 #include <frc2/command/button/JoystickButton.h>
 
 #include "GlobalConstants.h"
+#include "units/time.h"
 
 // return current Alliance from either FMS or Driver Station
 bool RobotContainer::IsBlue() {
@@ -23,32 +23,8 @@ bool RobotContainer::IsBlue() {
 }
 
 // INPUT A BLUE POSE
-frc::Pose2d RobotContainer::HandleAlliancePose(frc::Pose2d pose) {
-  if(!IsBlue()) {
-    return pose.RotateAround(fieldMiddle, 180_deg);
-  } else {
-    return pose;
-  }
-}
-
-// INPUT A BLUE POSE
 frc::Pose2d RobotContainer::SwapToRed(frc::Pose2d pose) {
   return pose.RotateAround(fieldMiddle, 180_deg);
-}
-
-void RobotContainer::HandlePartnerCommands(frc2::CommandPtr solo, frc2::CommandPtr partner) {
-  if(controller2.IsConnected()) {
-    ManuallySchedule(std::move(partner));
-  } else {
-    ManuallySchedule(std::move(solo));
-  }
-}
-
-frc2::CommandPtr RobotContainer::GetEmptyCommand() {
-  return frc2::cmd::RunOnce(
-  [&]() {
-
-  }, {});
 }
 
 frc2::CommandPtr RobotContainer::SetAllKinematics(RobotContainer::KinematicsPose pose) {
@@ -417,6 +393,78 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
   return *target;
 }
 
+frc2::CommandPtr RobotContainer::GetReefLineupCommand() {
+  return frc2::cmd::Sequence(
+    // Set relevant flags pre-lineup
+    frc2::cmd::RunOnce([this]() {
+        SetMLTarget(MLLabels::Reef);
+        ReefHeightLevel = 4;
+        drive.SetTransAdjust(true);
+    }),
+    // Modify translational adjustment until robot is lined up
+    frc2::cmd::Race(
+      frc2::cmd::WaitUntil([this]() {
+        double dist = drive.GetWallDistance();
+        double off =  dist - 0.22;
+        if(off < 0.0) off = 0.0;
+        if(off > 1.0) off = 1.0;
+        drive.SetTransYAdjustSpeeds(-5.0_mps * off);
+        drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
+
+        return mlDCenter < 40 && !noReefFound && dist < 0.33;
+      }),
+      GetMLFollowCommand() // Run until you lose the race
+    )
+  );
+}
+
+frc2::CommandPtr RobotContainer::GetCoralLineupCommand() {
+  return frc2::cmd::Sequence(
+    frc2::cmd::RunOnce([this]() {
+      drive.SetOmegaOverride(true);
+      drive.SetThetaToHold(autonLoading[0].Rotation());
+      SetMLTarget(MLLabels::Coral);
+      drive.SetTransAdjust(true);
+      coral.SetPower(-1.0);
+    }),
+    frc2::cmd::Race(
+      frc2::cmd::WaitUntil([this]() {
+        drive.SetTransYAdjustSpeeds(0.0_mps);
+        drive.Drive({0.0_mps, 0.9_mps, 0.0_deg_per_s}, true, false);
+
+        return coral.IsCoralIndexed();
+      }),
+      GetMLFollowCommand()
+    ),
+    frc2::cmd::RunOnce([this]() {
+      coral.SetPower(0.0);
+    }, {&coral})
+  );
+}
+
+frc2::CommandPtr RobotContainer::PathGenKinematics(frc::Pose2d pose, KinematicsPose stance, units::time::second_t delay) {
+  return frc2::cmd::Parallel(
+    drive.PathGenCommand(pose), // Drive to pose
+    frc2::cmd::Sequence(  // Wait for delay and then set kinematics stance
+      frc2::cmd::Wait(delay),
+      SetAllKinematics(stance),
+      // Do not release until at target
+      frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
+  ));
+}
+
+frc2::CommandPtr RobotContainer::ShootCoralCommand() {
+  return frc2::cmd::Parallel(
+    frc2::cmd::RunOnce([this]() {
+      coral.SetPower(0.7);
+    }, {&coral}),
+    frc2::cmd::Wait(0.7_s),
+    frc2::cmd::RunOnce([this]() {
+      coral.SetPower(0.0);
+    }, {&coral})
+  );
+}
+
 frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
   return frc2::cmd::Run(
     [this] {
@@ -428,7 +476,7 @@ frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
       } else if(mlTrackingTarget == MLLabels::Coral) {
         /*return;*/
         std::vector<JetsonSubsystem::MLDetectionFrame> coralDets;
-        for(int i = 0; i < dets.size(); i++) {
+        for(unsigned int i = 0; i < dets.size(); i++) {
           if(dets[i].label == MLLabels::Coral) {
             coralDets.push_back(dets[i]);
           }
@@ -456,7 +504,7 @@ frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
       } else if(mlTrackingTarget == MLLabels::Reef) {
         if(ReefHeightLevel != 4) return;
         std::vector<JetsonSubsystem::MLDetectionFrame> reefDets;
-        for(int i = 0; i < dets.size(); i++) {
+        for(unsigned int i = 0; i < dets.size(); i++) {
           if(dets[i].label == MLLabels::Reef) {
             reefDets.push_back(dets[i]);
           }
@@ -523,7 +571,7 @@ RobotContainer::RobotContainer() {
 
   controller.Start().OnTrue(frc2::cmd::RunOnce([this]() {
         SetMLTarget(-1);
-        ManuallySchedule(std::move(SetAllKinematics(startingPose)));
+        ManuallySchedule(SetAllKinematics(startingPose));
   }, {}));
 
   /*controller.Back().OnTrue(frc2::cmd::RunOnce([this]() {*/
@@ -542,14 +590,14 @@ RobotContainer::RobotContainer() {
 
             auto angle = IsBlue() ? blueLoading[LoadTarget].Rotation() : redLoading[LoadTarget].Rotation();
             drive.SetThetaToHold(angle);
-            ManuallySchedule(std::move(SetAllKinematics(loadPose)));
+            ManuallySchedule(SetAllKinematics(loadPose));
         } else {
             SetMLTarget(-1);
 
             auto angle = processorLoading.Rotation();
             if(IsBlue()) angle.RotateBy(180_deg);
             drive.SetThetaToHold(angle);
-            ManuallySchedule(std::move(SetAllKinematics(floorIntakePose)));
+            ManuallySchedule(SetAllKinematics(floorIntakePose));
         }
   }, {}));
 
@@ -560,14 +608,14 @@ RobotContainer::RobotContainer() {
 
           auto angle = IsBlue() ? blueLoading[LoadTarget].Rotation() : redLoading[LoadTarget].Rotation();
           drive.SetThetaToHold(angle);
-          ManuallySchedule(std::move(SetAllKinematics(loadPose)));
+          ManuallySchedule(SetAllKinematics(loadPose));
         } else {
           SetMLTarget(-1);
 
           auto angle = processorLoading.Rotation();
           if(IsBlue()) angle.RotateBy(180_deg);
           drive.SetThetaToHold(angle);
-          ManuallySchedule(std::move(SetAllKinematics(floorIntakePose)));
+          ManuallySchedule(SetAllKinematics(floorIntakePose));
         }
       }, {}));
 
@@ -576,10 +624,10 @@ RobotContainer::RobotContainer() {
         ReefHeightLevel = 1;
         if(TrackingTarget == GlobalConstants::kCoralMode) {
             SetMLTarget(MLLabels::Reef);
-            ManuallySchedule(std::move(SetAllKinematics(l1Coral)));
+            ManuallySchedule(SetAllKinematics(l1Coral));
           }   else {
             SetMLTarget(-1);
-            ManuallySchedule(std::move(SetAllKinematics(l1Algae)));
+            ManuallySchedule(SetAllKinematics(l1Algae));
         }
       }, {}));
 
@@ -587,10 +635,10 @@ RobotContainer::RobotContainer() {
         ReefHeightLevel = 1;
         if(TrackingTarget == GlobalConstants::kCoralMode) {
             SetMLTarget(MLLabels::Reef);
-            ManuallySchedule(std::move(SetAllKinematics(l1Coral)));
+            ManuallySchedule(SetAllKinematics(l1Coral));
           }   else {
             SetMLTarget(-1);
-            ManuallySchedule(std::move(SetAllKinematics(l1Algae)));
+            ManuallySchedule(SetAllKinematics(l1Algae));
         }
       }, {}));
 
@@ -599,10 +647,10 @@ RobotContainer::RobotContainer() {
         ReefHeightLevel = 2;
         if(TrackingTarget == GlobalConstants::kCoralMode) {
             SetMLTarget(MLLabels::Reef);
-            ManuallySchedule(std::move(SetAllKinematics(l2Coral)));
+            ManuallySchedule(SetAllKinematics(l2Coral));
           }   else {
             SetMLTarget(-1);
-            ManuallySchedule(std::move(SetAllKinematics(l2Algae)));
+            ManuallySchedule(SetAllKinematics(l2Algae));
         }
       }, {}));
 
@@ -610,10 +658,10 @@ RobotContainer::RobotContainer() {
         ReefHeightLevel = 2;
         if(TrackingTarget == GlobalConstants::kCoralMode) {
             SetMLTarget(MLLabels::Reef);
-            ManuallySchedule(std::move(SetAllKinematics(l2Coral)));
+            ManuallySchedule(SetAllKinematics(l2Coral));
           }   else {
             SetMLTarget(-1);
-            ManuallySchedule(std::move(SetAllKinematics(l2Algae)));
+            ManuallySchedule(SetAllKinematics(l2Algae));
         }
       }, {}));
 
@@ -622,10 +670,10 @@ RobotContainer::RobotContainer() {
         ReefHeightLevel = 3;
         if(TrackingTarget == GlobalConstants::kCoralMode) {
             SetMLTarget(MLLabels::Reef);
-            ManuallySchedule(std::move(SetAllKinematics(l3Coral)));
+            ManuallySchedule(SetAllKinematics(l3Coral));
           }   else {
             SetMLTarget(-1);
-            ManuallySchedule(std::move(SetAllKinematics(l3Algae)));
+            ManuallySchedule(SetAllKinematics(l3Algae));
         }
       }, {}));
 
@@ -633,10 +681,10 @@ RobotContainer::RobotContainer() {
         ReefHeightLevel = 3;
         if(TrackingTarget == GlobalConstants::kCoralMode) {
             SetMLTarget(MLLabels::Reef);
-            ManuallySchedule(std::move(SetAllKinematics(l3Coral)));
+            ManuallySchedule(SetAllKinematics(l3Coral));
           }   else {
             SetMLTarget(-1);
-            ManuallySchedule(std::move(SetAllKinematics(l3Algae)));
+            ManuallySchedule(SetAllKinematics(l3Algae));
         }
       }, {}));
 
@@ -645,10 +693,10 @@ RobotContainer::RobotContainer() {
         ReefHeightLevel = 4;
         if(TrackingTarget == GlobalConstants::kCoralMode) {
             SetMLTarget(MLLabels::Reef);
-            ManuallySchedule(std::move(SetAllKinematics(l4Coral)));
+            ManuallySchedule(SetAllKinematics(l4Coral));
           }   else {
             SetMLTarget(-1);
-            ManuallySchedule(std::move(SetAllKinematics(l4Algae)));
+            ManuallySchedule(SetAllKinematics(l4Algae));
         }
       }, {}));
 
@@ -656,17 +704,17 @@ RobotContainer::RobotContainer() {
         ReefHeightLevel = 4;
         if(TrackingTarget == GlobalConstants::kCoralMode) {
             SetMLTarget(MLLabels::Reef);
-            ManuallySchedule(std::move(SetAllKinematics(l4Coral)));
+            ManuallySchedule(SetAllKinematics(l4Coral));
           }   else {
             SetMLTarget(-1);
-            ManuallySchedule(std::move(SetAllKinematics(l4Algae)));
+            ManuallySchedule(SetAllKinematics(l4Algae));
         }
       }, {}));
 
   drive.SetThetaToHold(IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation());
 
   controller.RightStick().ToggleOnTrue(frc2::cmd::RunOnce([this]() {
-    ManuallySchedule(std::move(frc2::cmd::Sequence(
+    ManuallySchedule(frc2::cmd::Sequence(
       frc2::cmd::RunOnce([this](){
         DisableTagTracking();
       }, {}),
@@ -674,7 +722,7 @@ RobotContainer::RobotContainer() {
       // drive.FollowPathCommand("1_meter"),
       frc2::cmd::RunOnce([this]() {
         EnableTagTracking();
-      }, {}))));
+      }, {})));
   }, {}));
 
   reefTargetChanged.WhileTrue(frc2::cmd::RunOnce([this]() {

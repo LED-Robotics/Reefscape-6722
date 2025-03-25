@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <frc/XboxController.h>
 #include <frc2/command/button/CommandXboxController.h>
 #include <frc/controller/PIDController.h>
@@ -28,14 +29,12 @@
 #include "subsystems/AlgaeSubsystem/AlgaeSubsystem.h"
 #include "subsystems/DriveSubsystem/DriveSubsystem.h"
 #include "subsystems/CascadeSubsystem/CascadeSubsystem.h"
-#include "subsystems/ClimbSubsystem/ClimbSubsystem.h"
 #include "subsystems/CoralSubsystem/CoralSubsystem.h"
 #include "subsystems/LEDSubsystem/LEDSubsystem.h"
 #include "subsystems/PivotSubsystem/PivotSubsystem.h"
+#include "units/time.h"
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/WaitCommand.h>
-#include "iostream"
-#include "frc/motorcontrol/Spark.h"
 #include <frc/apriltag/AprilTagFieldLayout.h>
 // #include <pathplanner/lib/commands/PathPlannerAuto.h>
 // #include <ctre/Phoenix.h>
@@ -371,175 +370,122 @@ class RobotContainer {
 
   frc::Pose2d SwapToRed(frc::Pose2d pose);
 
-  frc2::CommandPtr EmptyAuto{GetEmptyCommand()};
+  frc2::CommandPtr EmptyAuto{frc2::cmd::None()};
 
   frc::Pose2d onePointMiddleStart{7.1_m, 4.0_m, -90.0_deg};
   frc::Pose2d onePointMiddleEnd{6.386_m, 4.0_m, -90.0_deg};
+
+  // One Piece Middle Auton
+  frc2::CommandPtr OnePieceMiddle{frc2::cmd::Sequence(
+    frc2::cmd::RunOnce([this]() { // Reset to starting pose
+      drive.ResetOdometry(IsBlue() ? onePointMiddleStart : SwapToRed(onePointMiddleStart));
+    }, {}),
+    // Drive to reef segment
+    frc2::cmd::Either(
+      PathGenKinematics(autonReef[0], l4Coral, 0.5_s),
+      PathGenKinematics(SwapToRed(autonReef[0]), l4Coral, 0.5_s),
+      [this]() { return IsBlue(); }
+    ),
+    // Use vision to lineup with reef
+    GetReefLineupCommand(),
+    ShootCoralCommand(), // SHOOT
+    // Turn off vision adjust
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+    }, {&coral}),
+    // Return near start of auton
+    frc2::cmd::Either(
+      PathGenKinematics(onePointMiddleEnd, startingPose, 0.75_s),
+      PathGenKinematics(SwapToRed(onePointMiddleEnd), startingPose, 0.75_s),
+      [this]() { return IsBlue(); }
+    )
+  )};
 
   // One Piece Middle Auton
   frc2::CommandPtr OnePieceMiddleBlue{frc2::cmd::Sequence(
     frc2::cmd::RunOnce([this]() { // Reset to starting pose
       drive.ResetOdometry(onePointMiddleStart);
     }, {}),
-    frc2::cmd::Parallel(
-      drive.PathGenCommand(autonReef[0]), // Drive to reef
-      frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-        frc2::cmd::Wait(0.5_s),
-        SetAllKinematics(l4Coral),
-        frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        SetMLTarget(MLLabels::Reef);
-        ReefHeightLevel = 4;
-        drive.SetTransAdjust(true);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          double dist = drive.GetWallDistance();
-          double off =  dist - 0.22;
-          if(off < 0.0) off = 0.0;
-          if(off > 1.0) off = 1.0;
-          drive.SetTransYAdjustSpeeds(-5.0_mps * off);
-          drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
-
-          return mlDCenter < 40 && !noReefFound && dist < 0.33;
-        }),
-        GetMLFollowCommand(),
-        frc2::cmd::Wait(3.0_s)
-      ),
-      frc2::cmd::Parallel(
-        frc2::cmd::RunOnce([this]() {
-          coral.SetPower(0.7);
-        }, {&coral}),
-        frc2::cmd::Wait(0.7_s)
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-        drive.PathGenCommand(onePointMiddleEnd), // Drive to reef
-        frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-          frc2::cmd::Wait(0.75_s),
-          SetAllKinematics(startingPose),
-          frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      ))
+    PathGenKinematics(autonReef[0], l4Coral, 0.5_s),
+    GetReefLineupCommand(),
+    ShootCoralCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+    }, {&coral}),
+    PathGenKinematics(onePointMiddleEnd, startingPose, 0.75_s)
   )};
 
     // TWO PIECE LEFT //
   frc::Pose2d twoPieceLeftStart{7.1_m, 5.52_m, -90.0_deg};
 
+  frc2::CommandPtr TwoPieceLeft{frc2::cmd::Sequence(
+    frc2::cmd::RunOnce([this]() { // Reset to starting pose
+      drive.ResetOdometry(twoPieceLeftStart);
+    }, {}),
+    frc2::cmd::Either(
+      PathGenKinematics(autonReef[5], l4Coral, 0.5_s),
+      PathGenKinematics(SwapToRed(autonReef[5]), l4Coral, 0.5_s),
+      [this]() { return IsBlue(); }
+    ),
+    GetReefLineupCommand(),
+    ShootCoralCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    frc2::cmd::Either(
+      PathGenKinematics(autonLoading[1], loadPose, 0.20_s),
+      PathGenKinematics(SwapToRed(autonLoading[1]), loadPose, 0.20_s),
+      [this]() { return IsBlue(); }
+    ),
+    GetCoralLineupCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    frc2::cmd::Either(
+      PathGenKinematics(autonReef[4], l4Coral, 1.5_s),
+      PathGenKinematics(SwapToRed(autonReef[4]), l4Coral, 1.5_s),
+      [this]() { return IsBlue(); }
+    ),
+    GetReefLineupCommand(),
+    ShootCoralCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    frc2::cmd::Either(
+      PathGenKinematics(autonLoading[1], loadPose, 0.20_s),
+      PathGenKinematics(SwapToRed(autonLoading[1]), loadPose, 0.20_s),
+      [this]() { return IsBlue(); }
+    )
+  )};
+
   frc2::CommandPtr TwoPieceLeftBlue{frc2::cmd::Sequence(
     frc2::cmd::RunOnce([this]() { // Reset to starting pose
       drive.ResetOdometry(twoPieceLeftStart);
     }, {}),
-    frc2::cmd::Parallel(
-      drive.PathGenCommand(autonReef[5]), // Drive to reef
-      frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-        frc2::cmd::Wait(0.5_s),
-        SetAllKinematics(l4Coral),
-        frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        SetMLTarget(MLLabels::Reef);
-        ReefHeightLevel = 4;
-        drive.SetTransAdjust(true);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          double dist = drive.GetWallDistance();
-          double off =  dist - 0.3;
-          if(off < 0.0) off = 0.0;
-          if(off > 1.0) off = 1.0;
-          drive.SetTransYAdjustSpeeds(-5.0_mps * off);
-          drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
-
-          return mlDCenter < 40 && !noReefFound && dist < 0.33;
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::Parallel(
-        frc2::cmd::RunOnce([this]() {
-          coral.SetPower(0.7);
-        }, {&coral}),
-        frc2::cmd::Wait(0.7_s)
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-        drive.SetTransAdjust(false);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-        drive.PathGenCommand(autonLoading[1]), // Drive to reef
-        frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-          frc2::cmd::Wait(0.20_s),
-          SetAllKinematics(loadPose),
-          frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        drive.SetOmegaOverride(true);
-        drive.SetThetaToHold(autonLoading[1].Rotation());
-        SetMLTarget(MLLabels::Coral);
-        drive.SetTransAdjust(true);
-        coral.SetPower(-1.0);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          drive.SetTransYAdjustSpeeds(0.0_mps);
-          drive.Drive({0.0_mps, 0.9_mps, 0.0_deg_per_s}, true, false);
-
-          return coral.IsCoralIndexed();
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-        drive.SetTransAdjust(false);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-      drive.PathGenCommand(autonReef[4]), // Drive to reef
-      frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-        frc2::cmd::Wait(1.5_s),
-        SetAllKinematics(l4Coral),
-        frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        SetMLTarget(MLLabels::Reef);
-        ReefHeightLevel = 4;
-        drive.SetTransAdjust(true);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          double dist = drive.GetWallDistance();
-          double off =  dist - 0.3;
-          if(off < 0.0) off = 0.0;
-          if(off > 1.0) off = 1.0;
-          drive.SetTransYAdjustSpeeds(-5.0_mps * off);
-          drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
-
-          return mlDCenter < 40 && !noReefFound && dist < 0.33;
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::Parallel(
-        frc2::cmd::RunOnce([this]() {
-          coral.SetPower(0.7);
-        }, {&coral}),
-        frc2::cmd::Wait(0.7_s)
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-        drive.SetTransAdjust(false);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-        drive.PathGenCommand(autonLoading[1]), // Drive to left load
-        frc2::cmd::Sequence(  // Wait 2 seconds then go to load pose
-          frc2::cmd::Wait(0.20_s),
-          SetAllKinematics(loadPose),
-          frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      ))
+    PathGenKinematics(autonReef[5], l4Coral, 0.5_s),
+    GetReefLineupCommand(),
+    ShootCoralCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    PathGenKinematics(autonLoading[1], loadPose, 0.20_s),
+    GetCoralLineupCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    PathGenKinematics(autonReef[4], l4Coral, 1.5_s),
+    GetReefLineupCommand(),
+    ShootCoralCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    PathGenKinematics(autonLoading[1], loadPose, 0.20_s)
   )};
 
   // TWO PIECE RIGHT //
@@ -549,113 +495,27 @@ class RobotContainer {
     frc2::cmd::RunOnce([this]() { // Reset to starting pose
       drive.ResetOdometry(twoPieceRightStart);
     }, {}),
-    frc2::cmd::Parallel(
-      drive.PathGenCommand(autonReef[1]), // Drive to reef
-      frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-        frc2::cmd::Wait(0.5_s),
-        SetAllKinematics(l4Coral),
-        frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        SetMLTarget(MLLabels::Reef);
-        ReefHeightLevel = 4;
-        drive.SetTransAdjust(true);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          double dist = drive.GetWallDistance();
-          double off =  dist - 0.3;
-          if(off < 0.0) off = 0.0;
-          if(off > 1.0) off = 1.0;
-          drive.SetTransYAdjustSpeeds(-5.0_mps * off);
-          drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
-
-          return mlDCenter < 40 && !noReefFound && dist < 0.33;
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::Parallel(
-        frc2::cmd::RunOnce([this]() {
-          coral.SetPower(0.7);
-        }, {&coral}),
-        frc2::cmd::Wait(0.7_s)
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-        drive.SetTransAdjust(false);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-        drive.PathGenCommand(autonLoading[0]), // Drive to reef
-        frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-          frc2::cmd::Wait(0.20_s),
-          SetAllKinematics(loadPose),
-          frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        drive.SetOmegaOverride(true);
-        drive.SetThetaToHold(autonLoading[0].Rotation());
-        SetMLTarget(MLLabels::Coral);
-        drive.SetTransAdjust(true);
-        coral.SetPower(-1.0);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          drive.SetTransYAdjustSpeeds(0.0_mps);
-          drive.Drive({0.0_mps, 0.9_mps, 0.0_deg_per_s}, true, false);
-
-          return coral.IsCoralIndexed();
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-        drive.SetTransAdjust(false);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-      drive.PathGenCommand(autonReef[2]), // Drive to reef
-      frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-        frc2::cmd::Wait(1.5_s),
-        SetAllKinematics(l4Coral),
-        frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        SetMLTarget(MLLabels::Reef);
-        ReefHeightLevel = 4;
-        drive.SetTransAdjust(true);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          double dist = drive.GetWallDistance();
-          double off =  dist - 0.3;
-          if(off < 0.0) off = 0.0;
-          if(off > 1.0) off = 1.0;
-          drive.SetTransYAdjustSpeeds(-5.0_mps * off);
-          drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
-
-          return mlDCenter < 40 && !noReefFound && dist < 0.33;
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::Parallel(
-        frc2::cmd::RunOnce([this]() {
-          coral.SetPower(0.7);
-        }, {&coral}),
-        frc2::cmd::Wait(0.7_s)
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-        drive.SetTransAdjust(false);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-        drive.PathGenCommand(autonLoading[0]), // Drive to left load
-        frc2::cmd::Sequence(  // Wait 2 seconds then go to load pose
-          frc2::cmd::Wait(0.20_s),
-          SetAllKinematics(loadPose),
-          frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      ))
+    PathGenKinematics(autonReef[1], l4Coral, 0.5_s),
+    GetReefLineupCommand(),
+    ShootCoralCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    PathGenKinematics(autonLoading[0], loadPose, 0.20_s),
+    GetCoralLineupCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    PathGenKinematics(autonReef[2], l4Coral, 1.5_s),
+    GetReefLineupCommand(),
+    ShootCoralCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    PathGenKinematics(autonLoading[0], loadPose, 0.20_s)
   )};
 
 
@@ -664,48 +524,13 @@ class RobotContainer {
     frc2::cmd::RunOnce([this]() { // Reset to starting pose
       drive.ResetOdometry(SwapToRed(onePointMiddleStart));
     }, {}),
-    frc2::cmd::Parallel(
-      drive.PathGenCommand(SwapToRed(autonReef[0])), // Drive to reef
-      frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-        frc2::cmd::Wait(0.5_s),
-        SetAllKinematics(l4Coral),
-        frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        SetMLTarget(MLLabels::Reef);
-        ReefHeightLevel = 4;
-        drive.SetTransAdjust(true);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          double dist = drive.GetWallDistance();
-          double off =  dist - 0.22;
-          if(off < 0.0) off = 0.0;
-          if(off > 1.0) off = 1.0;
-          drive.SetTransYAdjustSpeeds(-5.0_mps * off);
-          drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
-
-          return mlDCenter < 40 && !noReefFound && dist < 0.33;
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::Parallel(
-        frc2::cmd::RunOnce([this]() {
-          coral.SetPower(0.7);
-        }, {&coral}),
-        frc2::cmd::Wait(0.7_s)
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-        drive.PathGenCommand(SwapToRed(onePointMiddleEnd)), // Drive to reef
-        frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-          frc2::cmd::Wait(0.75_s),
-          SetAllKinematics(startingPose),
-          frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      ))
+    PathGenKinematics(SwapToRed(autonReef[0]), l4Coral, 0.5_s),
+    GetReefLineupCommand(),
+    ShootCoralCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+    }, {&coral}),
+    PathGenKinematics(SwapToRed(onePointMiddleEnd), startingPose, 0.75_s)
   )};
 
     // TWO PIECE LEFT //
@@ -713,113 +538,27 @@ class RobotContainer {
     frc2::cmd::RunOnce([this]() { // Reset to starting pose
       drive.ResetOdometry(SwapToRed(twoPieceLeftStart));
     }, {}),
-    frc2::cmd::Parallel(
-      drive.PathGenCommand(SwapToRed(autonReef[5])), // Drive to reef
-      frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-        frc2::cmd::Wait(0.5_s),
-        SetAllKinematics(l4Coral),
-        frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        SetMLTarget(MLLabels::Reef);
-        ReefHeightLevel = 4;
-        drive.SetTransAdjust(true);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          double dist = drive.GetWallDistance();
-          double off =  dist - 0.3;
-          if(off < 0.0) off = 0.0;
-          if(off > 1.0) off = 1.0;
-          drive.SetTransYAdjustSpeeds(-5.0_mps * off);
-          drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
-
-          return mlDCenter < 40 && !noReefFound && dist < 0.33;
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::Parallel(
-        frc2::cmd::RunOnce([this]() {
-          coral.SetPower(0.7);
-        }, {&coral}),
-        frc2::cmd::Wait(0.7_s)
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-        drive.SetTransAdjust(false);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-        drive.PathGenCommand(SwapToRed(autonLoading[1])), // Drive to reef
-        frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-          frc2::cmd::Wait(0.20_s),
-          SetAllKinematics(loadPose),
-          frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        drive.SetOmegaOverride(true);
-        drive.SetThetaToHold(autonLoading[1].Rotation().RotateBy(180_deg));
-        SetMLTarget(MLLabels::Coral);
-        drive.SetTransAdjust(true);
-        coral.SetPower(-1.0);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          drive.SetTransYAdjustSpeeds(0.0_mps);
-          drive.Drive({0.0_mps, 0.9_mps, 0.0_deg_per_s}, true, false);
-
-          return coral.IsCoralIndexed();
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-        drive.SetTransAdjust(false);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-      drive.PathGenCommand(SwapToRed(autonReef[4])), // Drive to reef
-      frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-        frc2::cmd::Wait(1.5_s),
-        SetAllKinematics(l4Coral),
-        frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        SetMLTarget(MLLabels::Reef);
-        ReefHeightLevel = 4;
-        drive.SetTransAdjust(true);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          double dist = drive.GetWallDistance();
-          double off =  dist - 0.3;
-          if(off < 0.0) off = 0.0;
-          if(off > 1.0) off = 1.0;
-          drive.SetTransYAdjustSpeeds(-5.0_mps * off);
-          drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
-
-          return mlDCenter < 40 && !noReefFound && dist < 0.33;
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::Parallel(
-        frc2::cmd::RunOnce([this]() {
-          coral.SetPower(0.7);
-        }, {&coral}),
-        frc2::cmd::Wait(0.7_s)
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-        drive.SetTransAdjust(false);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-        drive.PathGenCommand(SwapToRed(autonLoading[1])), // Drive to left load
-        frc2::cmd::Sequence(  // Wait 2 seconds then go to load pose
-          frc2::cmd::Wait(0.20_s),
-          SetAllKinematics(loadPose),
-          frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      ))
+    PathGenKinematics(SwapToRed(autonReef[5]), l4Coral, 0.5_s),
+    GetReefLineupCommand(),
+    ShootCoralCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    PathGenKinematics(SwapToRed(autonLoading[1]), loadPose, 0.20_s),
+    GetCoralLineupCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    PathGenKinematics(SwapToRed(autonReef[4]), l4Coral, 1.5_s),
+    GetReefLineupCommand(),
+    ShootCoralCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    PathGenKinematics(SwapToRed(autonLoading[1]), loadPose, 0.20_s)
   )};
 
   // TWO PIECE RIGHT //
@@ -827,113 +566,27 @@ class RobotContainer {
     frc2::cmd::RunOnce([this]() { // Reset to starting pose
       drive.ResetOdometry(SwapToRed(twoPieceRightStart));
     }, {}),
-    frc2::cmd::Parallel(
-      drive.PathGenCommand(SwapToRed(autonReef[1])), // Drive to reef
-      frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-        frc2::cmd::Wait(0.5_s),
-        SetAllKinematics(l4Coral),
-        frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        SetMLTarget(MLLabels::Reef);
-        ReefHeightLevel = 4;
-        drive.SetTransAdjust(true);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          double dist = drive.GetWallDistance();
-          double off =  dist - 0.3;
-          if(off < 0.0) off = 0.0;
-          if(off > 1.0) off = 1.0;
-          drive.SetTransYAdjustSpeeds(-5.0_mps * off);
-          drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
-
-          return mlDCenter < 40 && !noReefFound && dist < 0.33;
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::Parallel(
-        frc2::cmd::RunOnce([this]() {
-          coral.SetPower(0.7);
-        }, {&coral}),
-        frc2::cmd::Wait(0.7_s)
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-        drive.SetTransAdjust(false);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-        drive.PathGenCommand(SwapToRed(autonLoading[0])), // Drive to reef
-        frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-          frc2::cmd::Wait(0.20_s),
-          SetAllKinematics(loadPose),
-          frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        drive.SetOmegaOverride(true);
-        drive.SetThetaToHold(autonLoading[0].Rotation().RotateBy(180_deg));
-        SetMLTarget(MLLabels::Coral);
-        drive.SetTransAdjust(true);
-        coral.SetPower(-1.0);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          drive.SetTransYAdjustSpeeds(0.0_mps);
-          drive.Drive({0.0_mps, 0.9_mps, 0.0_deg_per_s}, true, false);
-
-          return coral.IsCoralIndexed();
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-        drive.SetTransAdjust(false);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-      drive.PathGenCommand(SwapToRed(autonReef[2])), // Drive to reef
-      frc2::cmd::Sequence(  // Wait 2 seconds then go to L4Coral pose
-        frc2::cmd::Wait(1.5_s),
-        SetAllKinematics(l4Coral),
-        frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      )),
-      frc2::cmd::RunOnce([this]() {
-        SetMLTarget(MLLabels::Reef);
-        ReefHeightLevel = 4;
-        drive.SetTransAdjust(true);
-      }),
-      frc2::cmd::Race(
-        frc2::cmd::WaitUntil([this]() {
-          double dist = drive.GetWallDistance();
-          double off =  dist - 0.3;
-          if(off < 0.0) off = 0.0;
-          if(off > 1.0) off = 1.0;
-          drive.SetTransYAdjustSpeeds(-5.0_mps * off);
-          drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
-
-          return mlDCenter < 40 && !noReefFound && dist < 0.33;
-        }),
-        GetMLFollowCommand()
-      ),
-      frc2::cmd::Parallel(
-        frc2::cmd::RunOnce([this]() {
-          coral.SetPower(0.7);
-        }, {&coral}),
-        frc2::cmd::Wait(0.7_s)
-      ),
-      frc2::cmd::RunOnce([this]() {
-        coral.SetPower(0.0);
-        SetMLTarget(-1);
-        drive.SetTransAdjust(false);
-      }, {&coral}),
-      frc2::cmd::Parallel(
-        drive.PathGenCommand(SwapToRed(autonLoading[0])), // Drive to left load
-        frc2::cmd::Sequence(  // Wait 2 seconds then go to load pose
-          frc2::cmd::Wait(0.20_s),
-          SetAllKinematics(loadPose),
-          frc2::cmd::WaitUntil([this]() { return ManipulatorIsAtTarget(); })
-      ))
+    PathGenKinematics(SwapToRed(autonReef[1]), l4Coral, 0.5_s),
+    GetReefLineupCommand(),
+    ShootCoralCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    PathGenKinematics(SwapToRed(autonLoading[0]), loadPose, 0.20_s),
+    GetCoralLineupCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    PathGenKinematics(SwapToRed(autonReef[2]), l4Coral, 1.5_s),
+    GetReefLineupCommand(),
+    ShootCoralCommand(),
+    frc2::cmd::RunOnce([this]() {
+      SetMLTarget(-1);
+      drive.SetTransAdjust(false);
+    }, {&coral}),
+    PathGenKinematics(SwapToRed(autonLoading[0]), loadPose, 0.20_s)
   )};
 
   frc2::CommandPtr kerblooey{frc2::cmd::Sequence(
@@ -958,20 +611,6 @@ class RobotContainer {
   bool IsBlue();
 
   /**
-   * Return one of two Commands based on whether a partner controller is connected.
-   */
-  void HandlePartnerCommands(frc2::CommandPtr solo, frc2::CommandPtr partner);
-
-  /**
-   * Return a pointer to an empty Command that will do nothing when run.
-   *
-   * @return A Command* to an empty Command
-   */
-  frc2::CommandPtr GetEmptyCommand();
-
-  frc2::CommandPtr HandleModeScheduling(frc2::CommandPtr coral, frc2::CommandPtr algae);
-
-  /**
    * Return the command pointer that sets all subsystem kinematics.
    */
   frc2::CommandPtr SetAllKinematics(KinematicsPose pose);
@@ -993,8 +632,8 @@ class RobotContainer {
   bool noReefFound = true;
   double mlDCenter = 99999.0;
   double mlAutoScoreThreshold = 20.0;
-  int mlReefCamId = 0;
-  int aprilTagCamId = 2;
+  uint8_t mlReefCamId = 0;
+  uint8_t aprilTagCamId = 2;
   // Persistance variables
   bool persistenceDataSet = false;
   int persistenceRetries = 10;
@@ -1051,7 +690,12 @@ class RobotContainer {
   bool IsViableCoralPersistenceTarget(JetsonSubsystem::MLDetectionFrame &coral);
   JetsonSubsystem::MLDetectionFrame GetCoralTrackingTarget(std::vector<JetsonSubsystem::MLDetectionFrame> &dets);
 
+  frc2::CommandPtr GetReefLineupCommand();
+  frc2::CommandPtr GetCoralLineupCommand();
   frc2::CommandPtr GetMLFollowCommand();
+
+  frc2::CommandPtr PathGenKinematics(frc::Pose2d pose, KinematicsPose stance, units::time::second_t delay);
+  frc2::CommandPtr ShootCoralCommand();
 
   // The chooser for the autonomous routines
   /*frc::SendableChooser<frc2::CommandPtr&&> autonChooser;*/
