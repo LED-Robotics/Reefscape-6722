@@ -10,8 +10,4 @@ namespace JetsonConstants {
 
     const double kPoseConfidenceThresh = 0.8;
     const double kRelativeConfidenceThresh = 0.7;
-
-    /*const std::vector<uint8_t> tagIDsDisabled{0, 2, 4, 6, 8};*/
-    const std::vector<uint8_t> tagIDsDisabled{};
-    const std::vector<uint8_t> mlIDsDisabled{};
 }

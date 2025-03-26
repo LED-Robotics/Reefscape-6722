@@ -78,8 +78,12 @@ class RobotContainer {
    */
   frc2::Command* GetAutonomousCommand();
 
-  void ChangeCoralCamID(int newId);
+  void ChangeStationaryMLCamID(int newId);
   void ChangeAprilTagCamID(int newId);
+  void ChangeCoralCamID(int newId);
+  void ChangeAlgaeCamID(int newId);
+
+  void SetCameraStates();
 
   /**
    * Set the brake mode of most robot motors.
@@ -401,26 +405,12 @@ class RobotContainer {
     )
   )};
 
-  // One Piece Middle Auton
-  frc2::CommandPtr OnePieceMiddleBlue{frc2::cmd::Sequence(
-    frc2::cmd::RunOnce([this]() { // Reset to starting pose
-      drive.ResetOdometry(onePointMiddleStart);
-    }, {}),
-    PathGenKinematics(autonReef[0], l4Coral, 0.5_s),
-    GetReefLineupCommand(),
-    ShootCoralCommand(),
-    frc2::cmd::RunOnce([this]() {
-      SetMLTarget(-1);
-    }, {&coral}),
-    PathGenKinematics(onePointMiddleEnd, startingPose, 0.75_s)
-  )};
-
     // TWO PIECE LEFT //
   frc::Pose2d twoPieceLeftStart{7.1_m, 5.52_m, -90.0_deg};
 
   frc2::CommandPtr TwoPieceLeft{frc2::cmd::Sequence(
     frc2::cmd::RunOnce([this]() { // Reset to starting pose
-      drive.ResetOdometry(twoPieceLeftStart);
+      drive.ResetOdometry(IsBlue() ? twoPieceLeftStart : twoPieceLeftStart);
     }, {}),
     frc2::cmd::Either(
       PathGenKinematics(autonReef[5], l4Coral, 0.5_s),
@@ -461,132 +451,50 @@ class RobotContainer {
     )
   )};
 
-  frc2::CommandPtr TwoPieceLeftBlue{frc2::cmd::Sequence(
-    frc2::cmd::RunOnce([this]() { // Reset to starting pose
-      drive.ResetOdometry(twoPieceLeftStart);
-    }, {}),
-    PathGenKinematics(autonReef[5], l4Coral, 0.5_s),
-    GetReefLineupCommand(),
-    ShootCoralCommand(),
-    frc2::cmd::RunOnce([this]() {
-      SetMLTarget(-1);
-      drive.SetTransAdjust(false);
-    }, {&coral}),
-    PathGenKinematics(autonLoading[1], loadPose, 0.20_s),
-    GetCoralLineupCommand(),
-    frc2::cmd::RunOnce([this]() {
-      SetMLTarget(-1);
-      drive.SetTransAdjust(false);
-    }, {&coral}),
-    PathGenKinematics(autonReef[4], l4Coral, 1.5_s),
-    GetReefLineupCommand(),
-    ShootCoralCommand(),
-    frc2::cmd::RunOnce([this]() {
-      SetMLTarget(-1);
-      drive.SetTransAdjust(false);
-    }, {&coral}),
-    PathGenKinematics(autonLoading[1], loadPose, 0.20_s)
-  )};
-
   // TWO PIECE RIGHT //
   frc::Pose2d twoPieceRightStart{7.1_m, 2.521_m, -90.0_deg};
 
-  frc2::CommandPtr TwoPieceRightBlue{frc2::cmd::Sequence(
+  frc2::CommandPtr TwoPieceRight{frc2::cmd::Sequence(
     frc2::cmd::RunOnce([this]() { // Reset to starting pose
-      drive.ResetOdometry(twoPieceRightStart);
+      drive.ResetOdometry(IsBlue() ? twoPieceRightStart : SwapToRed(twoPieceRightStart));
     }, {}),
-    PathGenKinematics(autonReef[1], l4Coral, 0.5_s),
+    frc2::cmd::Either(
+      PathGenKinematics(autonReef[1], l4Coral, 0.5_s),
+      PathGenKinematics(SwapToRed(autonReef[1]), l4Coral, 0.5_s),
+      [this]() { return IsBlue(); }
+    ),
     GetReefLineupCommand(),
     ShootCoralCommand(),
     frc2::cmd::RunOnce([this]() {
       SetMLTarget(-1);
       drive.SetTransAdjust(false);
     }, {&coral}),
-    PathGenKinematics(autonLoading[0], loadPose, 0.20_s),
+    frc2::cmd::Either(
+      PathGenKinematics(autonLoading[0], loadPose, 0.20_s),
+      PathGenKinematics(SwapToRed(autonLoading[0]), loadPose, 0.20_s),
+      [this]() { return IsBlue(); }
+    ),
     GetCoralLineupCommand(),
     frc2::cmd::RunOnce([this]() {
       SetMLTarget(-1);
       drive.SetTransAdjust(false);
     }, {&coral}),
-    PathGenKinematics(autonReef[2], l4Coral, 1.5_s),
+    frc2::cmd::Either(
+      PathGenKinematics(autonReef[2], l4Coral, 1.5_s),
+      PathGenKinematics(SwapToRed(autonReef[2]), l4Coral, 1.5_s),
+      [this]() { return IsBlue(); }
+    ),
     GetReefLineupCommand(),
     ShootCoralCommand(),
     frc2::cmd::RunOnce([this]() {
       SetMLTarget(-1);
       drive.SetTransAdjust(false);
     }, {&coral}),
-    PathGenKinematics(autonLoading[0], loadPose, 0.20_s)
-  )};
-
-
-  // One Piece Middle Auton
-  frc2::CommandPtr OnePieceMiddleRed{frc2::cmd::Sequence(
-    frc2::cmd::RunOnce([this]() { // Reset to starting pose
-      drive.ResetOdometry(SwapToRed(onePointMiddleStart));
-    }, {}),
-    PathGenKinematics(SwapToRed(autonReef[0]), l4Coral, 0.5_s),
-    GetReefLineupCommand(),
-    ShootCoralCommand(),
-    frc2::cmd::RunOnce([this]() {
-      SetMLTarget(-1);
-    }, {&coral}),
-    PathGenKinematics(SwapToRed(onePointMiddleEnd), startingPose, 0.75_s)
-  )};
-
-    // TWO PIECE LEFT //
-  frc2::CommandPtr TwoPieceLeftRed{frc2::cmd::Sequence(
-    frc2::cmd::RunOnce([this]() { // Reset to starting pose
-      drive.ResetOdometry(SwapToRed(twoPieceLeftStart));
-    }, {}),
-    PathGenKinematics(SwapToRed(autonReef[5]), l4Coral, 0.5_s),
-    GetReefLineupCommand(),
-    ShootCoralCommand(),
-    frc2::cmd::RunOnce([this]() {
-      SetMLTarget(-1);
-      drive.SetTransAdjust(false);
-    }, {&coral}),
-    PathGenKinematics(SwapToRed(autonLoading[1]), loadPose, 0.20_s),
-    GetCoralLineupCommand(),
-    frc2::cmd::RunOnce([this]() {
-      SetMLTarget(-1);
-      drive.SetTransAdjust(false);
-    }, {&coral}),
-    PathGenKinematics(SwapToRed(autonReef[4]), l4Coral, 1.5_s),
-    GetReefLineupCommand(),
-    ShootCoralCommand(),
-    frc2::cmd::RunOnce([this]() {
-      SetMLTarget(-1);
-      drive.SetTransAdjust(false);
-    }, {&coral}),
-    PathGenKinematics(SwapToRed(autonLoading[1]), loadPose, 0.20_s)
-  )};
-
-  // TWO PIECE RIGHT //
-  frc2::CommandPtr TwoPieceRightRed{frc2::cmd::Sequence(
-    frc2::cmd::RunOnce([this]() { // Reset to starting pose
-      drive.ResetOdometry(SwapToRed(twoPieceRightStart));
-    }, {}),
-    PathGenKinematics(SwapToRed(autonReef[1]), l4Coral, 0.5_s),
-    GetReefLineupCommand(),
-    ShootCoralCommand(),
-    frc2::cmd::RunOnce([this]() {
-      SetMLTarget(-1);
-      drive.SetTransAdjust(false);
-    }, {&coral}),
-    PathGenKinematics(SwapToRed(autonLoading[0]), loadPose, 0.20_s),
-    GetCoralLineupCommand(),
-    frc2::cmd::RunOnce([this]() {
-      SetMLTarget(-1);
-      drive.SetTransAdjust(false);
-    }, {&coral}),
-    PathGenKinematics(SwapToRed(autonReef[2]), l4Coral, 1.5_s),
-    GetReefLineupCommand(),
-    ShootCoralCommand(),
-    frc2::cmd::RunOnce([this]() {
-      SetMLTarget(-1);
-      drive.SetTransAdjust(false);
-    }, {&coral}),
-    PathGenKinematics(SwapToRed(autonLoading[0]), loadPose, 0.20_s)
+    frc2::cmd::Either(
+      PathGenKinematics(autonLoading[0], loadPose, 0.20_s),
+      PathGenKinematics(SwapToRed(autonLoading[0]), loadPose, 0.20_s),
+      [this]() { return IsBlue(); }
+  )
   )};
 
   frc2::CommandPtr kerblooey{frc2::cmd::Sequence(
@@ -625,15 +533,18 @@ class RobotContainer {
 
   int camFrameHeight = 480;
   int camFrameWidth = 640;
-  int camFrameCenterOffset = 50;
+  int reefCamFrameCenter = -249;
+  int coralCamFrameCenter = 50;
 
   int mlTrackingTarget = MLLabels::Coral;
   bool noCoralFound = true;
   bool noReefFound = true;
   double mlDCenter = 99999.0;
   double mlAutoScoreThreshold = 20.0;
-  uint8_t mlReefCamId = 0;
+  uint8_t stationaryMLCamId = 0;
   uint8_t aprilTagCamId = 2;
+  uint8_t coralCamId = 4;
+  uint8_t algaeCamId = 6;
   // Persistance variables
   bool persistenceDataSet = false;
   int persistenceRetries = 10;
@@ -648,10 +559,10 @@ class RobotContainer {
   // Persistance variables
   // Reef filter parameters
   double reefL4HeightRatioThreshold = 1.7;
-  double reefHeightRatioThreshold = 0.8;
+  double reefHeightRatioThreshold = 1.08;
   double reefYPosMax = 240;
   double reefL4AreaMin = 10000.0;
-  double reefAreaMin = 2000.0;
+  double reefAreaMin = 4300.0;
   // Reef filter parameters
   //
   // Coral filter parameters
@@ -660,10 +571,10 @@ class RobotContainer {
   // Coral filter parameters
 
   // Reef persistence parameters
-  double reefMaxWidthDrift = 20.0;
-  double reefMaxHeightDrift = 10.0;
-  double reefMaxXDrift = 10.0;
-  double reefMaxYDrift = 10.0;
+  double reefMaxWidthDrift = 107.0;
+  double reefMaxHeightDrift = 183.0;
+  double reefMaxXDrift = 35.0;
+  double reefMaxYDrift = 16.0;
   double reefTimeMultiplier = 0.0;
   // The X/Y comments are not typos
   double reefXSpeedMultiplier = 0.0; // Matched to robot Y speed

@@ -131,6 +131,10 @@ class JetsonSubsystem : public frc2::SubsystemBase {
 
   void ChangeTempCamId(int id);
 
+  void DisableML(int id);
+
+  void EnableML(int id);
+
  private:
   const size_t TAG_FRAME_SIZE = sizeof(AprilTagFrame);
   const size_t ML_FRAME_SIZE = sizeof(MLDetectionFrame);
@@ -138,17 +142,19 @@ class JetsonSubsystem : public frc2::SubsystemBase {
 
   std::shared_ptr<nt::NetworkTable> table;
   
+  std::vector<uint8_t> atagDisabled;
   std::vector<uint8_t> requestedTags;
   std::vector<AprilTagFrame> parsedTagData;
   std::vector<TagDetections> jetsonTagDetections; 
 
+  std::vector<uint8_t> mlDisabled;
   std::vector<MLDetectionFrame> mlDetections;
 
   frc::Transform3d camTrans;
   AprilTagFieldLayout field;
 
-  int tempCamId = 2;
-  CameraInformation staticATagCam{tempCamId, {0.253_m, -0.165_m, 0.274_m, {0.0_deg, 0.0_deg, 90.0_deg}}};
+  int atagCamId = 2;
+  CameraInformation staticATagCam{atagCamId, {0.253_m, -0.165_m, 0.274_m, {0.0_deg, 0.0_deg, 90.0_deg}}};
   // CameraInformation testCam1{1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
   // CameraInformation testCam2{2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
 

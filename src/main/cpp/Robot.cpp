@@ -26,8 +26,10 @@ void Robot::RobotInit() {
 void Robot::RobotPeriodic() {
   frc2::CommandScheduler::GetInstance().Run();
 
-  m_container.ChangeCoralCamID(SmartDashboard::GetNumber("ML Camera ID", -1));
+  m_container.ChangeStationaryMLCamID(SmartDashboard::GetNumber("Stationary Camera ID", -1));
   m_container.ChangeAprilTagCamID(SmartDashboard::GetNumber("AprilTag Camera ID", -1));
+  m_container.ChangeCoralCamID(SmartDashboard::GetNumber("Coral Camera ID", -1));
+  m_container.ChangeAlgaeCamID(SmartDashboard::GetNumber("Algae Camera ID", -1));
 }
 
 /**

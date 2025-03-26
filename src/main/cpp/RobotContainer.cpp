@@ -15,6 +15,7 @@
 #include <frc2/command/button/JoystickButton.h>
 
 #include "GlobalConstants.h"
+#include "subsystems/DriveSubsystem/Constants.h"
 #include "units/time.h"
 
 // return current Alliance from either FMS or Driver Station
@@ -103,21 +104,37 @@ void RobotContainer::SetMLTarget(int label) {
       autonReefLineup = false;
       autonCoralLoad = true;
       drive.SetTransAdjust(true);
+      jetson.EnableML(aprilTagCamId);
+      jetson.DisableML(stationaryMLCamId);
+      jetson.EnableML(coralCamId);
+      jetson.DisableML(algaeCamId);
       break;
     case MLLabels::Reef:
       autonReefLineup = true;
       autonCoralLoad = false;
       drive.SetTransAdjust(true);
+      jetson.DisableML(aprilTagCamId);
+      jetson.EnableML(stationaryMLCamId);
+      jetson.DisableML(coralCamId);
+      jetson.DisableML(algaeCamId);
       break;
     case MLLabels::Algae:
       autonReefLineup = false;
       autonCoralLoad = false;
       drive.SetTransAdjust(false);
+      jetson.EnableML(aprilTagCamId);
+      jetson.DisableML(stationaryMLCamId);
+      jetson.DisableML(coralCamId);
+      jetson.EnableML(algaeCamId);
       break;
     default:
       autonReefLineup = false;
       autonCoralLoad = false;
       drive.SetTransAdjust(false);
+      jetson.EnableML(aprilTagCamId);
+      jetson.EnableML(stationaryMLCamId);
+      jetson.DisableML(coralCamId);
+      jetson.DisableML(algaeCamId);
       break;
   }
 }
@@ -130,11 +147,13 @@ bool RobotContainer::IsReefDisqualified(JetsonSubsystem::MLDetectionFrame &reef)
   double area = reef.h * reef.w;
   
   // Disqualifying conditions for a reef detection
-  bool wrongCamera = reef.camId != mlReefCamId;
-  bool taller = heightRatio > (ReefHeightLevel == 4 ? reefL4HeightRatioThreshold : reefHeightRatioThreshold);
+  bool wrongCamera = reef.camId != stationaryMLCamId;
+  /*bool taller = heightRatio > (ReefHeightLevel == 4 ? reefL4HeightRatioThreshold : reefHeightRatioThreshold);*/
+  bool taller = heightRatio > reefHeightRatioThreshold;
   /*bool lower = centerY > reefYPosMax;*/
   bool lower = true;
-  bool bigEnough = area > (ReefHeightLevel == 4 ? reefL4AreaMin : reefAreaMin);
+  /*bool bigEnough = area > (ReefHeightLevel == 4 ? reefL4AreaMin : reefAreaMin);*/
+  bool bigEnough = area > reefAreaMin;
   if(wrongCamera || !taller || !lower || !bigEnough) return true;
   else return false;
 }
@@ -173,7 +192,7 @@ bool RobotContainer::IsCoralDisqualified(JetsonSubsystem::MLDetectionFrame &cora
   double area = coral.h * coral.w;
   
   // Disqualifying conditions for a reef detection
-  bool wrongCamera = coral.camId != mlReefCamId;
+  bool wrongCamera = coral.camId != coralCamId;
   bool bigEnough = area > 250;
   bool tooBig = area > coralAreaMax;
   if(wrongCamera || !bigEnough || tooBig) return true;
@@ -223,7 +242,7 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetCoralTrackingTarget(std::ve
     noCoralFound = true;
     return {
         MLLabels::Coral,
-        mlReefCamId,
+        coralCamId,
         mlLastCaptureTime,
         mlLastX,
         mlLastY,
@@ -324,47 +343,47 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
       pop(i--); // Next index is now current index
       continue;
     }
-    /*if(persistenceDataSet && !IsViableReefPersistenceTarget(reef)) {*/
-    /*  pop(i--); // Next index is now current index*/
-    /*}*/
+    if(persistenceDataSet && !IsViableReefPersistenceTarget(reef)) {
+      pop(i--); // Next index is now current index
+    }
   }
 
-  /*if(!numViable && persistenceDataSet) {*/
-  /*  if(++currentRetries > persistenceRetries) {*/
-  /*    persistenceDataSet = false;*/
-  /*    currentRetries = 0;*/
-  /*    noReefFound = true;*/
-  /*    return {};*/
-  /*  }*/
-  /*} else if(!numViable){*/
-  /*  noReefFound = true;*/
-  /*  return {*/
-  /*      MLLabels::Reef,*/
-  /*      mlReefCamId,*/
-  /*      mlLastCaptureTime,*/
-  /*      mlLastX,*/
-  /*      mlLastY,*/
-  /*      mlLastWidth,*/
-  /*      mlLastHeight*/
-  /*    };  */
-  /*} else if(numViable) {*/
-  /*    noReefFound = false;*/
-  /*}*/
-
-  if(!numViable){
+  if(!numViable && persistenceDataSet) {
+    if(++currentRetries > persistenceRetries) {
+      persistenceDataSet = false;
+      currentRetries = 0;
+      noReefFound = true;
+      return {};
+    }
+  } else if(!numViable){
     noReefFound = true;
     return {
         MLLabels::Reef,
-        mlReefCamId,
+        stationaryMLCamId,
         mlLastCaptureTime,
         mlLastX,
         mlLastY,
         mlLastWidth,
         mlLastHeight
-      };
+      };  
   } else if(numViable) {
       noReefFound = false;
   }
+
+  /*if(!numViable){*/
+  /*  noReefFound = true;*/
+  /*  return {*/
+  /*      MLLabels::Reef,*/
+  /*      stationaryMLCamId,*/
+  /*      mlLastCaptureTime,*/
+  /*      mlLastX,*/
+  /*      mlLastY,*/
+  /*      mlLastWidth,*/
+  /*      mlLastHeight*/
+  /*    };*/
+  /*} else if(numViable) {*/
+  /*    noReefFound = false;*/
+  /*}*/
   
   // Find reef closest to target x coordinate
   double closest = 10000.0;
@@ -382,13 +401,13 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
   }
 
   // Store persistence data from selection
-  /*persistenceDataSet = true;*/
-  /*mlRioLastCaptureTime = frc::Timer::GetFPGATimestamp();*/
-  /*mlLastX = target->x;*/
-  /*mlLastY = target->y;*/
-  /*mlLastWidth = target->w;*/
-  /*mlLastHeight = target->h;*/
-  /*mlLastHeightRatio = target->h / target->w;*/
+  persistenceDataSet = true;
+  mlRioLastCaptureTime = frc::Timer::GetFPGATimestamp();
+  mlLastX = target->x;
+  mlLastY = target->y;
+  mlLastWidth = target->w;
+  mlLastHeight = target->h;
+  mlLastHeightRatio = target->h / target->w;
 
   return *target;
 }
@@ -461,7 +480,7 @@ frc2::CommandPtr RobotContainer::ShootCoralCommand() {
     frc2::cmd::Wait(0.7_s),
     frc2::cmd::RunOnce([this]() {
       coral.SetPower(0.0);
-    }, {&coral})
+    }, {})
   );
 }
 
@@ -471,6 +490,7 @@ frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
       auto dets = jetson.GetMLDetections();
       int detSize = dets.size();
       SmartDashboard::PutNumber("numDets", detSize);
+      reefCamFrameCenter = SmartDashboard::GetNumber("reefCamCenter", reefCamFrameCenter);
       if(mlTrackingTarget == MLLabels::Algae) {
 
       } else if(mlTrackingTarget == MLLabels::Coral) {
@@ -489,7 +509,7 @@ frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
           return;
         }
         mlDCenter = target.x + (target.w / 2.0);
-        mlDCenter = mlDCenter - (camFrameWidth / 2.0) - camFrameCenterOffset;
+        mlDCenter = mlDCenter - (camFrameWidth / 2.0) - coralCamFrameCenter;
         auto xAdjust = units::meters_per_second_t{coralAdjust.Calculate(mlDCenter)};
 
         drive.SetTransXAdjustSpeeds({xAdjust});
@@ -502,13 +522,22 @@ frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
         SmartDashboard::PutNumber("coralDelta", mlDCenter);
 
       } else if(mlTrackingTarget == MLLabels::Reef) {
-        if(ReefHeightLevel != 4) return;
+        if(ReefHeightLevel == 1) return;
         std::vector<JetsonSubsystem::MLDetectionFrame> reefDets;
         for(unsigned int i = 0; i < dets.size(); i++) {
           if(dets[i].label == MLLabels::Reef) {
             reefDets.push_back(dets[i]);
           }
         }
+
+        reefHeightRatioThreshold = SmartDashboard::GetNumber("reefHeightRatio", reefHeightRatioThreshold);
+        reefYPosMax = SmartDashboard::GetNumber("reefYPosMax", reefYPosMax);
+        reefAreaMin = SmartDashboard::GetNumber("reefAreaMin", reefAreaMin);
+        persistenceRetries = SmartDashboard::GetNumber("persist", persistenceRetries);
+        reefMaxWidthDrift = SmartDashboard::GetNumber("persistWD", reefMaxWidthDrift);
+        reefMaxHeightDrift = SmartDashboard::GetNumber("persistHD", reefMaxHeightDrift);
+        reefMaxXDrift = SmartDashboard::GetNumber("persistXD", reefMaxXDrift);
+        reefMaxYDrift = SmartDashboard::GetNumber("persistYD", reefMaxYDrift);
 
         SmartDashboard::PutNumber("numReef", reefDets.size());
         auto target = GetReefTrackingTarget(reefDets);
@@ -523,7 +552,7 @@ frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
           return;
         }
         mlDCenter = target.x + (target.w / 2.0);
-        mlDCenter = mlDCenter - (camFrameWidth / 2.0) - camFrameCenterOffset;
+        mlDCenter = mlDCenter - (camFrameWidth / 2.0) - reefCamFrameCenter;
         auto xAdjust = units::meters_per_second_t{reefAdjust.Calculate(mlDCenter)};
 
         drive.SetTransXAdjustSpeeds({xAdjust});
@@ -539,14 +568,25 @@ frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
 RobotContainer::RobotContainer() {
   // Autonomous selector configuration
   autonChooser.SetDefaultOption("None", EmptyAuto.get());
-  autonChooser.AddOption("1PieceMiddleBlue", OnePieceMiddleBlue.get());
-  autonChooser.AddOption("1PieceMiddleRed", OnePieceMiddleRed.get());
-  autonChooser.AddOption("2PieceLeftBlue", TwoPieceLeftBlue.get());
-  autonChooser.AddOption("2PieceLeftRed", TwoPieceLeftRed.get());
-  autonChooser.AddOption("2PieceRightBlue", TwoPieceRightBlue.get());
-  autonChooser.AddOption("2PieceRightRed", TwoPieceRightRed.get());
+  autonChooser.AddOption("1PieceMiddle", OnePieceMiddle.get());
+  autonChooser.AddOption("2PieceLeft", TwoPieceLeft.get());
+  autonChooser.AddOption("2PieceRight", TwoPieceRight.get());
 
-  SmartDashboard::PutNumber("ML Camera ID", mlReefCamId);
+  SmartDashboard::PutNumber("Stationary Camera ID", stationaryMLCamId);
+  SmartDashboard::PutNumber("AprilTag Camera ID", aprilTagCamId);
+  SmartDashboard::PutNumber("Coral Camera ID", coralCamId);
+  SmartDashboard::PutNumber("Algae Camera ID", algaeCamId);
+
+  SmartDashboard::PutNumber("reefHeightRatio", reefHeightRatioThreshold);
+  SmartDashboard::PutNumber("reefYPosMax", reefYPosMax);
+  SmartDashboard::PutNumber("reefAreaMin", reefAreaMin);
+
+  SmartDashboard::PutNumber("persistWD", reefMaxWidthDrift);
+  SmartDashboard::PutNumber("persistHD", reefMaxHeightDrift);
+  SmartDashboard::PutNumber("persistXD", reefMaxXDrift);
+  SmartDashboard::PutNumber("persistYD", reefMaxYDrift);
+
+  SmartDashboard::PutNumber("reefCamCenter", reefCamFrameCenter);
 
   cascade.SetTargetPosition(startingPose.cascadePose);
   pivot.SetTargetAngle(startingPose.pivotAngle);
@@ -801,12 +841,15 @@ RobotContainer::RobotContainer() {
       if (y > -DriveConstants::kDriveDeadzone && y < DriveConstants::kDriveDeadzone)
           y = 0.0;
 
+      if (turnX > -DriveConstants::kTurnDeadzone && turnX < DriveConstants::kTurnDeadzone)
+          turnX = 0.0;
+
       // put speeds through a polynomial to smooth out joystick input
       // check the curve out here: https://www.desmos.com/calculator/65tpwhxyai the range between 0.0 to 1.0 is used for the motors
       // change driveCurveExtent to modify curve strength
       float xSpeed = DriveConstants::kDriveCurveExtent * pow(x, 3) + (1 - DriveConstants::kDriveCurveExtent) * x;
       float ySpeed = DriveConstants::kDriveCurveExtent * pow(y, 3) + (1 - DriveConstants::kDriveCurveExtent) * y;
-      float turn = 0.95 * pow(turnX, 3) + (1 - 0.95) * turnX;
+      float turn = 0.3 * pow(turnX, 3) + (1 - 0.3) * turnX;
       // pass filtered inputs to Drive function
       // inputs will be between -1.0 to 1.0, multiply by intended speed range in mps/deg_per_s when passing
       
@@ -919,15 +962,32 @@ void RobotContainer::SetRecording(bool state) {
   jetson.SetRecording(state);
 }
 
-void RobotContainer::ChangeCoralCamID(int newId) {
+void RobotContainer::ChangeStationaryMLCamID(int newId) {
   if(newId != -1) return;
-  mlReefCamId = newId;
+  stationaryMLCamId = newId;
+  SetCameraStates();
 }
 
 void RobotContainer::ChangeAprilTagCamID(int newId) {
   if(newId != -1) return;
-  aprilTagCamId  = newId;
+  aprilTagCamId = newId;
   jetson.ChangeTempCamId(aprilTagCamId);
+  SetCameraStates();
+}
+void RobotContainer::ChangeCoralCamID(int newId) {
+  if(newId != -1) return;
+  coralCamId = newId;
+  SetCameraStates();
+}
+
+void RobotContainer::ChangeAlgaeCamID(int newId) {
+  if(newId != -1) return;
+  algaeCamId = newId;
+  SetCameraStates();
+}
+
+void RobotContainer::SetCameraStates() {
+  SetMLTarget(mlTrackingTarget);
 }
 
 frc2::Command* RobotContainer::GetAutonomousCommand() {

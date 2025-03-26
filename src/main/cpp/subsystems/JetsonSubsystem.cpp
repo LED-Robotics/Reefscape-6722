@@ -4,6 +4,7 @@
 
 #include "subsystems/JetsonSubsystem/JetsonSubsystem.h"
 
+#include <cstdint>
 #include <iostream>
 
 using namespace frc;
@@ -18,9 +19,11 @@ JetsonSubsystem::JetsonSubsystem() {
 
   
 
-  SmartDashboard::PutNumber("AprilTag Camera ID", tempCamId);
+  SmartDashboard::PutNumber("AprilTag Camera ID", atagCamId);
   table->PutBoolean("recordState", false);
   table->PutBoolean("recordLabelled", false);
+  mlDisabled = table->GetRaw("mlOff", {});
+  atagDisabled = table->GetRaw("aprTagOff", {});
   
   this->AddRequestedTags(std::vector<uint8_t> {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22});
 }
@@ -38,8 +41,8 @@ void JetsonSubsystem::Periodic() {
   fieldRelativePose = AverageRobotPose();  
   
   table->PutRaw("rqsted", requestedTags);
-  table->PutRaw("mlOff", mlIDsDisabled);
-  table->PutRaw("aprTagOff", tagIDsDisabled);
+  table->PutRaw("mlOff", mlDisabled);
+  table->PutRaw("aprTagOff", atagDisabled);
 
   SmartDashboard::PutBoolean("IsPoseAvailable", IsPoseAvailable());
 
@@ -89,14 +92,12 @@ std::vector<JetsonSubsystem::MLDetectionFrame> JetsonSubsystem::ParseDetections(
   if(rawBuf.size() > 2){
     uint8_t* arrayData = &rawBuf[0]; //Turn the recieved vector into an array for memcpy
     bufSize = arrayData[0] + (arrayData[1] << 8); //Bit shift the first two pieces of data which represent the int of how long the buffer is
-    int foundML = 0;
       for(int i = 2; i < bufSize && i + 1 < bufSize; i++) {
         if(arrayData[i] == 0x69 && arrayData[i + 1] == 0x69) {
           JetsonSubsystem::MLDetectionFrame parsedData;
           memcpy(&parsedData, arrayData + i + 2, ML_FRAME_SIZE);
           detData.push_back(parsedData);
-          foundML++;
-        i += ML_FRAME_SIZE - 1;
+          i += ML_FRAME_SIZE - 1;
         }
       }
   }
@@ -245,6 +246,17 @@ double JetsonSubsystem::Constrain(double val, double floor, double ceiling) {
 }
 
 void JetsonSubsystem::ChangeTempCamId(int id) {
-  tempCamId = id;
-  staticATagCam.camId = tempCamId;
+  atagCamId = id;
+  staticATagCam.camId = atagCamId;
 }
+
+void JetsonSubsystem::DisableML(int id) {
+  uint8_t found = count(mlDisabled.begin(), mlDisabled.end(), id);
+  if(!found) mlDisabled.push_back(id);
+}
+
+void JetsonSubsystem::EnableML(int id) {
+  uint8_t found = count(mlDisabled.begin(), mlDisabled.end(), id);
+  if(found) mlDisabled.erase(std::find(mlDisabled.begin(), mlDisabled.end(), id));
+}
+
