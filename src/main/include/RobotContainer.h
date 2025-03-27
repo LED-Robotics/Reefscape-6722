@@ -21,6 +21,7 @@
 #include <frc2/command/ParallelDeadlineGroup.h>
 #include <frc2/command/ParallelCommandGroup.h>
 #include <frc2/command/RunCommand.h>
+#include "frc/geometry/Rotation2d.h"
 #include "units/angle.h"
 #include <frc/Timer.h>
 #include <math.h>
@@ -126,6 +127,7 @@ class RobotContainer {
   int ReefTarget = 0;
   int ReefHeightLevel = 0;
   int LoadTarget = 0;
+  bool useLoadTarget = false;
   bool rerunThetaSet = false;
   bool autonCoralLoad = false;
   bool autonReefLineup = false;
@@ -200,6 +202,9 @@ class RobotContainer {
   int currentTarget = 0;
 
   int omegaTempDisabled = 0;
+
+  frc::Rotation2d loadThetaAngle = {0.0_deg};
+  frc::Rotation2d scoringThetaAngle = {0.0_deg};
 
   // update odom based on Nvdia Jetson estimation
 
@@ -361,7 +366,7 @@ class RobotContainer {
 
   const frc::Pose2d redLoading[2] = {
     {11.0_m, 4.0_m, {-54_deg}}, 
-    {12.0_m, 5.75_m, {54_deg}}
+    {12.0_m, 5.75_m, {36_deg}}
   };
 
   const frc::Pose2d processorLoading {11.0_m, 4.0_m, {-180_deg}};
@@ -533,7 +538,7 @@ class RobotContainer {
 
   int camFrameHeight = 480;
   int camFrameWidth = 640;
-  int reefCamFrameCenter = -249;
+  int reefCamFrameCenter = -360;
   int coralCamFrameCenter = 50;
 
   int mlTrackingTarget = MLLabels::Coral;
@@ -559,10 +564,10 @@ class RobotContainer {
   // Persistance variables
   // Reef filter parameters
   double reefL4HeightRatioThreshold = 1.7;
-  double reefHeightRatioThreshold = 1.08;
+  double reefHeightRatioThreshold = 0.0;
   double reefYPosMax = 240;
   double reefL4AreaMin = 10000.0;
-  double reefAreaMin = 4300.0;
+  double reefAreaMin = 0.0;
   // Reef filter parameters
   //
   // Coral filter parameters
@@ -573,8 +578,8 @@ class RobotContainer {
   // Reef persistence parameters
   double reefMaxWidthDrift = 107.0;
   double reefMaxHeightDrift = 183.0;
-  double reefMaxXDrift = 35.0;
-  double reefMaxYDrift = 16.0;
+  double reefMaxXDrift = 300.0;
+  double reefMaxYDrift = 200.0;
   double reefTimeMultiplier = 0.0;
   // The X/Y comments are not typos
   double reefXSpeedMultiplier = 0.0; // Matched to robot Y speed

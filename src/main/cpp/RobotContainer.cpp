@@ -103,6 +103,7 @@ void RobotContainer::SetMLTarget(int label) {
     case MLLabels::Coral:
       autonReefLineup = false;
       autonCoralLoad = true;
+      useLoadTarget = true;
       drive.SetTransAdjust(true);
       jetson.EnableML(aprilTagCamId);
       jetson.DisableML(stationaryMLCamId);
@@ -112,15 +113,17 @@ void RobotContainer::SetMLTarget(int label) {
     case MLLabels::Reef:
       autonReefLineup = true;
       autonCoralLoad = false;
+      useLoadTarget = false;
       drive.SetTransAdjust(true);
       jetson.DisableML(aprilTagCamId);
       jetson.EnableML(stationaryMLCamId);
-      jetson.DisableML(coralCamId);
+      jetson.EnableML(coralCamId);
       jetson.DisableML(algaeCamId);
       break;
     case MLLabels::Algae:
       autonReefLineup = false;
       autonCoralLoad = false;
+      useLoadTarget = false;
       drive.SetTransAdjust(false);
       jetson.EnableML(aprilTagCamId);
       jetson.DisableML(stationaryMLCamId);
@@ -130,6 +133,7 @@ void RobotContainer::SetMLTarget(int label) {
     default:
       autonReefLineup = false;
       autonCoralLoad = false;
+      useLoadTarget = false;
       drive.SetTransAdjust(false);
       jetson.EnableML(aprilTagCamId);
       jetson.EnableML(stationaryMLCamId);
@@ -147,7 +151,8 @@ bool RobotContainer::IsReefDisqualified(JetsonSubsystem::MLDetectionFrame &reef)
   double area = reef.h * reef.w;
   
   // Disqualifying conditions for a reef detection
-  bool wrongCamera = reef.camId != stationaryMLCamId;
+  bool wrongCamera = reef.camId != coralCamId;
+  return wrongCamera;
   /*bool taller = heightRatio > (ReefHeightLevel == 4 ? reefL4HeightRatioThreshold : reefHeightRatioThreshold);*/
   bool taller = heightRatio > reefHeightRatioThreshold;
   /*bool lower = centerY > reefYPosMax;*/
@@ -359,7 +364,7 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
     noReefFound = true;
     return {
         MLLabels::Reef,
-        stationaryMLCamId,
+        coralCamId,
         mlLastCaptureTime,
         mlLastX,
         mlLastY,
@@ -374,7 +379,7 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
   /*  noReefFound = true;*/
   /*  return {*/
   /*      MLLabels::Reef,*/
-  /*      stationaryMLCamId,*/
+  /*      coralCamId,*/
   /*      mlLastCaptureTime,*/
   /*      mlLastX,*/
   /*      mlLastY,*/
@@ -552,7 +557,7 @@ frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
           return;
         }
         mlDCenter = target.x + (target.w / 2.0);
-        mlDCenter = mlDCenter - (camFrameWidth / 2.0) - reefCamFrameCenter;
+        mlDCenter = mlDCenter + reefCamFrameCenter;
         auto xAdjust = units::meters_per_second_t{reefAdjust.Calculate(mlDCenter)};
 
         drive.SetTransXAdjustSpeeds({xAdjust});
@@ -655,6 +660,16 @@ RobotContainer::RobotContainer() {
           auto angle = processorLoading.Rotation();
           if(IsBlue()) angle.RotateBy(180_deg);
           drive.SetThetaToHold(angle);
+          ManuallySchedule(SetAllKinematics(floorIntakePose));
+        }
+      }, {}));
+
+  controller2.B().OnTrue(frc2::cmd::RunOnce([this]() {
+        ReefHeightLevel = 1;
+        ManuallySchedule(SetAllKinematics(startingPose));
+        if(TrackingTarget == GlobalConstants::kCoralMode) {
+          ManuallySchedule(SetAllKinematics(startingPose));
+        } else {
           ManuallySchedule(SetAllKinematics(floorIntakePose));
         }
       }, {}));
@@ -788,15 +803,27 @@ RobotContainer::RobotContainer() {
 
     if(ReefTarget >= 6) ReefTarget -= 6;
 
+    
     frc::Rotation2d angle;
-    if(TrackingTarget == GlobalConstants::kCoralMode) {
-      angle = IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation();
-      if(ReefHeightLevel == 1) angle = angle.RotateBy(180_deg);
+    if(useLoadTarget) {
+     if(ReefTarget >= 0 && ReefTarget < 3) {
+        LoadTarget = 0;
+      } else {
+        LoadTarget = 1;
+      }   
+      angle = IsBlue() ? blueLoading[LoadTarget].Rotation() : redLoading[LoadTarget].Rotation();
+      loadThetaAngle = angle;
     } else {
-      angle = IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation();
-      if(ReefHeightLevel != 4) angle = angle.RotateBy(180_deg);
+      if(TrackingTarget == GlobalConstants::kCoralMode) {
+        angle = IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation();
+        if(ReefHeightLevel == 1) angle = angle.RotateBy(180_deg);
+      } else {
+        angle = IsBlue() ? blueReef[ReefTarget].Rotation() : redReef[ReefTarget].Rotation();
+        if(ReefHeightLevel != 4) angle = angle.RotateBy(180_deg);
+      }
+      scoringThetaAngle = angle;
     }
-    drive.SetThetaToHold(angle);
+    /*drive.SetThetaToHold(angle);*/
     SmartDashboard::PutNumber("reefTarget", ReefTarget);
   }, {}).Repeatedly());
 
@@ -826,6 +853,13 @@ RobotContainer::RobotContainer() {
   /*******Subsystem DEFAULT Commands*******/
   drive.SetDefaultCommand(frc2::cmd::Run(
     [this] {
+      
+      if(useLoadTarget) {
+        drive.SetThetaToHold(loadThetaAngle);
+      } else {
+        drive.SetThetaToHold(scoringThetaAngle);
+      }
+
       SmartDashboard::PutNumber("Subsystem Target", TrackingTarget);
       SmartDashboard::PutBoolean("ManipAtTarget", ManipulatorIsAtTarget());
       // store control inputs for driving
