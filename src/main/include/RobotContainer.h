@@ -155,15 +155,37 @@ class RobotContainer {
 
   LEDSubsystem led{};
 
+  // COMPETITION POSES//
   // Kinematics Poses //
+
+  /*KinematicsPose startingPose{0.9_m, 40.00_deg};*/
+  /*KinematicsPose loadPose{1.08_m, -129.27_deg};*/
+  /*KinematicsPose floorIntakePose{0.59_m, -48.56_deg};*/
+  /**/
+  /*KinematicsPose l1Coral{0.71_m, -116.7_deg};*/
+  /*KinematicsPose l2Coral{0.83_m, 51.78_deg};*/
+  /*KinematicsPose l3Coral{1.28_m, 53.16_deg};*/
+  /*KinematicsPose l4Coral{1.95_m, 60.06_deg};*/
+  /**/
+  /*KinematicsPose l1Algae{0.9_m, 90_deg};*/
+  /*KinematicsPose l2Algae{1.1_m, -60.45_deg};*/
+  /*KinematicsPose l3Algae{1.38_m, -80.2_deg};*/
+  /*KinematicsPose l4Algae{2.05_m, -192.3_deg};*/
+
+  // Kinematics Poses //
+  // COMPETITION POSES
+
+  // HOME POSES
+  // Kinematics Poses //
+
   KinematicsPose startingPose{0.9_m, 40.00_deg};
-  KinematicsPose loadPose{1.08_m, -129.27_deg};
+  KinematicsPose loadPose{1.14_m, -129.27_deg};
   KinematicsPose floorIntakePose{0.59_m, -48.56_deg};
 
   KinematicsPose l1Coral{0.71_m, -116.7_deg};
-  KinematicsPose l2Coral{0.83_m, 51.78_deg};
-  KinematicsPose l3Coral{1.28_m, 53.16_deg};
-  KinematicsPose l4Coral{1.95_m, 60.06_deg};
+  KinematicsPose l2Coral{0.83_m, 48.38_deg};
+  KinematicsPose l3Coral{1.28_m, 48.36_deg};
+  KinematicsPose l4Coral{1.95_m, 48.75_deg};
 
   KinematicsPose l1Algae{0.9_m, 90_deg};
   KinematicsPose l2Algae{1.1_m, -60.45_deg};
@@ -171,6 +193,7 @@ class RobotContainer {
   KinematicsPose l4Algae{2.05_m, -192.3_deg};
 
   // Kinematics Poses //
+  // HOME POSES
 
   // used for AprilTag odom updates
   units::degree_t startOffset{180.0};
@@ -182,7 +205,7 @@ class RobotContainer {
   frc::PIDController yTransAdjust{0.006, 0.0, 0.0003};
   frc::PIDController coralAdjust{0.0016137, 0.0, 0.0};
   /*frc::PIDController reefAdjust{0.0019137, 0.0, 0.0};*/
-  frc::PIDController reefAdjust{0.0016137, 0.0, 0.0};
+  frc::PIDController reefAdjust{0.00175430902170, 0.0, 0.0};
 
   // flag to drive using field-centric positions
   bool fieldCentric = true;
@@ -538,7 +561,7 @@ class RobotContainer {
 
   int camFrameHeight = 480;
   int camFrameWidth = 640;
-  int reefCamFrameCenter = -360;
+  int reefCamFrameCenter = -392;
   int coralCamFrameCenter = 50;
 
   int mlTrackingTarget = MLLabels::Coral;
@@ -546,8 +569,8 @@ class RobotContainer {
   bool noReefFound = true;
   double mlDCenter = 99999.0;
   double mlAutoScoreThreshold = 20.0;
-  uint8_t stationaryMLCamId = 0;
-  uint8_t aprilTagCamId = 2;
+  uint8_t stationaryMLCamId = 2;
+  uint8_t aprilTagCamId = 0;
   uint8_t coralCamId = 4;
   uint8_t algaeCamId = 6;
   // Persistance variables
@@ -563,11 +586,12 @@ class RobotContainer {
   units::second_t mlRioLastCaptureTime = 0_s;
   // Persistance variables
   // Reef filter parameters
+  double reefXNarrow = 80;
   double reefL4HeightRatioThreshold = 1.7;
   double reefHeightRatioThreshold = 0.0;
-  double reefYPosMax = 240;
-  double reefL4AreaMin = 10000.0;
-  double reefAreaMin = 0.0;
+  double reefYPosMax = 340;
+  double reefL4AreaMin = 200.0;
+  double reefAreaMin = 2500.0;
   // Reef filter parameters
   //
   // Coral filter parameters
@@ -582,7 +606,7 @@ class RobotContainer {
   double reefMaxYDrift = 200.0;
   double reefTimeMultiplier = 0.0;
   // The X/Y comments are not typos
-  double reefXSpeedMultiplier = 0.0; // Matched to robot Y speed
+  double reefXSpeedMultiplier = 0.3; // Matched to robot Y speed
   double reefYSpeedMultiplier = 0.0; // Matched to robot X speed
   // Reef persistence parameters
 
