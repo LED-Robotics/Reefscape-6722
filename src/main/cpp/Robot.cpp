@@ -51,9 +51,9 @@ void Robot::DisabledPeriodic() {
  * RobotContainer class.
  */
 void Robot::AutonomousInit() {
-  // m_container.DisableTagTracking();   // auton uses odom relative to start, not based on AprilTags
+  m_container.DisableTagTracking();   // auton uses odom relative to start, not based on AprilTags*/
   m_container.SetDriveBrakes(true);
-  m_container.SetSlew(true);
+  m_container.SetSlew(false);
   // m_container.SetAutoIndex(true);
   if(DriverStation::IsFMSAttached()) {
     m_container.SetRecording(true);
