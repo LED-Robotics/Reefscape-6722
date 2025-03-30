@@ -155,13 +155,13 @@ void CascadeSubsystem::ConfigMotors() {
   cascadeConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = kRampSeconds;
   cascadeConfig.Audio.AllowMusicDurDisable = true;
   
-  cascadeConfig.MotorOutput.Inverted = true;
+  cascadeConfig.MotorOutput.Inverted = false;
   // cascadeConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
   
   left.GetConfigurator().Apply(cascadeConfig);
   // cascadeConfig.DifferentialSensors.DifferentialSensorSource = signals::DifferentialSensorSourceValue::RemoteTalonFX_Diff;
   // cascadeConfig.DifferentialSensors.DifferentialTalonFXSensorID = kLeftMotorPort;
-  cascadeConfig.MotorOutput.Inverted = false;
+  cascadeConfig.MotorOutput.Inverted = true;
 
   right.GetConfigurator().Apply(cascadeConfig);
 
