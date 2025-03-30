@@ -34,8 +34,8 @@ namespace DriveConstants {
 
     constexpr int kWallSensorPort = 1;
     
-    constexpr units::angle::turn_t kBLeftMagPos = 0.118408203125_tr;
-    constexpr units::angle::turn_t kFLeftMagPos = -0.180908203125_tr;
+    constexpr units::angle::turn_t kBLeftMagPos = -0.43212890625_tr;
+    constexpr units::angle::turn_t kFLeftMagPos = 0.370849609375_tr;
     constexpr units::angle::turn_t kBRightMagPos = -0.36279296875_tr;
     constexpr units::angle::turn_t kFRightMagPos = -0.3642578125_tr;
     
