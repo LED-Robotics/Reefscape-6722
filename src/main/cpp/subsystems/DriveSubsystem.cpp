@@ -87,6 +87,7 @@ void DriveSubsystem::Periodic() {
 
   // SetThetaToHold({units::angle::degree_t{SmartDashboard::GetNumber("Theta Target", 0.0)}});
   SmartDashboard::PutBoolean("Omega Override State", omegaOverride);
+  wallDistance = wallSensor.GetVoltage();
   SmartDashboard::PutNumber("wallSensor", GetWallDistance());
 
   odometry.Update(GetRotation(),
@@ -369,7 +370,7 @@ bool DriveSubsystem::IsAtTarget() {
 
 
 double DriveSubsystem::GetWallDistance() {
-  return wallSensor.GetVoltage();
+  return wallDistance;
 }
 
 units::length::meter_t DriveSubsystem::GetDistToTarget() {

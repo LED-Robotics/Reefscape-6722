@@ -502,11 +502,19 @@ frc2::CommandPtr RobotContainer::GetReefLineupCommand() {
     }),
     // Modify translational adjustment until robot is lined up
     frc2::cmd::Race(
+      GetMLFollowCommand(), // Run until you lose the race
       frc2::cmd::WaitUntil([this]() {
         drive.SetTransYAdjustSpeeds(0.0_mps);
         drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
 
-        bool centered = fabs(mlDCenter) < 100 && !noReefFound;
+        bool centered = fabs(mlDCenter) < mlAutoScoreThreshold && !noReefFound;
+        /*double distToCenter = fabs(mlDCenter);*/
+        /*if(distToCenter > mlAutoScoreThreshold * 1.2) {*/
+        /*  double farAdjust = 1 - ((distToCenter - mlAutoScoreThreshold) / mlAutoScoreThreshold);*/
+        /*  drive.SetTransYAdjustSpeeds(2.0_mps * farAdjust);*/
+        /*} else {*/
+        /*  // Fill if needed*/
+        /*}*/
         if(centered) {
           drive.SetTransXAdjustSpeeds(0.0_mps);
           drive.SetTransYAdjustSpeeds(0.0_mps);
@@ -514,8 +522,7 @@ frc2::CommandPtr RobotContainer::GetReefLineupCommand() {
           drive.Drive({0.0_mps, 0.0_mps, 0.0_deg_per_s}, true, false);
         }
         return centered;
-      }),
-      GetMLFollowCommand() // Run until you lose the race
+      })
     ),
     frc2::cmd::Deadline(
       frc2::cmd::Wait(0.2_s),
@@ -705,14 +712,16 @@ frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
         SmartDashboard::PutNumber("reefTh", target.h);
         SmartDashboard::PutNumber("reefArea", target.w * target.h);
 
-        if(noReefFound || tempDisableTracking) {
-          drive.SetTransXAdjustSpeeds(0.0_mps);
-          return;
-        }
+        
         mlDCenter = target.x + (target.w / 2.0);
         mlDCenter = mlDCenter - (camFrameWidth / 2.0) - coralCamFrameCenter;
         SmartDashboard::PutNumber("mlDCenter", mlDCenter);
         auto xAdjust = units::meters_per_second_t{reefAdjust.Calculate(mlDCenter)};
+
+        if(noReefFound || tempDisableTracking || (drive.GetWallDistance() > reefAutoAlignThreshold)) {
+          drive.SetTransXAdjustSpeeds(0.0_mps);
+          return;
+        }
 
         drive.SetTransXAdjustSpeeds({xAdjust});
         SmartDashboard::PutNumber("reefDelta", mlDCenter);
@@ -1065,7 +1074,7 @@ RobotContainer::RobotContainer() {
         else drive.SetTransAdjust(false);
       }
       
-      double cascadeAdjust = 1.0 - ((cascade.GetPosition() - 0.2_m).value() / 2.0);
+      double cascadeAdjust = 1.0 - ((cascade.GetPosition() - 0.2_m).value() / 2.4);
       if(cascadeAdjust < 0.0) cascadeAdjust = 0.0;
       if(cascadeAdjust > 1.0) cascadeAdjust = 1.0;
       SmartDashboard::PutNumber("cascadeAdjust", cascadeAdjust);

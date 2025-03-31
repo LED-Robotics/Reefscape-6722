@@ -182,7 +182,7 @@ class RobotContainer {
 
   KinematicsPose startingPose{0.9_m, 50.00_deg};
   KinematicsPose loadPose{1.17_m, -121.94_deg};
-  KinematicsPose floorIntakePose{0.59_m, -48.56_deg};
+  KinematicsPose floorIntakePose{0.59_m, -36.6_deg};
 
   KinematicsPose l1Coral{0.71_m, -116.7_deg};
   KinematicsPose l2Coral{0.79_m, 54.33_deg};
@@ -192,7 +192,7 @@ class RobotContainer {
   KinematicsPose l1Algae{0.9_m, 90_deg};
   KinematicsPose l2Algae{1.1_m, -60.45_deg};
   KinematicsPose l3Algae{1.38_m, -80.2_deg};
-  KinematicsPose l4Algae{2.05_m, -192.3_deg};
+  KinematicsPose l4Algae{2.05_m, -178.58_deg};
 
   // Kinematics Poses //
   // HOME POSES
@@ -510,13 +510,14 @@ class RobotContainer {
   int camFrameHeight = 480;
   int camFrameWidth = 640;
   int reefCamFrameCenter = -392;
-  int coralCamFrameCenter = 50;
+  int coralCamFrameCenter = 2;
 
   int mlTrackingTarget = MLLabels::Coral;
   bool noCoralFound = true;
   bool noReefFound = true;
   double mlDCenter = 99999.0;
-  double mlAutoScoreThreshold = 20.0;
+  double mlAutoScoreThreshold = 100.0;
+  double reefAutoAlignThreshold = 0.35;
   uint8_t stationaryMLCamId = 6;
   uint8_t aprilTagCamId = 4;
   uint8_t coralCamId = 0;

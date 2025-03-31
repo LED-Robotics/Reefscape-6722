@@ -337,5 +337,6 @@ class DriveSubsystem : public frc2::SubsystemBase {
   int distSample = 0;
   double distArray[kDistSamples];
   units::length::meter_t distFromTarget{0.0_m};
+  double wallDistance = 0.0;
   Field2d fieldWidget;
 };
