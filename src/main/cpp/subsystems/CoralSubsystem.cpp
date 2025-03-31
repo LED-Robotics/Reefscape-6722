@@ -42,11 +42,11 @@ void CoralSubsystem::Periodic() {
         intake2.Set(kHoldingPower);
       } else {
         intake1.Set(power);
-        intake2.Set(power * 0.2);
+        intake2.Set(power);
       }
     } else {
-      intake1.Set(power);
-      intake2.Set(power);
+      intake1.Set(power * 0.5);
+      intake2.Set(power * 0.5);
     }
   }
 }

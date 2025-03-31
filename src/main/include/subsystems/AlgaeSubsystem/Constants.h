@@ -5,7 +5,7 @@ namespace AlgaeConstants {
     // ports
     constexpr int kIntakePort = 9;
   
-    constexpr int kUltrasonicPort = 0;
+    constexpr int kUltrasonicPort = 2;
 
     constexpr double kIntakeDefaultPower = 0.0;
 

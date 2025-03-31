@@ -32,10 +32,10 @@ namespace DriveConstants {
     constexpr int kBackRightEncoderPort = 6;
     constexpr int kFrontRightEncoderPort = 7;
 
-    constexpr int kWallSensorPort = 1;
+    constexpr int kWallSensorPort = 3;
     
-    constexpr units::angle::turn_t kBLeftMagPos = 0.118408203125_tr;
-    constexpr units::angle::turn_t kFLeftMagPos = -0.180908203125_tr;
+    constexpr units::angle::turn_t kBLeftMagPos = -0.427978515625_tr;
+    constexpr units::angle::turn_t kFLeftMagPos = 0.364501953125_tr;
     constexpr units::angle::turn_t kBRightMagPos = -0.36279296875_tr;
     constexpr units::angle::turn_t kFRightMagPos = -0.3642578125_tr;
     
@@ -70,7 +70,7 @@ namespace DriveConstants {
     constexpr auto kDriveAccelerationLimit = 9.0_mps_sq;
     constexpr auto kDriveDecelerationLimit = 12.0_mps_sq;
     constexpr auto kDriveTranslationLimit = 7.7_mps;
-    constexpr auto kTransAdjustLimiter = 5.0_mps_sq;
+    constexpr auto kTransAdjustLimiter = 3.0_mps_sq;
     constexpr double kTxAdjust = 0.5;
     constexpr double kAlignP = 0.5;
     constexpr double kPVelTurnOffset = -2.0;

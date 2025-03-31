@@ -36,7 +36,7 @@ namespace PivotConstants {
     constexpr double kPPivot = 140.0;
     constexpr double kDPivot = 12.0;
     constexpr double kPivotRotorToGearbox = 136.0 / 5.0; //Will change
-    constexpr double kPivotGearboxToMechanism = 17.0 / 4.0; //Will change
+    constexpr double kPivotGearboxToMechanism = 68.0 / 18.0; //Will change
     // constexpr double kTurnsPerDegree = (kPivotRotorToGearbox * kPivotGearboxToMechanism) / 360.0;
     constexpr double kTurnsPerDegree = 1.0 / 360.0;
 }

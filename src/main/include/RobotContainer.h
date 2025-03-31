@@ -180,14 +180,14 @@ class RobotContainer {
   // HOME POSES
   // Kinematics Poses //
 
-  KinematicsPose startingPose{0.9_m, 40.00_deg};
-  KinematicsPose loadPose{1.14_m, -129.27_deg};
+  KinematicsPose startingPose{0.9_m, 50.00_deg};
+  KinematicsPose loadPose{1.17_m, -121.94_deg};
   KinematicsPose floorIntakePose{0.59_m, -48.56_deg};
 
   KinematicsPose l1Coral{0.71_m, -116.7_deg};
-  KinematicsPose l2Coral{0.83_m, 48.38_deg};
-  KinematicsPose l3Coral{1.28_m, 48.36_deg};
-  KinematicsPose l4Coral{1.95_m, 54.75_deg};
+  KinematicsPose l2Coral{0.79_m, 54.33_deg};
+  KinematicsPose l3Coral{1.24_m, 54.33_deg};
+  KinematicsPose l4Coral{2.05_m, 67.1_deg};
 
   KinematicsPose l1Algae{0.9_m, 90_deg};
   KinematicsPose l2Algae{1.1_m, -60.45_deg};
@@ -207,7 +207,7 @@ class RobotContainer {
   frc::PIDController yTransAdjust{0.006, 0.0, 0.0003};
   frc::PIDController coralAdjust{0.0016137, 0.0, 0.0};
   /*frc::PIDController reefAdjust{0.0019137, 0.0, 0.0};*/
-  frc::PIDController reefAdjust{0.002246430578, 0.0, 0.0};
+  frc::PIDController reefAdjust{0.00279127944556, 0.0, 0.0};
   /*frc::PIDController reefAdjust{0.00173673325180, 0.0024573398175, 0.0};*/
 
   // flag to drive using field-centric positions
@@ -364,8 +364,8 @@ class RobotContainer {
     /*{5.85_m, 3.75_m, {-90_deg}}, // Away from driver station, 0_deg*/
   const frc::Pose2d autonReef[6] = {
     {5.85_m, 4.25_m, {-90_deg}}, // Away from driver station, 0_deg
-    {5.026_m, 2.724_m, {-150.0_deg}}, // 45_deg
-    {3.524_m, 2.913_m, {150.0_deg}}, // 135_deg
+    {5.345_m, 2.937_m, {-150.0_deg}}, // 45_deg
+    {3.477_m, 2.984_m, {150.0_deg}}, // 135_deg
     {2.5_m, 4.0_m, {0_deg}}, // Facing driverstation, 180_deg
     {3.5_m, 5.75_m, {-60_deg}}, // 215_deg
     {5.5_m, 5.75_m, {-120_deg}} //305_deg
@@ -426,14 +426,18 @@ class RobotContainer {
     ShootCoralCommand(), // SHOOT
     // Turn off vision adjust
     frc2::cmd::RunOnce([this]() {
+      drive.SetTransAdjust(false);
       SetMLTarget(-1);
-    }, {&coral}),
+    }, {}),
     // Return near start of auton
     frc2::cmd::Either(
       PathGenKinematics(onePointMiddleEnd, startingPose, 0.75_s),
       PathGenKinematics(SwapToRed(onePointMiddleEnd), startingPose, 0.75_s),
       [this]() { return IsBlue(); }
-    )
+    ),
+    frc2::cmd::RunOnce([this]() {
+      drive.SetOmegaOverride(false);
+    }, {})
   )};
 
     // TWO PIECE LEFT //
@@ -451,8 +455,8 @@ class RobotContainer {
       drive.ResetOdometry(IsBlue() ? twoPieceRightStart : SwapToRed(twoPieceRightStart));
     }, {}),
     frc2::cmd::Either(
-      PathGenThenKinematics(autonReef[1], l4Coral, 0.2_s),
-      PathGenThenKinematics(SwapToRed(autonReef[1]), l4Coral, 0.2_s),
+      PathGenKinematics(autonReef[1], l4Coral, 0.8_s),
+      PathGenKinematics(SwapToRed(autonReef[1]), l4Coral, 0.8_s),
       [this]() { return IsBlue(); }
     ),
     GetReefLineupCommand(),
@@ -463,9 +467,10 @@ class RobotContainer {
       [this]() { return IsBlue(); }
     ),
     GetCoralLineupCommand(),
+    GetCoralFixCommand(),
     frc2::cmd::Either(
-      PathGenThenKinematics(autonReef[2], l4Coral, 0.2_s),
-      PathGenThenKinematics(SwapToRed(autonReef[2]), l4Coral, 0.2_s),
+      PathGenKinematics(autonReef[2], l4Coral, 0.8_s),
+      PathGenKinematics(SwapToRed(autonReef[2]), l4Coral, 0.8_s),
       [this]() { return IsBlue(); }
     ),
     GetReefLineupCommand(),
@@ -474,21 +479,12 @@ class RobotContainer {
       PathGenKinematics(autonLoading[0], loadPose, 0.20_s),
       PathGenKinematics(SwapToRed(autonLoading[0]), loadPose, 0.20_s),
       [this]() { return IsBlue(); }
-  )
-  )};
-
-  frc2::CommandPtr kerblooey{frc2::cmd::Sequence(
+    ),
+    GetCoralLineupCommand(),
+    /*GetCoralFixCommand(),*/
     frc2::cmd::RunOnce([this]() {
-      coral.SetPower(0.25);
-    }, {&coral}),
-    frc2::cmd::Wait(0.09_s),
-    frc2::cmd::RunOnce([this]() {
-      coral.SetPower(-1.0);
-    }, {&coral}),
-    frc2::cmd::Wait(0.3_s),
-    frc2::cmd::RunOnce([this]() {
-      coral.SetPower(0.0);
-    }, {&coral})
+      drive.SetOmegaOverride(false);
+    }, {})
   )};
 
   /**
@@ -521,10 +517,10 @@ class RobotContainer {
   bool noReefFound = true;
   double mlDCenter = 99999.0;
   double mlAutoScoreThreshold = 20.0;
-  uint8_t stationaryMLCamId = 0;
-  uint8_t aprilTagCamId = 2;
-  uint8_t coralCamId = 4;
-  uint8_t algaeCamId = 6;
+  uint8_t stationaryMLCamId = 6;
+  uint8_t aprilTagCamId = 4;
+  uint8_t coralCamId = 0;
+  uint8_t algaeCamId = 2;
   // Persistance variables
   bool persistenceDataSet = false;
   int persistenceRetries = 10;
@@ -589,6 +585,7 @@ class RobotContainer {
   frc2::CommandPtr PathGenKinematics(frc::Pose2d pose, KinematicsPose stance, units::time::second_t delay);
   frc2::CommandPtr PathGenThenKinematics(frc::Pose2d pose, KinematicsPose stance, units::time::second_t delay);
   frc2::CommandPtr ShootCoralCommand();
+  frc2::CommandPtr GetCoralFixCommand();
 
   // The chooser for the autonomous routines
   /*frc::SendableChooser<frc2::CommandPtr&&> autonChooser;*/
