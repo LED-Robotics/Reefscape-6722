@@ -207,7 +207,7 @@ class RobotContainer {
   frc::PIDController yTransAdjust{0.006, 0.0, 0.0003};
   frc::PIDController coralAdjust{0.0016137, 0.0, 0.0};
   /*frc::PIDController reefAdjust{0.0019137, 0.0, 0.0};*/
-  frc::PIDController reefAdjust{0.00279127944556, 0.0, 0.0};
+  frc::PIDController reefAdjust{0.00205309710993, 0.0, 0.0};
   /*frc::PIDController reefAdjust{0.00173673325180, 0.0024573398175, 0.0};*/
 
   // flag to drive using field-centric positions
@@ -363,8 +363,8 @@ class RobotContainer {
 
     /*{5.85_m, 3.75_m, {-90_deg}}, // Away from driver station, 0_deg*/
   const frc::Pose2d autonReef[6] = {
-    {5.85_m, 4.25_m, {-90_deg}}, // Away from driver station, 0_deg
-    {5.345_m, 2.937_m, {-150.0_deg}}, // 45_deg
+    {5.866_m, 3.907_m, {-90_deg}}, // Away from driver station, 0_deg
+    {5.097_m, 2.795_m, {-150.0_deg}}, // 45_deg
     {3.477_m, 2.984_m, {150.0_deg}}, // 135_deg
     {2.5_m, 4.0_m, {0_deg}}, // Facing driverstation, 180_deg
     {3.5_m, 5.75_m, {-60_deg}}, // 215_deg
@@ -408,7 +408,7 @@ class RobotContainer {
   frc2::CommandPtr EmptyAuto{frc2::cmd::None()};
 
   frc::Pose2d onePointMiddleStart{7.1_m, 4.0_m, -90.0_deg};
-  frc::Pose2d onePointMiddleEnd{6.1_m, 4.0_m, -90.0_deg};
+  frc::Pose2d onePointMiddleEnd{6.433_m, 4.025_m, -90.0_deg};
 
   // One Piece Middle Auton
   frc2::CommandPtr OnePieceMiddle{frc2::cmd::Sequence(
@@ -517,7 +517,7 @@ class RobotContainer {
   bool noReefFound = true;
   double mlDCenter = 99999.0;
   double mlAutoScoreThreshold = 100.0;
-  double reefAutoAlignThreshold = 0.35;
+  double reefAutoAlignThreshold = 0.45;
   uint8_t stationaryMLCamId = 6;
   uint8_t aprilTagCamId = 4;
   uint8_t coralCamId = 0;
@@ -535,7 +535,7 @@ class RobotContainer {
   units::second_t mlRioLastCaptureTime = 0_s;
   // Persistance variables
   // Reef filter parameters
-  double reefXNarrow = 97;
+  double reefXNarrow = 0;
   double reefL4HeightRatioThreshold = 1.7;
   double reefHeightRatioThreshold = 0.0;
   double reefYPosMax = 340;
@@ -551,7 +551,7 @@ class RobotContainer {
   // Reef persistence parameters
   double reefMaxWidthDrift = 107.0;
   double reefMaxHeightDrift = 183.0;
-  double reefMaxXDrift = 210.0;
+  double reefMaxXDrift = 441.0;
   double reefMaxYDrift = 200.0;
   double reefTimeMultiplier = 0.0;
   // The X/Y comments are not typos

@@ -453,7 +453,7 @@ JetsonSubsystem::MLDetectionFrame RobotContainer::GetReefTrackingTarget(std::vec
 
   bool areaCheck = target->w * target->h < areaThres * 0.5;
   bool signageCheck = (closest > 0 && mlDCenter < 0) || (closest < 0 && mlDCenter > 0);
-  signageCheck = signageCheck && fabs(closest - mlDCenter > reefMaxXDrift);
+  signageCheck = signageCheck && fabs(closest - mlDCenter) > reefMaxXDrift;
   mlDCenter = closest;
   if(areaCheck || signageCheck) {
     noReefFound = true;
@@ -716,12 +716,13 @@ frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
         mlDCenter = target.x + (target.w / 2.0);
         mlDCenter = mlDCenter - (camFrameWidth / 2.0) - coralCamFrameCenter;
         SmartDashboard::PutNumber("mlDCenter", mlDCenter);
-        auto xAdjust = units::meters_per_second_t{reefAdjust.Calculate(mlDCenter)};
 
         if(noReefFound || tempDisableTracking || (drive.GetWallDistance() > reefAutoAlignThreshold)) {
           drive.SetTransXAdjustSpeeds(0.0_mps);
           return;
-        }
+        }        
+
+        auto xAdjust = units::meters_per_second_t{reefAdjust.Calculate(mlDCenter)};
 
         drive.SetTransXAdjustSpeeds({xAdjust});
         SmartDashboard::PutNumber("reefDelta", mlDCenter);
@@ -1074,7 +1075,7 @@ RobotContainer::RobotContainer() {
         else drive.SetTransAdjust(false);
       }
       
-      double cascadeAdjust = 1.0 - ((cascade.GetPosition() - 0.2_m).value() / 2.4);
+      double cascadeAdjust = 1.0 - ((cascade.GetPosition() - 0.2_m).value() / 2.2);
       if(cascadeAdjust < 0.0) cascadeAdjust = 0.0;
       if(cascadeAdjust > 1.0) cascadeAdjust = 1.0;
       SmartDashboard::PutNumber("cascadeAdjust", cascadeAdjust);
