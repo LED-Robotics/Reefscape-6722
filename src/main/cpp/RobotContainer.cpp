@@ -717,7 +717,9 @@ frc2::CommandPtr RobotContainer::GetMLFollowCommand() {
         mlDCenter = mlDCenter - (camFrameWidth / 2.0) - coralCamFrameCenter;
         SmartDashboard::PutNumber("mlDCenter", mlDCenter);
 
-        if(noReefFound || tempDisableTracking || (drive.GetWallDistance() > reefAutoAlignThreshold)) {
+        disableWallSensor = SmartDashboard::GetBoolean("disableWallSensor", disableWallSensor);
+        bool inReefProximity = disableWallSensor ? true : (drive.GetWallDistance() < reefAutoAlignThreshold);
+        if(noReefFound || tempDisableTracking || !inReefProximity) {
           drive.SetTransXAdjustSpeeds(0.0_mps);
           return;
         }        
@@ -763,6 +765,8 @@ RobotContainer::RobotContainer() {
   SmartDashboard::PutNumber("reefkP", reefAdjust.GetP());
   SmartDashboard::PutNumber("reefkI", reefAdjust.GetI());
   SmartDashboard::PutNumber("reefkD", reefAdjust.GetD());
+
+  SmartDashboard::PutBoolean("disableWallSensor", disableWallSensor);
 
   cascade.SetTargetPosition(startingPose.cascadePose);
   pivot.SetTargetAngle(startingPose.pivotAngle);
@@ -1093,7 +1097,7 @@ RobotContainer::RobotContainer() {
         power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
       }
-      if(CodriverIntakeTarget == GlobalConstants::kCoralMode) {
+      if(!controller2.GetHID().GetYButton() && CodriverIntakeTarget == GlobalConstants::kCoralMode) {
         if(power == 0.0) power = controller2.GetLeftTriggerAxis() - controller2.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
       }
@@ -1109,7 +1113,7 @@ RobotContainer::RobotContainer() {
         power = controller.GetLeftTriggerAxis() - controller.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
       }
-      if(CodriverIntakeTarget == GlobalConstants::kAlgaeMode) {
+      if(!controller2.GetHID().GetYButton() && CodriverIntakeTarget == GlobalConstants::kAlgaeMode) {
         if(power == 0.0) power = controller2.GetLeftTriggerAxis() - controller2.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
       }
@@ -1117,13 +1121,15 @@ RobotContainer::RobotContainer() {
     }, 
   {&algae}));
 
-  // climb.SetDefaultCommand(frc2::cmd::Run(
-  //   [this] {
-  //     double power = controller2.GetLeftTriggerAxis() - controller2.GetRightTriggerAxis();
-  //     if(fabs(power) < 0.15) power = 0.0;
-  //     climb.SetPower(power);
-  //   }, 
-  // {&climb}));
+  climb.SetDefaultCommand(frc2::cmd::Run(
+    [this] {
+      if(controller2.GetHID().GetYButton()) {
+        double power = controller2.GetLeftTriggerAxis();
+        if(fabs(power) < 0.15) power = 0.0;
+        climb.SetPower(power);
+      }
+    }, 
+  {&climb}));
 
   xTransAdjust.SetSetpoint(0.0);
   yTransAdjust.SetSetpoint(0.0);

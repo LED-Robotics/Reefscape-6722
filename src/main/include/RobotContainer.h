@@ -33,6 +33,7 @@
 #include "subsystems/CoralSubsystem/CoralSubsystem.h"
 #include "subsystems/LEDSubsystem/LEDSubsystem.h"
 #include "subsystems/PivotSubsystem/PivotSubsystem.h"
+#include "subsystems/ClimbSubsystem/ClimbSubsystem.h"
 #include "units/time.h"
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/WaitCommand.h>
@@ -133,6 +134,7 @@ class RobotContainer {
   bool autonReefLineup = false;
 
   bool tempDisableTracking = false;
+  bool disableWallSensor = false;
   
   // The robot's subsystems
   JetsonSubsystem jetson{};
@@ -149,7 +151,7 @@ class RobotContainer {
 
   PivotSubsystem pivot{};
 
-  // ClimbSubsystem climb{};
+  ClimbSubsystem climb{};
 
   CoralSubsystem coral{};
 
@@ -469,8 +471,8 @@ class RobotContainer {
     GetCoralLineupCommand(),
     GetCoralFixCommand(),
     frc2::cmd::Either(
-      PathGenKinematics(autonReef[2], l4Coral, 0.8_s),
-      PathGenKinematics(SwapToRed(autonReef[2]), l4Coral, 0.8_s),
+      PathGenKinematics(autonReef[2], l4Coral, 0.5_s),
+      PathGenKinematics(SwapToRed(autonReef[2]), l4Coral, 0.5_s),
       [this]() { return IsBlue(); }
     ),
     GetReefLineupCommand(),
