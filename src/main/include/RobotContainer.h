@@ -162,19 +162,19 @@ class RobotContainer {
   // COMPETITION POSES//
   // Kinematics Poses //
 
-  /*KinematicsPose startingPose{0.9_m, 40.00_deg};*/
-  /*KinematicsPose loadPose{1.08_m, -129.27_deg};*/
-  /*KinematicsPose floorIntakePose{0.59_m, -48.56_deg};*/
-  /**/
-  /*KinematicsPose l1Coral{0.71_m, -116.7_deg};*/
-  /*KinematicsPose l2Coral{0.83_m, 51.78_deg};*/
-  /*KinematicsPose l3Coral{1.28_m, 53.16_deg};*/
-  /*KinematicsPose l4Coral{1.95_m, 60.06_deg};*/
-  /**/
-  /*KinematicsPose l1Algae{0.9_m, 90_deg};*/
-  /*KinematicsPose l2Algae{1.1_m, -60.45_deg};*/
-  /*KinematicsPose l3Algae{1.38_m, -80.2_deg};*/
-  /*KinematicsPose l4Algae{2.05_m, -192.3_deg};*/
+  KinematicsPose startingPose{0.9_m, 40.00_deg};
+  KinematicsPose loadPose{1.08_m, -129.27_deg};
+  KinematicsPose floorIntakePose{0.59_m, -48.56_deg};
+  
+  KinematicsPose l1Coral{0.71_m, -116.7_deg};
+  KinematicsPose l2Coral{0.71_m, 51.78_deg};
+  KinematicsPose l3Coral{1.21_m, 59.12_deg};
+  KinematicsPose l4Coral{1.99_m, 66.3_deg};
+  
+  KinematicsPose l1Algae{0.64_m, 120.5_deg};
+  KinematicsPose l2Algae{1.1_m, -60.45_deg};
+  KinematicsPose l3Algae{1.38_m, -80.2_deg};
+  KinematicsPose l4Algae{2.05_m, -192.3_deg};
 
   // Kinematics Poses //
   // COMPETITION POSES
@@ -182,19 +182,19 @@ class RobotContainer {
   // HOME POSES
   // Kinematics Poses //
 
-  KinematicsPose startingPose{0.9_m, 50.00_deg};
-  KinematicsPose loadPose{1.17_m, -121.94_deg};
-  KinematicsPose floorIntakePose{0.59_m, -36.6_deg};
-
-  KinematicsPose l1Coral{0.71_m, -116.7_deg};
-  KinematicsPose l2Coral{0.79_m, 54.33_deg};
-  KinematicsPose l3Coral{1.24_m, 54.33_deg};
-  KinematicsPose l4Coral{2.05_m, 67.1_deg};
-
-  KinematicsPose l1Algae{0.9_m, 90_deg};
-  KinematicsPose l2Algae{1.1_m, -60.45_deg};
-  KinematicsPose l3Algae{1.38_m, -80.2_deg};
-  KinematicsPose l4Algae{2.05_m, -178.58_deg};
+  // KinematicsPose startingPose{0.9_m, 50.00_deg};
+  // KinematicsPose loadPose{1.17_m, -121.94_deg};
+  // KinematicsPose floorIntakePose{0.59_m, -36.6_deg};
+  //
+  // KinematicsPose l1Coral{0.71_m, -116.7_deg};
+  // KinematicsPose l2Coral{0.79_m, 54.33_deg};
+  // KinematicsPose l3Coral{1.24_m, 54.33_deg};
+  // KinematicsPose l4Coral{2.05_m, 67.1_deg};
+  //
+  // KinematicsPose l1Algae{0.64_m, 120.5_deg};
+  // KinematicsPose l2Algae{1.1_m, -60.45_deg};
+  // KinematicsPose l3Algae{1.38_m, -80.2_deg};
+  // KinematicsPose l4Algae{2.05_m, -178.58_deg};
 
   // Kinematics Poses //
   // HOME POSES
