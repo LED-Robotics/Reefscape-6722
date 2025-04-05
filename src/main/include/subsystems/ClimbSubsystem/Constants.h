@@ -4,7 +4,7 @@
 namespace ClimbConstants {
     // ports
     constexpr int kClimbPort = 10;
-    constexpr int kEncoderPort = 12;
+    constexpr int kEncoderPort = 18;
 
     constexpr units::angle::turn_t kEncoderOffset = -0.46044921875_tr;
 
@@ -24,6 +24,7 @@ namespace ClimbConstants {
     // arm position constants
     constexpr double kStartOffset = 0.0;
     constexpr units::angle::degree_t kStartAngle{90_deg};
+    constexpr double kClimbThresh = 1.178466796875;
     // position deadzone
     constexpr units::angle::degree_t kAngleDeadzone{2_deg};
     // feed forward at max gravity i.e. 90 degrees off the floor

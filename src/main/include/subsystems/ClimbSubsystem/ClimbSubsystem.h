@@ -117,7 +117,7 @@ class ClimbSubsystem : public frc2::SubsystemBase {
   // The motor controllers
   hardware::TalonFX climb;
 
-  // hardware::CANcoder encoder;
+  hardware::CANcoder encoder;
 
   controls::PositionVoltage positionController{0_tr};
 };
