@@ -13,7 +13,8 @@ using namespace ClimbConstants;
 using namespace frc;
 
 ClimbSubsystem::ClimbSubsystem()
-  : climb{kClimbPort, "canCan"} {
+  : climb{kClimbPort, "canCan"},
+    encoder{kEncoderPort, "canCan"} {
       // climb.SetPosition(0.0_tr);
       SmartDashboard::PutNumber("Climb Angle", GetAngle().value());
       ConfigMotor();
@@ -26,6 +27,12 @@ void ClimbSubsystem::Periodic() {
   //  Control
   /*SetTargetAngle(units::angle::degree_t{SmartDashboard::GetNumber("Climb Angle", GetAngle().value())});*/
   SmartDashboard::PutNumber("Climb Actual", GetAngle().value());
+  double encoderPos = encoder.GetPosition().GetValueAsDouble();
+  SmartDashboard::PutNumber("Climb Encoder", encoderPos);
+  if(encoderPos > kClimbThresh) {
+    climb.Set(0.0);
+    return;
+  }
   if(state == ClimbStates::kOff) {
     climb.Set(0.0);
   } else if(state == ClimbStates::kPowerMode) {

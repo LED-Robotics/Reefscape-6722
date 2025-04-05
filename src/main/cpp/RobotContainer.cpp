@@ -1101,7 +1101,7 @@ RobotContainer::RobotContainer() {
         if(power == 0.0) power = controller2.GetLeftTriggerAxis() - controller2.GetRightTriggerAxis();
         if(fabs(power) < 0.1) power = 0.0;
       }
-      if(power > 0.0) power *= 0.5;
+      if(power > 0.0) power *= 0.13;
       coral.SetPower(power);
     },
   {&coral}));
