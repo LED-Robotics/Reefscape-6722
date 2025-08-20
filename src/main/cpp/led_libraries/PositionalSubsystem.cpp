@@ -6,7 +6,7 @@ PositionalSubsystem::PositionalSubsystem(std::vector<SmartMotor*> motorRefs)
   : motors{motorRefs} {
 }
 
-void PositionalSubsystem::Periodic() {
+void PositionalSubsystem::RunMotors() {
   if(state == States::kOff) {
     for(auto &motor : motors) {
       motor->Stop();

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <units/angle.h>
 #include <units/angular_velocity.h>
 

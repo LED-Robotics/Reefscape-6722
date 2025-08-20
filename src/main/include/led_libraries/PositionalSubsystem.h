@@ -22,7 +22,7 @@ class PositionalSubsystem : public frc2::SubsystemBase {
   /**
    * Will be called periodically whenever the CommandScheduler runs.
    */
-  void Periodic() override;
+  void RunMotors();
   
   /**
    * Turns the Cascade state to kOff.

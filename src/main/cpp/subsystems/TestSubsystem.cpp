@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 #include "subsystems/TestSubsystem/TestSubsystem.h"
+#include "led_libraries/PositionalSubsystem.h"
 
 #include <frc/geometry/Rotation2d.h>
 #include <iostream>
@@ -13,8 +14,10 @@ using namespace TestConstants;
 using namespace frc;
 
 TestSubsystem::TestSubsystem()
-  : test{kTestPort},
-    testEncoder{kEncoderPort} {
+  : PositionalSubsystem{std::vector<SmartMotor*>{&testController}},
+    test{kTestPort},
+    testEncoder{kEncoderPort}
+    {
       /*test.SetPosition(0.0_tr);*/
       SmartDashboard::PutNumber("Test Angle", 90.0);
       SmartDashboard::PutNumber("microAdjustTest", 0.0);  // print to Shuffleboard
@@ -29,25 +32,16 @@ void TestSubsystem::Periodic() {
   // Test Control
   SetTargetAngle(units::angle::degree_t{SmartDashboard::GetNumber("Test Angle", GetAngle().value())});
   SmartDashboard::PutNumber("Test Actual", GetAngle().value());
-  if(state == TestStates::kTestOff) {
-    test.Set(0.0);
-  } else if(state == TestStates::kTestPowerMode) {
-    test.Set(power);
-  } else if(state == TestStates::kTestAngleMode) {
-    // feed forwards should be a changing constant that increases as the test moves further. It should be a static amount of power to overcome gravity.
-
-    microAdjust = units::angle::degree_t{SmartDashboard::GetNumber("microAdjustTest", 0.0)};  // print to Shuffleboard
-    SmartDashboard::PutNumber("testTestTr", test.GetPosition().GetValue().value());  // print to Shuffleboard
-    SmartDashboard::PutNumber("angle", GetAngle().value());  // print to Shuffleboard
-    double feedForward = fabs(sin(angle.value())) * kMaxFeedForward;
-    SmartDashboard::PutNumber("Angle Target", angle.value());
-    units::angle::turn_t posTarget{(angle + microAdjust - kTestStartAngle).value() * kTurnsPerDegree};
-    SmartDashboard::PutNumber("wrTurnTarget", posTarget.value());
-    test.SetControl(testPosition
-      .WithPosition(units::angle::turn_t{posTarget})
-      .WithEnableFOC(true));
-      /*.WithFeedForward(units::volt_t{feedForward}));*/
-  }
+  // feed forwards should be a changing constant that increases as the test moves further. It should be a static amount of power to overcome gravity.
+  microAdjust = units::angle::degree_t{SmartDashboard::GetNumber("microAdjustTest", 0.0)};  // print to Shuffleboard
+  SmartDashboard::PutNumber("testTestTr", test.GetPosition().GetValue().value());  // print to Shuffleboard
+  SmartDashboard::PutNumber("angle", GetAngle().value());  // print to Shuffleboard
+  double feedForward = fabs(sin(angle.value())) * kMaxFeedForward;
+  SmartDashboard::PutNumber("Angle Target", angle.value());
+  units::angle::turn_t posTarget{(angle + microAdjust - kTestStartAngle).value() * kTurnsPerDegree};
+  SmartDashboard::PutNumber("wrTurnTarget", posTarget.value());
+  // Send control signals to motors
+  RunMotors();
 }
 
 void TestSubsystem::TestOn() {

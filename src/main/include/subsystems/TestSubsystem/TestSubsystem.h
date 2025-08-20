@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include <vector>
 #include "led_libraries/PositionalSubsystem.h"
+#include "led_libraries/TalonSmartMotor.h"
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/CANcoder.hpp>
 #include <frc2/command/Command.h>
@@ -121,8 +123,11 @@ class TestSubsystem : public PositionalSubsystem {
 
   // The motor controllers
   hardware::TalonFX test;
+  TalonSmartMotor testController{&test};
 
   hardware::CANcoder testEncoder;
 
   controls::PositionVoltage testPosition{0_tr};
+
+  std::vector<SmartMotor*>motors{};
 };
