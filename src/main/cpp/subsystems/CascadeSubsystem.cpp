@@ -52,9 +52,10 @@ units::length::meter_t CascadeSubsystem::GetPositionMeters() {
 }
 
 void CascadeSubsystem::SetTargetMeters(units::length::meter_t newPosition) {
+  newPosition = newPosition + ToMeters(nudge) - kStartPosition;
   if(newPosition < kCascadeMeterMin) newPosition = kCascadeMeterMin;
   if(newPosition > kCascadeMeterMax) newPosition = kCascadeMeterMax;
-  SetTargetPosition(ToTurns(newPosition + ToMeters(nudge) - kStartPosition));
+  SetTargetPosition(ToTurns(newPosition));
   SmartDashboard::PutNumber("SetCascadeTarget", newPosition.value());
 }
 

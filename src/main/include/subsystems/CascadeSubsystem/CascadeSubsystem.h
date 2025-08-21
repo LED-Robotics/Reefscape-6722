@@ -73,12 +73,6 @@ class CascadeSubsystem : public PositionalSubsystem {
   frc2::CommandPtr GetMoveCommand(units::length::meter_t target);
     
  private:
-  // while the state is kOn the Cascade will run at the current power setting
-  // int state = CascadeConstants::CascadeStates::kPositionMode;
-  // double power = CascadeConstants::kDefaultPower;
-  // units::length::meter_t position{CascadeConstants::kStartPosition + 0.3_m};
-  // units::length::meter_t microAdjust{0.0_m};
-
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
 
@@ -89,7 +83,4 @@ class CascadeSubsystem : public PositionalSubsystem {
   TalonSmartMotor rightController{&right};
 
   // hardware::CANcoder encoder;
-
-  controls::PositionVoltage positionController{0_tr};
-  // controls::MotionMagicVoltage positionController{0_tr};
 };
