@@ -79,7 +79,7 @@ frc2::CommandPtr RobotContainer::SetAllKinematics(RobotContainer::KinematicsPose
   // Set subsystems to final targets
   auto setTargets = frc2::cmd::RunOnce(
   [&, cascadeTarget, pose]() {
-    cascade.SetTargetPosition(cascadeTarget);
+    cascade.SetTargetMeters(cascadeTarget);
     pivot.SetTargetAngle(pose.pivotAngle);
   }, {&cascade, &pivot});
 
@@ -768,7 +768,7 @@ RobotContainer::RobotContainer() {
 
   SmartDashboard::PutBoolean("disableWallSensor", disableWallSensor);
 
-  cascade.SetTargetPosition(startingPose.cascadePose);
+  cascade.SetTargetMeters(startingPose.cascadePose);
   pivot.SetTargetAngle(startingPose.pivotAngle);
 
   SmartDashboard::PutData(std::move(&autonChooser));  // send auton selector to Shuffleboard
@@ -1079,7 +1079,7 @@ RobotContainer::RobotContainer() {
         else drive.SetTransAdjust(false);
       }
       
-      double cascadeAdjust = 1.0 - ((cascade.GetPosition() - 0.2_m).value() / 2.2);
+      double cascadeAdjust = 1.0 - ((cascade.GetPositionMeters() - 0.2_m).value() / 2.2);
       if(cascadeAdjust < 0.0) cascadeAdjust = 0.0;
       if(cascadeAdjust > 1.0) cascadeAdjust = 1.0;
       SmartDashboard::PutNumber("cascadeAdjust", cascadeAdjust);

@@ -20,84 +20,58 @@ class PositionalSubsystem : public frc2::SubsystemBase {
 
   enum States { kOff, kPowerMode, kPositionMode };
   /**
-   * Will be called periodically whenever the CommandScheduler runs.
+   * Sends control signals to motors
+   * This function MUST be called in Periodic of the derived class
    */
   void RunMotors();
   
   /**
-   * Turns the Cascade state to kOff.
+   * Turns the motors' state to kOff
    */
   void Off();
   
   /**
-   * Turns the Cascade state to kPowerMode.
+   * Turns the motors' state to kPowerMode.
    */
   void On();
 
   /**
-   * Sets the power for the Cascade to use when in kPowerMode.
+   * Sets the power for the motors to use when in kPowerMode
    *
-   * @param power the power for the Cascade to use
+   * @param power the power for the motors to use
    */
   void SetPower(double newPower);
 
   /**
-   * @return The current state of the Cascade
+   * @return The current state of the motors
    */
   int GetState();
 
   /**
-   * Sets the current state of the Cascade.
+   * Sets the current state of the motors
    */
   void SetState(int newState);
   
   /**
-   * Returns the current position of the left Cascade's KrakenX60.
-   */
-  units::angle::turn_t GetLeftPosition();
-
-  /**
-   * Returns the current position of the right Cascade's KrakenX60.
-   */
-  units::angle::turn_t GetRightPosition();
-
-  /**
-   * Returns the current estimated angle of the Cascade Subsystem.
+   * Returns the current estimated angle of the motors Subsystem
    */
   units::angle::turn_t GetPosition();
 
   /**
-   * Sets the target angle of the Cascade.
+   * Sets the target turns of the motors.
    */
   void SetTargetPosition(units::angle::turn_t newPosition);
 
   /**
-   * Returns whether the subsystem is at its intended target position.
+   * Sets the target turns of the motors.
    */
-  bool IsAtTarget();
+  void SetNudge(units::angle::turn_t newNudge);
 
-  /**
-   * Sets the state of the Cascade brakes.
-   *
-   * @param state the state of the brakes.
-   */
-  void SetBrakeMode(bool state);
-
-  /**
-   * Initially configure onboard TalonFX settings for motors.
-   */
-  void ConfigMotors();
-
-  /**
-   * Create command to move Subsystem
-   */
-  frc2::CommandPtr GetMoveCommand(units::angle::turn_t target);
-    
- private:
-  // while the state is kOn the Cascade will run at the current power setting
+ protected:
+  // while the state is kOn the motors will run at the current power setting
   int state = States::kOff;
   double power = 0.0;
   units::angle::turn_t position{0.0_tr};
-  units::angle::turn_t microAdjust{0.0_tr};
+  units::angle::turn_t nudge{0.0_tr};
   std::vector<SmartMotor*> motors;
 };
