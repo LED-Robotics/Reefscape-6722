@@ -16,8 +16,8 @@ CascadeSubsystem::CascadeSubsystem()
   left{kLeftMotorPort},
   right{kRightMotorPort}
   {
-    SmartDashboard::PutNumber("Cascade Position", position.value());
-    SmartDashboard::PutNumber("microAdjustCascade", 0.0);  // print to Shuffleboard
+    SmartDashboard::PutNumber("SetCascadeTarget", position.value());
+    SmartDashboard::PutNumber("NudgeCascade", 0.0);  // print to Shuffleboard
     ConfigMotors();
     SetTargetMeters(kStartPosition);
 
@@ -35,13 +35,13 @@ units::angle::turn_t CascadeSubsystem::ToTurns(units::length::meter_t meters) {
 
 void CascadeSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
-  SetNudge(ToTurns(units::length::meter_t{SmartDashboard::GetNumber("nudgeCascade", 0.0)}));  // print to Shuffleboard
+  SetNudge(ToTurns(units::length::meter_t{SmartDashboard::GetNumber("NudgeCascade", 0.0)}));  // print to Shuffleboard
   SetTargetMeters(units::length::meter_t{SmartDashboard::GetNumber("SetCascadeTarget", ToMeters(position).value())});
 
+  SmartDashboard::PutNumber("CascadeActual", ToMeters(GetPosition()).value());  // print to Shuffleboard
+  SmartDashboard::PutNumber("CascadeTargetTr", position.value());
   SmartDashboard::PutNumber("leftCascadeTr", GetLeftPosition().value());
   SmartDashboard::PutNumber("rightCascadeTr", GetRightPosition().value());
-  SmartDashboard::PutNumber("cascadePosition", GetPosition().value());  // print to Shuffleboard
-  SmartDashboard::PutNumber("cascadeTargetTr", position.value());
 
   
   RunMotors();

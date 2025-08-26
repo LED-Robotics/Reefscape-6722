@@ -11,13 +11,19 @@
 #include <frc2/command/Commands.h>
 
 #include "Constants.h"
+#include "led_libraries/PositionalSubsystem.h"
+#include "led_libraries/TalonSmartMotor.h"
 
 using namespace frc;
 using namespace ctre::phoenix6;
 
-class PivotSubsystem : public frc2::SubsystemBase {
+class PivotSubsystem : public PositionalSubsystem {
  public:
   PivotSubsystem();
+
+  units::angle::degree_t ToDegrees(units::angle::turn_t turns);
+
+  units::angle::turn_t ToTurns(units::angle::degree_t degrees);
 
   /**
    * Will be called periodically whenever the CommandScheduler runs.
@@ -27,49 +33,18 @@ class PivotSubsystem : public frc2::SubsystemBase {
             /* PIVOT FUNCTIONS */
 
   /**
-   * Turns the Intake state to kAngleMode.
-   */
-  void PivotOn();
-
-  /**
-   * Turns the Intake state to kOff.
-   */
-  void PivotOff();
-
-  /**
-   * Sets the power for the Pivot to use when in kPowerMode.
-   *
-   * @param power the power for the pivot to use
-   */
-  void SetPivotPower(double newPower);
-  
-  /**
-   * Get the current power used by the Pivot.
-   * 
-   * @return current pivot power
-   */
-  double GetPivotPower();
-
-  /**
    * Sets the target angle of the Pivot.
    * 
    * @param newAngle new angle for the pivot
    */
-  void SetTargetAngle(units::angle::degree_t newAngle);
+  void SetTargetDegrees(units::angle::degree_t newAngle, double feedForward = 0.0);
 
   /**
    * Returns the current estimated angle of the pivot.
    * 
    * @return current pivot angle
    */
-  units::angle::degree_t GetAngle();
-
-  /**
-   * Returns the position from the TalonFX motor controller.
-   *
-   * @return the TalonFX reported position
-   */
-  double GetPivotPosition();
+  units::angle::degree_t GetAngleDegrees();
 
   /**
    * Returns whether the subsystem is at its intended target position.
@@ -77,20 +52,6 @@ class PivotSubsystem : public frc2::SubsystemBase {
    * @return If the pivot is at it's target
    */
   bool IsAtTarget();
-
-  /**
-   * Sets the current state of the Pivot.
-   * 
-   * @param newState the new state for the Pivot.
-   */
-  void SetPivotState(int newState);
-  
-  /**
-   * Returns the current state of the Pivot.
-   *
-   * @return The current state of the Pivot
-   */
-  int GetPivotState();
 
   /**
    * Sets Pivot brake mode.
@@ -110,17 +71,12 @@ class PivotSubsystem : public frc2::SubsystemBase {
   frc2::CommandPtr GetMoveCommand(units::angle::degree_t target);
     
  private:
-  // While the state is kOn the pivot will run on the angle mode.
-  int state = PivotConstants::PivotStates::kPivotAngleMode;
-  double power = PivotConstants::kPivotDefaultPower;
-  units::angle::degree_t angle{90_deg};
-  units::angle::degree_t microAdjust{0_deg};
-
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
 
   // The motor controllers
   hardware::TalonFX pivot;
+  TalonSmartMotor pivotController{&pivot};
 
   hardware::CANcoder pivotEncoder;
 

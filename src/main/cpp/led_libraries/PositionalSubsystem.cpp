@@ -50,8 +50,9 @@ units::angle::turn_t PositionalSubsystem::GetPosition() {
   return sum / (double)motors.size();
 }
 
-void PositionalSubsystem::SetTargetPosition(units::angle::turn_t newPosition) {
+void PositionalSubsystem::SetTargetPosition(units::angle::turn_t newPosition, double newFeedForward) {
   position = newPosition;
+  feedForward = newFeedForward;
 }
 
 void PositionalSubsystem::SetNudge(units::angle::turn_t newNudge) {

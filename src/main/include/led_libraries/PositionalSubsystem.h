@@ -60,17 +60,23 @@ class PositionalSubsystem : public frc2::SubsystemBase {
   /**
    * Sets the target turns of the motors.
    */
-  void SetTargetPosition(units::angle::turn_t newPosition);
+  void SetTargetPosition(units::angle::turn_t newPosition, double feedForward = 0.0);
 
   /**
    * Sets the target turns of the motors.
    */
   void SetNudge(units::angle::turn_t newNudge);
 
+  /**
+   * Sets the feed forward of the subsystem.
+   */
+  void SetFeedForward(double power);
+
  protected:
   // while the state is kOn the motors will run at the current power setting
   int state = States::kOff;
   double power = 0.0;
+  double feedForward = 0.0;
   units::angle::turn_t position{0.0_tr};
   units::angle::turn_t nudge{0.0_tr};
   std::vector<SmartMotor*> motors;
