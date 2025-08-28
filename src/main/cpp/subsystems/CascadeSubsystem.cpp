@@ -16,11 +16,11 @@ CascadeSubsystem::CascadeSubsystem()
   left{kLeftMotorPort},
   right{kRightMotorPort}
   {
-    SmartDashboard::PutNumber("SetCascadeTarget", position.value());
-    SmartDashboard::PutNumber("NudgeCascade", 0.0);  // print to Shuffleboard
     ConfigMotors();
     SetTargetMeters(kStartPosition);
 
+    SmartDashboard::PutNumber("SetCascadeTarget", position.value());
+    SmartDashboard::PutNumber("NudgeCascade", 0.0);  // print to Shuffleboard
 }
 
 
@@ -39,9 +39,10 @@ void CascadeSubsystem::Periodic() {
   SetTargetMeters(units::length::meter_t{SmartDashboard::GetNumber("SetCascadeTarget", ToMeters(position).value())});
 
   SmartDashboard::PutNumber("CascadeActual", ToMeters(GetPosition()).value());  // print to Shuffleboard
-  SmartDashboard::PutNumber("CascadeTargetTr", position.value());
   SmartDashboard::PutNumber("leftCascadeTr", GetLeftPosition().value());
   SmartDashboard::PutNumber("rightCascadeTr", GetRightPosition().value());
+  SmartDashboard::PutNumber("CascadeTarget", ToMeters(position).value());
+  SmartDashboard::PutNumber("CascadeTargetTr", position.value());
 
   
   RunMotors();

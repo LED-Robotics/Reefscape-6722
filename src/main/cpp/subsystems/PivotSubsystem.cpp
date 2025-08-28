@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 #include "subsystems/PivotSubsystem/PivotSubsystem.h"
+#include "units/angle.h"
 
 #include <frc/geometry/Rotation2d.h>
 #include <iostream>
@@ -16,13 +17,20 @@ PivotSubsystem::PivotSubsystem()
   : PositionalSubsystem{std::vector<SmartMotor*>{&pivotController}},
     pivot{kPivotPort},
     pivotEncoder{kEncoderPort} {
-      /*pivot.SetPosition(0.0_tr);*/
-      SmartDashboard::PutNumber("SetPivotTarget", 90.0);
-      SmartDashboard::PutNumber("NudgePivot", 0.0);  // print to Shuffleboard
       ConfigPivot();
-
       SetTargetDegrees(ToDegrees(position));
 
+      SmartDashboard::PutNumber("SetPivotTarget", 90.0);
+      SmartDashboard::PutNumber("NudgePivot", 0.0);  // print to Shuffleboard
+}
+
+
+units::angle::degree_t PivotSubsystem::ToDegrees(units::angle::turn_t turns) {
+  return units::angle::degree_t{turns.value() / kTurnsPerDegree};
+}
+
+units::angle::turn_t PivotSubsystem::ToTurns(units::angle::degree_t degrees) {
+  return units::angle::turn_t{degrees.value() * kTurnsPerDegree};
 }
 
 void PivotSubsystem::Periodic() {
@@ -33,8 +41,8 @@ void PivotSubsystem::Periodic() {
   double feedForward = fabs(sin(ToDegrees(position).value())) * kMaxFeedForward;
   SetTargetDegrees(units::angle::degree_t{SmartDashboard::GetNumber("SetPivotTarget", GetAngleDegrees().value())}, feedForward);
     // feed forwards should be a changing constant that increases as the pivot moves further. It should be a static amount of power to overcome gravity.
-  SmartDashboard::PutNumber("PivotTr", GetPosition().value());  // print to Shuffleboard
   SmartDashboard::PutNumber("PivotActual", GetAngleDegrees().value());  // print to Shuffleboard
+  SmartDashboard::PutNumber("PivotTr", GetPosition().value());  // print to Shuffleboard
   SmartDashboard::PutNumber("PivotTarget", ToDegrees(position).value());
   SmartDashboard::PutNumber("PivotTargetTr", position.value());
 
@@ -54,7 +62,7 @@ units::angle::degree_t PivotSubsystem::GetAngleDegrees() {
 }
 
 bool PivotSubsystem::IsAtTarget() {
-  auto target = ToDegrees(position) + ToDegrees(nudge);
+  auto target = ToDegrees(position + nudge);
   auto angle = GetAngleDegrees();
   bool atTarget = angle > target - (kPivotAngleDeadzone / 2) && angle < target + (kPivotAngleDeadzone / 2);
   return atTarget;

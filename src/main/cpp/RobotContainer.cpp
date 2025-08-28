@@ -47,7 +47,7 @@ frc2::CommandPtr RobotContainer::SetAllKinematics(RobotContainer::KinematicsPose
   /*  }*/
   /*}*/
 
-  auto currentAngle = pivot.GetAngle();
+  auto currentAngle = pivot.GetAngleDegrees();
   // Can't sweep if the target isn't changing
   if(currentAngle != pose.pivotAngle) {
     auto top = currentAngle > pose.pivotAngle ? currentAngle : pose.pivotAngle;
@@ -80,7 +80,7 @@ frc2::CommandPtr RobotContainer::SetAllKinematics(RobotContainer::KinematicsPose
   auto setTargets = frc2::cmd::RunOnce(
   [&, cascadeTarget, pose]() {
     cascade.SetTargetMeters(cascadeTarget);
-    pivot.SetTargetAngle(pose.pivotAngle);
+    pivot.SetTargetDegrees(pose.pivotAngle);
   }, {&cascade, &pivot});
 
   commands.push_back(std::move(setTargets));
@@ -769,7 +769,7 @@ RobotContainer::RobotContainer() {
   SmartDashboard::PutBoolean("disableWallSensor", disableWallSensor);
 
   cascade.SetTargetMeters(startingPose.cascadePose);
-  pivot.SetTargetAngle(startingPose.pivotAngle);
+  pivot.SetTargetDegrees(startingPose.pivotAngle);
 
   SmartDashboard::PutData(std::move(&autonChooser));  // send auton selector to Shuffleboard
 
