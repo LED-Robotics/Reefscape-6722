@@ -79,6 +79,4 @@ class PivotSubsystem : public PositionalSubsystem {
   TalonSmartMotor pivotController{&pivot};
 
   hardware::CANcoder pivotEncoder;
-
-  controls::PositionVoltage pivotPosition{0_tr};
 };

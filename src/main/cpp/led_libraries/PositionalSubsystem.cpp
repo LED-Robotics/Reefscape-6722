@@ -17,7 +17,7 @@ void PositionalSubsystem::RunMotors() {
     }
   } else if(state == States::kPositionMode) {
     for(auto &motor : motors) {
-      motor->SetPosition(position);
+      motor->SetPosition(position + nudge);
     }
   }
 }

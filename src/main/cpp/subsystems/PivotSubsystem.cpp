@@ -6,7 +6,6 @@
 #include "units/angle.h"
 
 #include <frc/geometry/Rotation2d.h>
-#include <iostream>
 #include <frc/kinematics/DifferentialDriveWheelSpeeds.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 
@@ -50,7 +49,6 @@ void PivotSubsystem::Periodic() {
 }
 
 void PivotSubsystem::SetTargetDegrees(units::angle::degree_t newAngle, double feedForward) {
-  newAngle = newAngle + ToDegrees(nudge) - kPivotStartAngle;
   if(newAngle < kPivotDegreeMin) newAngle = kPivotDegreeMin;
   if(newAngle > kPivotDegreeMax) newAngle = kPivotDegreeMax;
   SetTargetPosition(ToTurns(newAngle), feedForward);
