@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 #include "subsystems/CascadeSubsystem/CascadeSubsystem.h"
+#include "led_libraries/PositionalSubsystem.h"
 
 #include <frc/geometry/Rotation2d.h>
 #include <frc/kinematics/DifferentialDriveWheelSpeeds.h>
@@ -18,6 +19,7 @@ CascadeSubsystem::CascadeSubsystem()
   {
     ConfigMotors();
     SetTargetMeters(kStartPosition);
+    SetState(kPositionMode);
 
     SmartDashboard::PutNumber("SetCascadeTarget", position.value());
     SmartDashboard::PutNumber("NudgeCascade", 0.0);  // print to Shuffleboard

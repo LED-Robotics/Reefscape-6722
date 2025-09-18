@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 #include "subsystems/PivotSubsystem/PivotSubsystem.h"
+#include "led_libraries/PositionalSubsystem.h"
 #include "units/angle.h"
 
 #include <frc/geometry/Rotation2d.h>
@@ -18,6 +19,7 @@ PivotSubsystem::PivotSubsystem()
     pivotEncoder{kEncoderPort} {
       ConfigPivot();
       SetTargetDegrees(ToDegrees(position));
+      SetState(kPositionMode);
 
       SmartDashboard::PutNumber("SetPivotTarget", 90.0);
       SmartDashboard::PutNumber("NudgePivot", 0.0);  // print to Shuffleboard

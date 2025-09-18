@@ -8,14 +8,14 @@
         "layouts": [],
         "containers": [
           {
-            "title": "Cascade Position",
+            "title": "SetCascadeTarget",
             "x": 0.0,
             "y": 384.0,
             "width": 768.0,
             "height": 128.0,
             "type": "Number Slider",
             "properties": {
-              "topic": "/SmartDashboard/Cascade Position",
+              "topic": "/SmartDashboard/SetCascadeTarget",
               "period": 0.06,
               "data_type": "double",
               "min_value": 0.0,
@@ -25,14 +25,14 @@
             }
           },
           {
-            "title": "Pivot Angle",
+            "title": "SetPivotTarget",
             "x": 0.0,
             "y": 0.0,
             "width": 768.0,
             "height": 128.0,
             "type": "Number Slider",
             "properties": {
-              "topic": "/SmartDashboard/Pivot Angle",
+              "topic": "/SmartDashboard/SetPivotTarget",
               "period": 0.06,
               "data_type": "double",
               "min_value": -360.0,
@@ -42,28 +42,28 @@
             }
           },
           {
-            "title": "Pivot Actual",
+            "title": "PivotActual",
             "x": 768.0,
             "y": 0.0,
             "width": 256.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/Pivot Actual",
+              "topic": "/SmartDashboard/PivotActual",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
             }
           },
           {
-            "title": "cascadePosition",
+            "title": "CascadeActual",
             "x": 768.0,
             "y": 384.0,
             "width": 128.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/cascadePosition",
+              "topic": "/SmartDashboard/CascadeActual",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
@@ -96,14 +96,14 @@
             }
           },
           {
-            "title": "microAdjustPivot",
+            "title": "NudgePivot",
             "x": 0.0,
             "y": 128.0,
             "width": 768.0,
             "height": 128.0,
             "type": "Number Slider",
             "properties": {
-              "topic": "/SmartDashboard/microAdjustPivot",
+              "topic": "/SmartDashboard/NudgePivot",
               "period": 0.06,
               "data_type": "double",
               "min_value": -90.0,
@@ -113,14 +113,14 @@
             }
           },
           {
-            "title": "microAdjustCascade",
+            "title": "NudgeCascade",
             "x": 0.0,
             "y": 256.0,
             "width": 768.0,
             "height": 128.0,
             "type": "Number Slider",
             "properties": {
-              "topic": "/SmartDashboard/microAdjustCascade",
+              "topic": "/SmartDashboard/NudgeCascade",
               "period": 0.06,
               "data_type": "double",
               "min_value": -0.2,
