@@ -40,11 +40,10 @@ void CascadeSubsystem::Periodic() {
   SetNudge(ToTurns(units::length::meter_t{SmartDashboard::GetNumber("NudgeCascade", 0.0)}));  // print to Shuffleboard
   SetTargetMeters(units::length::meter_t{SmartDashboard::GetNumber("SetCascadeTarget", ToMeters(position).value())});
 
-  SmartDashboard::PutNumber("CascadeActual", ToMeters(GetPosition()).value());  // print to Shuffleboard
-  SmartDashboard::PutNumber("leftCascadeTr", GetLeftPosition().value());
-  SmartDashboard::PutNumber("rightCascadeTr", GetRightPosition().value());
-  SmartDashboard::PutNumber("CascadeTarget", ToMeters(position).value());
-  SmartDashboard::PutNumber("CascadeTargetTr", position.value());
+  SmartDashboard::PutNumber("CascadeActual", (ToMeters(GetPosition()) + kStartPosition).value());  // print to Shuffleboard
+  SmartDashboard::PutNumber("CascadeActualTr", GetPosition().value());  // print to Shuffleboard
+  SmartDashboard::PutNumber("CascadeTarget", (ToMeters(position) + kStartPosition).value());
+  SmartDashboard::PutNumber("CascadeTargetTr", position.value() + nudge.value());
 
   
   RunMotors();
@@ -57,7 +56,9 @@ units::length::meter_t CascadeSubsystem::GetPositionMeters() {
 void CascadeSubsystem::SetTargetMeters(units::length::meter_t newPosition) {
   if(newPosition < kCascadeMeterMin) newPosition = kCascadeMeterMin;
   if(newPosition > kCascadeMeterMax) newPosition = kCascadeMeterMax;
+  newPosition -= kStartPosition;
   SetTargetPosition(ToTurns(newPosition));
+  newPosition += kStartPosition;
   SmartDashboard::PutNumber("SetCascadeTarget", newPosition.value());
 }
 
