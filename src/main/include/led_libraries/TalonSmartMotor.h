@@ -7,12 +7,12 @@ using namespace ctre::phoenix6;
 
 class TalonSmartMotor : public SmartMotor {
   public:
-    hardware::TalonFX *motor;
+    hardware::TalonFX motor;
     controls::PositionVoltage positionController{0_tr};
     controls::VelocityVoltage velocityController{0_tps};
     bool focEnabled;
     
-    TalonSmartMotor(hardware::TalonFX *motorRef, bool foc = true);
+    TalonSmartMotor(int port, bool foc = true, std::string canBus = "rio");
 
     units::angle::turn_t GetPosition() override;
     units::angular_velocity::turns_per_second_t GetVelocity() override;

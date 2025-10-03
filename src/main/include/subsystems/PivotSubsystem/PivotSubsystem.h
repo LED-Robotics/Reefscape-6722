@@ -75,8 +75,7 @@ class PivotSubsystem : public PositionalSubsystem {
   // declared private and exposed only through public methods.
 
   // The motor controllers
-  hardware::TalonFX pivot;
-  TalonSmartMotor pivotController{&pivot};
+  TalonSmartMotor pivot;
 
   hardware::CANcoder pivotEncoder;
 };

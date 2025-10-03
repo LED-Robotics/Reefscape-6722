@@ -14,7 +14,7 @@ using namespace PivotConstants;
 using namespace frc;
 
 PivotSubsystem::PivotSubsystem()
-  : PositionalSubsystem{std::vector<SmartMotor*>{&pivotController}},
+  : PositionalSubsystem{std::vector<SmartMotor*>{&pivot}},
     pivot{kPivotPort},
     pivotEncoder{kEncoderPort} {
       ConfigPivot();
@@ -86,7 +86,7 @@ void PivotSubsystem::SetPivotBrakeMode(bool state) {
   else mode = signals::NeutralModeValue::Coast;
   configs::MotorOutputConfigs updated;
   updated.WithNeutralMode(mode);
-  pivot.GetConfigurator().Apply(updated, 50_ms);
+  pivot.motor.GetConfigurator().Apply(updated, 50_ms);
 }
 
 void PivotSubsystem::ConfigPivot() {
@@ -120,7 +120,7 @@ void PivotSubsystem::ConfigPivot() {
 
   pivotConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
   
-  pivot.GetConfigurator().Apply(pivotConfig);
+  pivot.motor.GetConfigurator().Apply(pivotConfig);
 
   configs::CANcoderConfiguration encoderConfig{};
   encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;

@@ -13,7 +13,7 @@ using namespace CascadeConstants;
 using namespace frc;
 
 CascadeSubsystem::CascadeSubsystem()
-  : PositionalSubsystem{std::vector<SmartMotor*>{&leftController, &rightController}},
+  : PositionalSubsystem{std::vector<SmartMotor*>{&left, &right}},
   left{kLeftMotorPort},
   right{kRightMotorPort}
   {
@@ -77,8 +77,8 @@ void CascadeSubsystem::SetBrakeMode(bool state) {
   configs::MotorOutputConfigs updated;
   updated.WithNeutralMode(mode);
 
-  left.GetConfigurator().Apply(updated, 50_ms);
-  right.GetConfigurator().Apply(updated, 50_ms);
+  left.motor.GetConfigurator().Apply(updated, 50_ms);
+  right.motor.GetConfigurator().Apply(updated, 50_ms);
 }
 
 void CascadeSubsystem::ConfigMotors() {
@@ -109,12 +109,12 @@ void CascadeSubsystem::ConfigMotors() {
   cascadeConfig.MotorOutput.Inverted = false;
   // cascadeConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
   
-  left.GetConfigurator().Apply(cascadeConfig);
+  left.motor.GetConfigurator().Apply(cascadeConfig);
   // cascadeConfig.DifferentialSensors.DifferentialSensorSource = signals::DifferentialSensorSourceValue::RemoteTalonFX_Diff;
   // cascadeConfig.DifferentialSensors.DifferentialTalonFXSensorID = kLeftMotorPort;
   cascadeConfig.MotorOutput.Inverted = true;
 
-  right.GetConfigurator().Apply(cascadeConfig);
+  right.motor.GetConfigurator().Apply(cascadeConfig);
 
   // configs::CANcoderConfiguration encoderConfig{};
   // encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
@@ -135,11 +135,11 @@ frc2::CommandPtr CascadeSubsystem::GetMoveCommand(units::length::meter_t target)
 
 // For debug
 units::length::meter_t CascadeSubsystem::GetLeftPosition() {
-  auto base = units::length::meter_t{left.GetPosition().GetValueAsDouble() / kTurnsPerMeter};
+  auto base = units::length::meter_t{left.motor.GetPosition().GetValueAsDouble() / kTurnsPerMeter};
   return base + kStartPosition;
 }
 
 units::length::meter_t CascadeSubsystem::GetRightPosition() {
-  auto base = units::length::meter_t{right.GetPosition().GetValueAsDouble() / kTurnsPerMeter};
+  auto base = units::length::meter_t{right.motor.GetPosition().GetValueAsDouble() / kTurnsPerMeter};
   return base + kStartPosition;
 }
