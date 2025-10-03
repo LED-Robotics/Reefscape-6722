@@ -1,13 +1,13 @@
-#include "rev/SparkBase.h"
+#include "rev/SparkFlex.h"
 #include "SmartMotor.h"
 
 using namespace rev::spark;
 
-class SparkSmartMotor : public SmartMotor {
+class SparkFlexSmartMotor : public SmartMotor {
   public:
-    SparkBase *motor;
+    SparkFlex motor;
     
-    SparkSmartMotor(SparkBase *motorRef);
+    SparkFlexSmartMotor(int port, SparkLowLevel::MotorType type);
 
     units::angle::turn_t GetPosition() override;
     units::angular_velocity::turns_per_second_t GetVelocity() override;
