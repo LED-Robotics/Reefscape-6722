@@ -1,4 +1,4 @@
-#include "led_libraries/TalonSmartMotor.h"
+#include "led_libraries/SmartMotor/TalonSmartMotor.h"
 
 TalonSmartMotor::TalonSmartMotor(int port, bool foc, std::string canBus) 
   : motor{port, canBus} {

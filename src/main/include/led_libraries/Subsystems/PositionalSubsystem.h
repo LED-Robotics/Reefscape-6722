@@ -9,7 +9,7 @@
 #include <ctre/phoenix6/CANcoder.hpp>
 #include <frc2/command/Command.h>
 #include <frc2/command/Commands.h>
-#include "led_libraries/SmartMotor.h"
+#include "led_libraries/SmartMotor/SmartMotor.h"
 
 using namespace frc;
 using namespace ctre::phoenix6;

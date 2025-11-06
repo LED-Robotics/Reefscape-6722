@@ -1,4 +1,4 @@
-#include "led_libraries/SparkMaxSmartMotor.h"
+#include "led_libraries/SmartMotor/SparkMaxSmartMotor.h"
 #include "units/angular_velocity.h"
 
 SparkMaxSmartMotor::SparkMaxSmartMotor(int port, SparkLowLevel::MotorType type) 
