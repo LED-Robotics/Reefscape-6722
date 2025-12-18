@@ -87,6 +87,8 @@ class AlgaeSubsystem : public frc2::SubsystemBase {
 
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
+  //
+  CANBus rio;
 
   // The motor controllers
   hardware::TalonFX intakeMotor;

@@ -7,6 +7,7 @@
 #include <frc2/command/Commands.h>
 
 #include "Constants.h"
+#include "ctre/phoenix6/CANBus.hpp"
 
 using namespace frc;
 using namespace ctre::phoenix6;
@@ -113,6 +114,8 @@ class ClimbSubsystem : public frc2::SubsystemBase {
 
   // Components (e.g. motor controllers and sensors) should generally be
   // declared private and exposed only through public methods.
+
+  CANBus canivore;
 
   // The motor controllers
   hardware::TalonFX climb;

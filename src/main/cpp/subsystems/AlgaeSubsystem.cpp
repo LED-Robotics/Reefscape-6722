@@ -13,7 +13,8 @@ using namespace AlgaeConstants;
 using namespace frc;
 
 AlgaeSubsystem::AlgaeSubsystem()
-  : intakeMotor{kIntakePort},
+  : rio{"rio"},
+    intakeMotor{kIntakePort, rio},
     detector{kUltrasonicPort}  {
       ConfigIntake();
 }

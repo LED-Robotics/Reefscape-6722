@@ -10,6 +10,7 @@
 #include <frc2/command/Command.h>
 #include <frc2/command/Commands.h>
 #include "Constants.h"
+#include "ctre/phoenix6/CANBus.hpp"
 #include "led_libraries/Subsystems/PositionalSubsystem.h"
 #include "led_libraries/SmartMotor/TalonSmartMotor.h"
 #include "units/angle.h"
@@ -77,6 +78,7 @@ class CascadeSubsystem : public PositionalSubsystem {
   // declared private and exposed only through public methods.
 
   // The motor controllers
+
   TalonSmartMotor left;
   TalonSmartMotor right;
 
