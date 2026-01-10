@@ -42,8 +42,8 @@ namespace DriveConstants {
     // info for odometry
     constexpr int kEncoderResolution = 4096;
     constexpr auto kDriveBaseRadius = 0.319786_m;
-    constexpr double kWheelRadius = .0498;
-    constexpr double kDriveRatio = 1 / 4.125;
+    constexpr double kWheelRadius = 0.0508;
+    constexpr double kDriveRatio = 1 / 5.27;
     constexpr double kTurnRatio = 1 / 10.29;
     constexpr double kDriveDistancePerRev = (2 * std::numbers::pi * kWheelRadius) * kDriveRatio;
     // constexpr double kDriveEncoderDistancePerPulse = (2 * std::numbers::pi * kWheelRadius / (double)kEncoderResolution) * kDriveRatio;
@@ -58,10 +58,10 @@ namespace DriveConstants {
     constexpr double kDriveV = 0.1345313787460327;
     constexpr units::time::second_t kDriveRamp = 0.0_s;
     constexpr units::current::ampere_t kDriveCurrentLimit = 30.0_A;
-    constexpr double kTurnP = 80.0;
-    constexpr double kTurnPRatio = 10.279000282287598;
+    constexpr double kTurnP = 15.0;
+    constexpr double kTurnPRatio = (double)(11.0/287.0);
 
-    constexpr auto turnKp = 0.275;
+    constexpr auto turnKp = 0.01;
 
     // drivetrain controller constants
     constexpr double kDriveDeadzone = 0.2;

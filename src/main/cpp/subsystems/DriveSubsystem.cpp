@@ -21,23 +21,22 @@ using namespace rev;
 
 DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
       //Wheel motors
-    : canivore{"canCan"},
-      backLeft{kBackLeftPort, canivore},
-      frontLeft{kFrontLeftPort, canivore},
-      backRight{kBackRightPort, canivore},
-      frontRight{kFrontRightPort, canivore},
+    : backLeft{kBackLeftPort},
+      frontLeft{kFrontLeftPort},
+      backRight{kBackRightPort},
+      frontRight{kFrontRightPort},
 
       //Degree of wheel motors
-      backLeftTheta{kBackLeftThetaPort, canivore},
-      frontLeftTheta{kFrontLeftThetaPort, canivore},
-      backRightTheta{kBackRightThetaPort, canivore},
-      frontRightTheta{kFrontRightThetaPort, canivore},
+      backLeftTheta{kBackLeftThetaPort},
+      frontLeftTheta{kFrontLeftThetaPort},
+      backRightTheta{kBackRightThetaPort},
+      frontRightTheta{kFrontRightThetaPort},
 
       //Mag encoder motor controllers
-      blCANCoder{kBackLeftEncoderPort, canivore},
-      flCANCoder{kFrontLeftEncoderPort, canivore},
-      brCANCoder{kBackRightEncoderPort, canivore},
-      frCANCoder{kFrontRightEncoderPort, canivore},
+      blCANCoder{kBackLeftEncoderPort},
+      flCANCoder{kFrontLeftEncoderPort},
+      brCANCoder{kBackRightEncoderPort},
+      frCANCoder{kFrontRightEncoderPort},
 
       //Swerve group motors
       s_backLeft{&backLeft, &backLeftTheta},
@@ -46,7 +45,7 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
       s_frontRight{&frontRight, &frontRightTheta},
 
       //Gyro
-      gyro{0, canivore},
+      gyro{0},
 
       wallSensor{kWallSensorPort},
 
@@ -167,13 +166,13 @@ void DriveSubsystem::SetModuleStates(
   wpi::array<frc::SwerveModuleState, 4> desiredStates, bool desaturate) {
   if(desaturate) kDriveKinematics.DesaturateWheelSpeeds(&desiredStates, kDriveTranslationLimit);
   // SmartDashboard::PutNumber("FL Target Angle", (double)desiredStates[0].angle.Degrees());
-    s_frontLeft.SetDesiredState(desiredStates[0]);
+    // s_frontLeft.SetDesiredState(desiredStates[0]);
   // SmartDashboard::PutNumber("FR Target Angle", (double)desiredStates[1].angle.Degrees());
-    s_frontRight.SetDesiredState(desiredStates[1]);
+    // s_frontRight.SetDesiredState(desiredStates[1]);
   // SmartDashboard::PutNumber("BL Target Angle", (double)desiredStates[2].angle.Degrees());
     s_backLeft.SetDesiredState(desiredStates[2]);
   // SmartDashboard::PutNumber("BR Target Angle", (double)desiredStates[2].angle.Degrees());
-    s_backRight.SetDesiredState(desiredStates[3]);
+    // s_backRight.SetDesiredState(desiredStates[3]);
 }
 
 wpi::array<SwerveModuleState, 4> DriveSubsystem::GetModuleStates() const {
@@ -406,7 +405,6 @@ void DriveSubsystem::ConfigThetaMotors() {
   turnConfig.Feedback.SensorToMechanismRatio = 1.0;
   turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
   turnConfig.Audio.AllowMusicDurDisable = true;
-  turnConfig.MotorOutput.Inverted = true;
 
   turnConfig.Feedback.FeedbackRemoteSensorID = kBackLeftEncoderPort;
   backLeftTheta.GetConfigurator().Apply(turnConfig);
@@ -419,7 +417,7 @@ void DriveSubsystem::ConfigThetaMotors() {
 
   configs::CANcoderConfiguration encoderConfig{};
   encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;
-  encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::Clockwise_Positive;
+  encoderConfig.MagnetSensor.SensorDirection = signals::SensorDirectionValue::CounterClockwise_Positive;
   
   encoderConfig.MagnetSensor.MagnetOffset = kBLeftMagPos;
   blCANCoder.GetConfigurator().Apply(encoderConfig);
