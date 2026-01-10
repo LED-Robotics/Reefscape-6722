@@ -13,8 +13,9 @@ using namespace ClimbConstants;
 using namespace frc;
 
 ClimbSubsystem::ClimbSubsystem()
-  : climb{kClimbPort, "canCan"},
-    encoder{kEncoderPort, "canCan"} {
+  : canivore{"canCan"},
+    climb{kClimbPort, canivore},
+    encoder{kEncoderPort, canivore} {
       // climb.SetPosition(0.0_tr);
       SmartDashboard::PutNumber("Climb Angle", GetAngle().value());
       ConfigMotor();

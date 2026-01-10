@@ -3,9 +3,9 @@
 // the WPILib BSD license file in the root directory of this project.
 
 #include "subsystems/PivotSubsystem/PivotSubsystem.h"
+#include "units/angle.h"
 
 #include <frc/geometry/Rotation2d.h>
-#include <iostream>
 #include <frc/kinematics/DifferentialDriveWheelSpeeds.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 
@@ -13,95 +13,66 @@ using namespace PivotConstants;
 using namespace frc;
 
 PivotSubsystem::PivotSubsystem()
-  : pivot{kPivotPort},
+  : PositionalSubsystem{std::vector<SmartMotor*>{&pivot}},
+    pivot{kPivotPort},
     pivotEncoder{kEncoderPort} {
-      /*pivot.SetPosition(0.0_tr);*/
-      SmartDashboard::PutNumber("Pivot Angle", 90.0);
-      SmartDashboard::PutNumber("microAdjustPivot", 0.0);  // print to Shuffleboard
       ConfigPivot();
+      SetTargetDegrees(ToDegrees(position));
+      SetState(kPositionMode);
 
-      SetTargetAngle(angle);
+      SmartDashboard::PutNumber("SetPivotTarget", 90.0);
+      SmartDashboard::PutNumber("NudgePivot", 0.0);  // print to Shuffleboard
+}
 
+
+units::angle::degree_t PivotSubsystem::ToDegrees(units::angle::turn_t turns) {
+  return units::angle::degree_t{turns.value() / kTurnsPerDegree};
+}
+
+units::angle::turn_t PivotSubsystem::ToTurns(units::angle::degree_t degrees) {
+  return units::angle::turn_t{degrees.value() * kTurnsPerDegree};
 }
 
 void PivotSubsystem::Periodic() {
   // Implementation of subsystem periodic method goes here
   // Pivot Control
-  SetTargetAngle(units::angle::degree_t{SmartDashboard::GetNumber("Pivot Angle", GetAngle().value())});
-  SmartDashboard::PutNumber("Pivot Actual", GetAngle().value());
-  if(state == PivotStates::kPivotOff) {
-    pivot.Set(0.0);
-  } else if(state == PivotStates::kPivotPowerMode) {
-    pivot.Set(power);
-  } else if(state == PivotStates::kPivotAngleMode) {
+  SetNudge(ToTurns(units::angle::degree_t{SmartDashboard::GetNumber("NudgePivot", 0.0)}));  // print to Shuffleboard
+
+  double feedForward = fabs(sin(ToDegrees(position).value())) * kMaxFeedForward;
+  SetTargetDegrees(units::angle::degree_t{SmartDashboard::GetNumber("SetPivotTarget", GetAngleDegrees().value())}, feedForward);
     // feed forwards should be a changing constant that increases as the pivot moves further. It should be a static amount of power to overcome gravity.
+  SmartDashboard::PutNumber("PivotActual", GetAngleDegrees().value());  // print to Shuffleboard
+  SmartDashboard::PutNumber("PivotTr", GetPosition().value());  // print to Shuffleboard
+  SmartDashboard::PutNumber("PivotTarget", ToDegrees(position).value());
+  SmartDashboard::PutNumber("PivotTargetTr", position.value());
 
-    microAdjust = units::angle::degree_t{SmartDashboard::GetNumber("microAdjustPivot", 0.0)};  // print to Shuffleboard
-    SmartDashboard::PutNumber("pivotPivotTr", pivot.GetPosition().GetValue().value());  // print to Shuffleboard
-    SmartDashboard::PutNumber("angle", GetAngle().value());  // print to Shuffleboard
-    double feedForward = fabs(sin(angle.value())) * kMaxFeedForward;
-    SmartDashboard::PutNumber("Angle Target", angle.value());
-    units::angle::turn_t posTarget{(angle + microAdjust - kPivotStartAngle).value() * kTurnsPerDegree};
-    SmartDashboard::PutNumber("wrTurnTarget", posTarget.value());
-    pivot.SetControl(pivotPosition
-      .WithPosition(units::angle::turn_t{posTarget})
-      .WithEnableFOC(true));
-      /*.WithFeedForward(units::volt_t{feedForward}));*/
-  }
+  RunMotors();
 }
 
-void PivotSubsystem::PivotOn() {
-  state = PivotStates::kPivotAngleMode;
+void PivotSubsystem::SetTargetDegrees(units::angle::degree_t newAngle, double feedForward) {
+  if(newAngle < kPivotDegreeMin) newAngle = kPivotDegreeMin;
+  if(newAngle > kPivotDegreeMax) newAngle = kPivotDegreeMax;
+  SetTargetPosition(ToTurns(newAngle), feedForward);
+  SmartDashboard::PutNumber("SetPivotTarget", newAngle.value());
 }
 
-void PivotSubsystem::PivotOff() {
-  state = PivotStates::kPivotOff;
-}
-
-void PivotSubsystem::SetPivotPower(double newPower) {
-  power = newPower;
-}
-
-double PivotSubsystem::GetPivotPower() {
-  return power;
-}
-
-void PivotSubsystem::SetTargetAngle(units::angle::degree_t newAngle) {
-  angle = newAngle;
-  if(angle < kPivotDegreeMin) angle = kPivotDegreeMin;
-  if(angle > kPivotDegreeMax) angle = kPivotDegreeMax;
-  SmartDashboard::PutNumber("Pivot Angle", angle.value());
-}
-
-units::angle::degree_t PivotSubsystem::GetAngle() {
-  return units::angle::degree_t{(GetPivotPosition() / kTurnsPerDegree)} + kPivotStartAngle;
-}
-
-double PivotSubsystem::GetPivotPosition() {
-  return pivot.GetPosition().GetValueAsDouble();
+units::angle::degree_t PivotSubsystem::GetAngleDegrees() {
+  return ToDegrees(GetPosition()) + kPivotStartAngle;
 }
 
 bool PivotSubsystem::IsAtTarget() {
-  auto target = angle + microAdjust;
-  auto angle = GetAngle();
+  auto target = ToDegrees(position + nudge);
+  auto angle = GetAngleDegrees();
   bool atTarget = angle > target - (kPivotAngleDeadzone / 2) && angle < target + (kPivotAngleDeadzone / 2);
   return atTarget;
-}
-
-void PivotSubsystem::SetPivotState(int newState) {
-  state = newState;
-}
-
-int PivotSubsystem::GetPivotState() {
-  return state;
 }
 
 frc2::CommandPtr PivotSubsystem::GetMoveCommand(units::angle::degree_t target) {
   return frc2::cmd::Sequence(
       frc2::cmd::RunOnce([this, target]() {
-        SetTargetAngle(target);
+        SetTargetDegrees(target);
       }, {this}),
-      frc2::cmd::WaitUntil([this, target](){
+      frc2::cmd::WaitUntil([this](){
         return IsAtTarget();
       }));
   /*return frc2::cmd::RunOnce([this, target]() {*/
@@ -114,7 +85,7 @@ void PivotSubsystem::SetPivotBrakeMode(bool state) {
   else mode = signals::NeutralModeValue::Coast;
   configs::MotorOutputConfigs updated;
   updated.WithNeutralMode(mode);
-  pivot.GetConfigurator().Apply(updated, 50_ms);
+  pivot.motor.GetConfigurator().Apply(updated, 50_ms);
 }
 
 void PivotSubsystem::ConfigPivot() {
@@ -148,7 +119,7 @@ void PivotSubsystem::ConfigPivot() {
 
   pivotConfig.Feedback.FeedbackRemoteSensorID = kEncoderPort;
   
-  pivot.GetConfigurator().Apply(pivotConfig);
+  pivot.motor.GetConfigurator().Apply(pivotConfig);
 
   configs::CANcoderConfiguration encoderConfig{};
   encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5_tr;

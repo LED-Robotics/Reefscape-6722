@@ -1,0 +1,40 @@
+#include "led_libraries/SmartMotor/TalonSmartMotor.h"
+#include "ctre/phoenix6/CANBus.hpp"
+
+TalonSmartMotor::TalonSmartMotor(int port, bool foc, CANBus canBus) 
+  : motor{port, canBus} {
+  focEnabled = foc;
+}
+
+units::angle::turn_t TalonSmartMotor::GetPosition() {
+  return motor.GetPosition().GetValue();
+}
+
+units::angular_velocity::turns_per_second_t TalonSmartMotor::GetVelocity() {
+  return motor.GetVelocity().GetValue();
+}
+
+double TalonSmartMotor::GetPower() {
+  return motor.Get();
+}
+
+void TalonSmartMotor::SetPosition(units::angle::turn_t turns) {
+  motor.SetControl(positionController
+      .WithPosition(turns)
+      .WithEnableFOC(focEnabled));
+}
+
+void TalonSmartMotor::SetVelocity(units::angular_velocity::turns_per_second_t tps) {
+  motor.SetControl(velocityController
+      .WithVelocity(tps)
+      .WithEnableFOC(focEnabled));
+}
+
+void TalonSmartMotor::SetPower(double power) {
+  motor.Set(power);
+}
+
+void TalonSmartMotor::Stop() {
+  motor.StopMotor();
+}
+
