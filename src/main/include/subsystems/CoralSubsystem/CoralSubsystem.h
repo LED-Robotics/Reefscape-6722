@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include "Constants.h"
+#include "ctre/phoenix6/CANBus.hpp"
 
 using namespace frc;
 using namespace ctre::phoenix6;
@@ -92,6 +93,7 @@ class CoralSubsystem : public frc2::SubsystemBase {
   // The motor controllers
   /*hardware::TalonFX left;*/
   /*hardware::TalonFX right;*/
+  CANBus rio;
 
   hardware::TalonFX intake1;
   hardware::TalonFX intake2;

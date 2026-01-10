@@ -11,8 +11,8 @@
 #include <frc2/command/Commands.h>
 
 #include "Constants.h"
-#include "led_libraries/PositionalSubsystem.h"
-#include "led_libraries/TalonSmartMotor.h"
+#include "led_libraries/Subsystems/PositionalSubsystem.h"
+#include "led_libraries/SmartMotor/TalonSmartMotor.h"
 
 using namespace frc;
 using namespace ctre::phoenix6;

@@ -1,4 +1,4 @@
-#include "led_libraries/SparkFlexSmartMotor.h"
+#include "led_libraries/SmartMotor/SparkFlexSmartMotor.h"
 #include "units/angular_velocity.h"
 
 SparkFlexSmartMotor::SparkFlexSmartMotor(int port, SparkLowLevel::MotorType type) 
