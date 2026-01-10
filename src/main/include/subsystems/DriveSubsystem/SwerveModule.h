@@ -81,10 +81,6 @@ class SwerveModule {
          */
         void SetDesiredState(const frc::SwerveModuleState& state);
         /**
-         * Run one cycle of theta PID Controller. This should be run repeatedly while operational.
-         */
-        void RunPID();
-        /**
          * Debug function to set swerve drive motor using power.
          */
         void SetDrivePower(double power);
@@ -99,14 +95,13 @@ class SwerveModule {
 
     private:
 
-        double GetFalconTurnPosition() const; 
+        double GetKrakenTurnPosition() const; 
         // double GetNeoTurnPosition() const; 
 
-        void SetFalconTurnPower(double power); 
+        void SetKrakenTurnPower(double power); 
         // void SetNeoTurnPower(double power); 
 
         // motor references
-        bool usingFalcon = true;
         hardware::TalonFX *driveMotor;
         hardware::TalonFX *turnMotor;
         controls::VelocityVoltage velocity{0_tps};

@@ -22,28 +22,7 @@
 
 using namespace frc;
 
-// Struct format for ML detection
-struct MLDetectionFrame {
-  uint8_t label = 0;
-  uint8_t camId = 0;
-  uint32_t timeCaptured;
-  double x;
-  double y;
-  double w;
-  double h;
-};
 
-struct AprilTagFrame {
-  uint8_t tagId = -1;
-  uint8_t camId = -1;
-  uint32_t timeCaptured;
-  double tx;
-  double ty;
-  double tz;
-  double rx;
-  double ry;
-  double rz;
-};
 
 struct TagDetections {
   int tagId;
@@ -61,6 +40,29 @@ struct CameraInformation {
 class JetsonSubsystem : public frc2::SubsystemBase {
  public:
   JetsonSubsystem();
+
+  // Struct format for ML detection
+  struct MLDetectionFrame {
+    uint8_t label = 0;
+    uint8_t camId = 0;
+    uint32_t timeCaptured;
+    double x;
+    double y;
+    double w;
+    double h;
+  };
+
+  struct AprilTagFrame {
+    uint8_t tagId = -1;
+    uint8_t camId = -1;
+    uint32_t timeCaptured;
+    double tx;
+    double ty;
+    double tz;
+    double rx;
+    double ry;
+    double rz;
+  };
 
   /**
    * Will be called periodically whenever the CommandScheduler runs.
@@ -115,13 +117,23 @@ class JetsonSubsystem : public frc2::SubsystemBase {
    */
   frc::Pose2d AverageRobotPose();
 
+  std::vector<MLDetectionFrame> GetMLDetections();
+
   bool IsPoseAvailable();
+
+  void SetRecording(bool state);
 
   double Min(double val, double min);
 
   double Max(double val, double max);
 
   double Constrain(double val, double floor, double ceiling);
+
+  void ChangeTempCamId(int id);
+
+  void DisableML(int id);
+
+  void EnableML(int id);
 
  private:
   const size_t TAG_FRAME_SIZE = sizeof(AprilTagFrame);
@@ -130,20 +142,23 @@ class JetsonSubsystem : public frc2::SubsystemBase {
 
   std::shared_ptr<nt::NetworkTable> table;
   
+  std::vector<uint8_t> atagDisabled;
   std::vector<uint8_t> requestedTags;
   std::vector<AprilTagFrame> parsedTagData;
   std::vector<TagDetections> jetsonTagDetections; 
 
+  std::vector<uint8_t> mlDisabled;
   std::vector<MLDetectionFrame> mlDetections;
 
   frc::Transform3d camTrans;
   AprilTagFieldLayout field;
 
-  CameraInformation testCam0{0, {0.0_m, -0.371_m, 0.089_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
-  CameraInformation testCam1{1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
-  CameraInformation testCam2{2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
+  int atagCamId = 2;
+  CameraInformation staticATagCam{atagCamId, {0.253_m, -0.165_m, 0.274_m, {0.0_deg, 0.0_deg, 90.0_deg}}};
+  // CameraInformation testCam1{1, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
+  // CameraInformation testCam2{2, {0.0_m, 0.0_m, 0.0_m, {0.0_deg, 0.0_deg, -90.0_deg}}};
 
-  std::vector<CameraInformation> cams{testCam0, testCam1, testCam2};
+  std::vector<CameraInformation> cams{staticATagCam};
 
   Pose2d fieldRelativePose;
 };

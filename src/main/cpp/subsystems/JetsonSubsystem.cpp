@@ -4,6 +4,7 @@
 
 #include "subsystems/JetsonSubsystem/JetsonSubsystem.h"
 
+#include <cstdint>
 #include <iostream>
 
 using namespace frc;
@@ -15,23 +16,34 @@ JetsonSubsystem::JetsonSubsystem() {
   table = nt::NetworkTableInstance::GetDefault().GetTable("jetson");
   field = AprilTagFieldLayout::LoadField(AprilTagField::k2025ReefscapeWelded);
   field.SetOrigin(AprilTagFieldLayout::OriginPosition::kBlueAllianceWallRightSide);
+
   
-  this->AddRequestedTags(std::vector<uint8_t> {6, 7, 8, 9, 10, 11});
+
+  SmartDashboard::PutNumber("AprilTag Camera ID", atagCamId);
+  table->PutBoolean("recordState", false);
+  table->PutBoolean("recordLabelled", false);
+  mlDisabled = table->GetRaw("mlOff", {});
+  atagDisabled = table->GetRaw("aprTagOff", {});
+  
+  this->AddRequestedTags(std::vector<uint8_t> {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22});
 }
 
 void JetsonSubsystem::Periodic() {
   parsedTagData = ParseRawTagInfo(GetRawTagInfo());
   mlDetections = ParseDetections(GetMLInfo());
 
-  for(auto& det : mlDetections) {
-    std::cout << "Found label: " << (int)det.label << std::endl;
-    std::cout << "At: " << det.x << ", " << det.y << std::endl;
-    std::cout << "W: " << det.w << "H: " << det.h << std::endl;
-  }
+  /*for(auto& det : mlDetections) {*/
+  /*  std::cout << "Found label: " << (int)det.label << std::endl;*/
+  /*  std::cout << "At: " << det.x << ", " << det.y << std::endl;*/
+  /*  std::cout << "W: " << det.w << "H: " << det.h << std::endl;*/
+  /*}*/
   jetsonTagDetections = CreateTagVector(parsedTagData);
   fieldRelativePose = AverageRobotPose();  
   
   table->PutRaw("rqsted", requestedTags);
+  table->PutRaw("mlOff", mlDisabled);
+  table->PutRaw("aprTagOff", atagDisabled);
+
   SmartDashboard::PutBoolean("IsPoseAvailable", IsPoseAvailable());
 
   // Debug printouts
@@ -55,49 +67,49 @@ std::vector<uint8_t> JetsonSubsystem::GetMLInfo() {
   return mlBuf;
 }
 
-std::vector<AprilTagFrame> JetsonSubsystem::ParseRawTagInfo(std::vector<uint8_t> rawBuf) {
-  std::vector<AprilTagFrame> tagData = {};
+std::vector<JetsonSubsystem::AprilTagFrame> JetsonSubsystem::ParseRawTagInfo(std::vector<uint8_t> rawBuf) {
+  std::vector<JetsonSubsystem::AprilTagFrame> tagData = {};
   int bufSize = 2;
   if(rawBuf.size() > 2){
     uint8_t* arrayData = &rawBuf[0]; //Turn the recieved vector into an array for memcpy
     bufSize = arrayData[0] + (arrayData[1] << 8); //Bit shift the first two pieces of data which represent the int of how long the buffer is
       for(int i = 2; i < bufSize && i + 1 < bufSize; i++) {
         if(arrayData[i] == 0x69 && arrayData[i + 1] == 0x69) {
-          AprilTagFrame parsedData;
+          JetsonSubsystem::AprilTagFrame parsedData;
           memcpy(&parsedData, arrayData + i + 2, TAG_FRAME_SIZE);
           tagData.push_back(parsedData);
+          i += TAG_FRAME_SIZE - 1;
         }
-        i += TAG_FRAME_SIZE - 1;
       }
   }
     // SmartDashboard::PutNumber("Buffer Length", bufSize);
     return tagData;
 }
 
-std::vector<MLDetectionFrame> JetsonSubsystem::ParseDetections(std::vector<uint8_t> rawBuf) {
-  std::vector<MLDetectionFrame> detData = {};
+std::vector<JetsonSubsystem::MLDetectionFrame> JetsonSubsystem::ParseDetections(std::vector<uint8_t> rawBuf) {
+  std::vector<JetsonSubsystem::MLDetectionFrame> detData = {};
   int bufSize = 2;
   if(rawBuf.size() > 2){
     uint8_t* arrayData = &rawBuf[0]; //Turn the recieved vector into an array for memcpy
     bufSize = arrayData[0] + (arrayData[1] << 8); //Bit shift the first two pieces of data which represent the int of how long the buffer is
       for(int i = 2; i < bufSize && i + 1 < bufSize; i++) {
         if(arrayData[i] == 0x69 && arrayData[i + 1] == 0x69) {
-          MLDetectionFrame parsedData;
+          JetsonSubsystem::MLDetectionFrame parsedData;
           memcpy(&parsedData, arrayData + i + 2, ML_FRAME_SIZE);
           detData.push_back(parsedData);
+          i += ML_FRAME_SIZE - 1;
         }
-        i += ML_FRAME_SIZE - 1;
       }
   }
     // SmartDashboard::PutNumber("Buffer Length", bufSize);
     return detData;
 }
 
-std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<AprilTagFrame> parsedData) {
+std::vector<TagDetections> JetsonSubsystem::CreateTagVector(std::vector<JetsonSubsystem::AprilTagFrame> parsedData) {
   std::vector<TagDetections> finalResult;
   poseAvailable = false;
   for(int i = 0; i < (int)parsedData.size(); i++) {
-    AprilTagFrame tag = parsedData.at(i);
+    JetsonSubsystem::AprilTagFrame tag = parsedData.at(i);
     // Detection confidence calculation
     double angRaw = fabs(tag.rz) / kAngularConfThresh;
     double angularConf = Constrain(1 - pow(fabs(angRaw), kAngularConfCurveExtent), 0.0, 1.0);
@@ -213,6 +225,14 @@ bool JetsonSubsystem::IsPoseAvailable() {
   return poseAvailable;
 }
 
+void JetsonSubsystem::SetRecording(bool state) {
+  table->PutBoolean("recordState", state);
+}
+
+std::vector<JetsonSubsystem::MLDetectionFrame> JetsonSubsystem::GetMLDetections() {
+  return mlDetections;
+}
+
 double JetsonSubsystem::Min(double val, double min) {
   return val < min ? min : val;
 }
@@ -224,3 +244,19 @@ double JetsonSubsystem::Max(double val, double max) {
 double JetsonSubsystem::Constrain(double val, double floor, double ceiling) {
   return Min(Max(val, ceiling), floor);
 }
+
+void JetsonSubsystem::ChangeTempCamId(int id) {
+  atagCamId = id;
+  staticATagCam.camId = atagCamId;
+}
+
+void JetsonSubsystem::DisableML(int id) {
+  uint8_t found = count(mlDisabled.begin(), mlDisabled.end(), id);
+  if(!found) mlDisabled.push_back(id);
+}
+
+void JetsonSubsystem::EnableML(int id) {
+  uint8_t found = count(mlDisabled.begin(), mlDisabled.end(), id);
+  if(found) mlDisabled.erase(std::find(mlDisabled.begin(), mlDisabled.end(), id));
+}
+

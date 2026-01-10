@@ -20,8 +20,8 @@
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/Pigeon2.hpp>
 #include <ctre/phoenix6/CANcoder.hpp>
-
-#include <pathplanner/lib/path/PathConstraints.h>
+#include <ctre/phoenix6/CANBus.hpp>
+#include <frc/AnalogInput.h>
 
 #include <frc/DriverStation.h>
 
@@ -73,6 +73,11 @@ class DriveSubsystem : public frc2::SubsystemBase {
   void SetInverted(bool inverted);
 
   /**
+   * Gets current chassis speeds (real, not target)
+   */
+  frc::ChassisSpeeds GetChassisSpeeds();
+
+  /**
    * Sets the swerve modules to a SwerveModuleState.
    */
   void SetModuleStates(wpi::array<frc::SwerveModuleState, 4> desiredStates, bool desaturate = true);
@@ -86,7 +91,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
    * Generates a command to follow the path passed in.
    */
   frc2::CommandPtr FollowPathCommand(std::string path);
-  frc2::CommandPtr PathGenCommand(frc::Pose2d pose);
+  frc2::CommandPtr PathGenCommand(frc::Pose2d targetPose);
   frc2::CommandPtr Aimbot();
 
   /**
@@ -104,7 +109,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
    *
    * @return the robot's degrees, from -180 to 180
    */
-  units::degree_t GetAngle() const;
+  units::degree_t GetAngle();
 
   /**
    * Zeroes the heading of the robot.
@@ -154,9 +159,19 @@ class DriveSubsystem : public frc2::SubsystemBase {
   void SetBrakeMode(bool state);
 
    /**
-   * Initially configure onboard TalonFX settings for motors.
+   * Initially configure onboard TalonFX settings for the drive motors.
    */
-  void ConfigMotors();
+  void ConfigDriveMotors();
+   
+   /**
+   * Initially configure onboard TalonFX settings for the theta motors & absolute encoders.
+   */
+  void ConfigThetaMotors();
+
+  /**
+   * Configure the drivetrain's autonomous controller.
+   */
+  void ConfigAutonController();
 
    /**
    * Returns the pitch of the robot.
@@ -198,6 +213,26 @@ class DriveSubsystem : public frc2::SubsystemBase {
   void SetOmegaOverride(bool state);
 
   /**
+   * Get whether translation adjust is enabled.
+   */
+  bool GetTransAdjust();
+  
+  /**
+   * Set whether translation adjust is enabled.
+   */
+  void SetTransAdjust(bool state);
+
+  units::meters_per_second_t GetTransXAdjust();
+
+  units::meters_per_second_t GetTransYAdjust();
+
+  /**
+   * Set the translation adjustment speeds
+   */
+  void SetTransXAdjustSpeeds(units::meters_per_second_t vx);
+  void SetTransYAdjustSpeeds(units::meters_per_second_t vy);
+
+  /**
    * Get whether Y override is enabled.
    */
   bool GetYOverride();
@@ -208,6 +243,8 @@ class DriveSubsystem : public frc2::SubsystemBase {
   void SetYOverride(bool state);
 
   bool IsAtTarget();
+
+  double GetWallDistance();
 
   units::length::meter_t GetDistToTarget();
 
@@ -237,6 +274,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
   int *thetaTarget;
 
   bool omegaOverride = false;
+  bool transAdjust = false;
   bool yOverride = false;
   bool targetUsingLimelight = true;
   bool isAtTarget = false;
@@ -246,9 +284,16 @@ class DriveSubsystem : public frc2::SubsystemBase {
  
   frc::Pose2d poseToHold{}; // var to contain target pose
   // PID controllers for turn holding
-  frc::PIDController thetaHoldController{0.045, 0.0, 0.0};
+  frc::PIDController thetaHoldController{0.10, 0.0, 0.0};
+  units::meters_per_second_t txAdjust{0.0_mps};
+  units::meters_per_second_t tyAdjust{0.0_mps};
   int lastTarget = GlobalConstants::kArbitrary;
-  
+
+  // Components (e.g. motor controllers and sensors) should generally be
+  // declared private and exposed only through public methods.
+
+  CANBus canivore;
+
   // The motor controllers
   //Wheel motors
   hardware::TalonFX backLeft;
@@ -262,7 +307,7 @@ class DriveSubsystem : public frc2::SubsystemBase {
   hardware::TalonFX backRightTheta;
   hardware::TalonFX frontRightTheta;
 
-  //Abs encoders
+  //Degree of wheel motors
   hardware::CANcoder blCANCoder;
   hardware::CANcoder flCANCoder;
   hardware::CANcoder brCANCoder;
@@ -277,6 +322,8 @@ class DriveSubsystem : public frc2::SubsystemBase {
   // The gyro sensor
   hardware::Pigeon2 gyro;
 
+  frc::AnalogInput wallSensor;
+
   // Odometry class for tracking robot pose
   frc::SwerveDriveOdometry<4> odometry;
 
@@ -285,10 +332,14 @@ class DriveSubsystem : public frc2::SubsystemBase {
   SlewRateLimiter<units::meters_per_second> yAccel;
   SlewRateLimiter<units::meters_per_second> xDecel;
   SlewRateLimiter<units::meters_per_second> yDecel;
+  SlewRateLimiter<units::meters_per_second> xTransSlewLimiter;
+  SlewRateLimiter<units::meters_per_second> yTransSlewLimiter;
   double lastX = 0.0;
   double lastY = 0.0;
 
+  int distSample = 0;
+  double distArray[kDistSamples];
   units::length::meter_t distFromTarget{0.0_m};
+  double wallDistance = 0.0;
   Field2d fieldWidget;
-  pathplanner::PathConstraints pathConstraints{3.0_mps, 4.0_mps_sq, 540_deg_per_s, 720_deg_per_s_sq};
 };
