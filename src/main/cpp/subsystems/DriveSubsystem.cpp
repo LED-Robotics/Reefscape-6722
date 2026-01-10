@@ -6,36 +6,38 @@
 #include <frc/geometry/Rotation2d.h>
 #include <frc/smartdashboard/Field2d.h>
 #include <frc/smartdashboard/SmartDashboard.h>
-#include <pathplanner/lib/auto/AutoBuilder.h>
-#include <pathplanner/lib/config/RobotConfig.h>
-#include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
-#include <pathplanner/lib/path/PathPlannerPath.h>
+#include <frc2/command/Commands.h>
+// #include <pathplanner/lib/auto/AutoBuilder.h>
+// #include <pathplanner/lib/config/RobotConfig.h>
+// #include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
+// #include <pathplanner/lib/path/PathPlannerPath.h>
 #include <units/velocity.h>
 #include <units/acceleration.h>
 
 
 using namespace frc;
 using namespace rev;
-using namespace pathplanner;
+// using namespace pathplanner;
 
 DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
       //Wheel motors
-    : backLeft{kBackLeftPort, "canCan"},
-      frontLeft{kFrontLeftPort, "canCan"},
-      backRight{kBackRightPort, "canCan"},
-      frontRight{kFrontRightPort, "canCan"},
+    : canivore{"canCan"},
+      backLeft{kBackLeftPort, canivore},
+      frontLeft{kFrontLeftPort, canivore},
+      backRight{kBackRightPort, canivore},
+      frontRight{kFrontRightPort, canivore},
 
       //Degree of wheel motors
-      backLeftTheta{kBackLeftThetaPort, "canCan"},
-      frontLeftTheta{kFrontLeftThetaPort, "canCan"},
-      backRightTheta{kBackRightThetaPort, "canCan"},
-      frontRightTheta{kFrontRightThetaPort, "canCan"},
+      backLeftTheta{kBackLeftThetaPort, canivore},
+      frontLeftTheta{kFrontLeftThetaPort, canivore},
+      backRightTheta{kBackRightThetaPort, canivore},
+      frontRightTheta{kFrontRightThetaPort, canivore},
 
       //Mag encoder motor controllers
-      blCANCoder{kBackLeftEncoderPort, "canCan"},
-      flCANCoder{kFrontLeftEncoderPort, "canCan"},
-      brCANCoder{kBackRightEncoderPort, "canCan"},
-      frCANCoder{kFrontRightEncoderPort, "canCan"},
+      blCANCoder{kBackLeftEncoderPort, canivore},
+      flCANCoder{kFrontLeftEncoderPort, canivore},
+      brCANCoder{kBackRightEncoderPort, canivore},
+      frCANCoder{kFrontRightEncoderPort, canivore},
 
       //Swerve group motors
       s_backLeft{&backLeft, &backLeftTheta},
@@ -43,8 +45,8 @@ DriveSubsystem::DriveSubsystem(JetsonSubsystem *jetRef, int *targetRef)
       s_backRight{&backRight, &backRightTheta},
       s_frontRight{&frontRight, &frontRightTheta},
 
-      //Gryo
-      gyro{0, "canCan"},
+      //Gyro
+      gyro{0, canivore},
 
       wallSensor{kWallSensorPort},
 
@@ -179,16 +181,18 @@ wpi::array<SwerveModuleState, 4> DriveSubsystem::GetModuleStates() const {
 }
 
 frc2::CommandPtr DriveSubsystem::FollowPathCommand(std::string path){
-  auto useablePath = PathPlannerPath::fromPathFile(path);
-  return AutoBuilder::followPath(useablePath);
+  return frc2::cmd::None();
+  // auto useablePath = PathPlannerPath::fromPathFile(path);
+  // return AutoBuilder::followPath(useablePath);
 }
 
 frc2::CommandPtr DriveSubsystem::PathGenCommand(frc::Pose2d targetPose) {
-  return AutoBuilder::pathfindToPose(
-    targetPose,
-    pathplanner::PathConstraints(2.5_mps, 3.0_mps_sq, 360.0_deg_per_s, 720_deg_per_s_sq),
-    0_mps
-  );
+  return frc2::cmd::None();
+  // return AutoBuilder::pathfindToPose(
+  //   targetPose,
+  //   pathplanner::PathConstraints(2.5_mps, 3.0_mps_sq, 360.0_deg_per_s, 720_deg_per_s_sq),
+  //   0_mps
+  // );
 }
 
 void DriveSubsystem::SetDrivePower(double power) {
@@ -428,28 +432,28 @@ void DriveSubsystem::ConfigThetaMotors() {
 }
 
 void DriveSubsystem::ConfigAutonController() {
-  RobotConfig config = RobotConfig::fromGUISettings();
-  AutoBuilder::configure(
-      [this](){ return GetPose(); }, // Robot pose supplier
-      [this](frc::Pose2d pose){ odometry.ResetPose(pose); }, // Method to reset odometry (will be called if your auto has a starting pose)
-      [this](){ return kDriveKinematics.ToChassisSpeeds(GetModuleStates()); }, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-      [this](auto speeds, auto feedforwards){ Drive(speeds); }, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
-      std::make_shared<PPHolonomicDriveController>( // PPHolonomicController is the built in path following controller for holonomic drive trains
-          PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-          PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
-      ),
-      config, // The robot configuration
-      []() {
-          // Boolean supplier that controls when the path will be mirrored for the red alliance
-          // This will flip the path being followed to the red side of the field.
-          // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-          /*auto alliance = DriverStation::GetAlliance();*/
-          /*if (alliance) {*/
-          /*    return false; // Disabled auto path flipping*/
-          /*}*/
-          return false;
-      },
-      this // Reference to this subsystem to set requirements
-  );
+  // RobotConfig config = RobotConfig::fromGUISettings();
+  // AutoBuilder::configure(
+  //     [this](){ return GetPose(); }, // Robot pose supplier
+  //     [this](frc::Pose2d pose){ odometry.ResetPose(pose); }, // Method to reset odometry (will be called if your auto has a starting pose)
+  //     [this](){ return kDriveKinematics.ToChassisSpeeds(GetModuleStates()); }, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+  //     [this](auto speeds, auto feedforwards){ Drive(speeds); }, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+  //     std::make_shared<PPHolonomicDriveController>( // PPHolonomicController is the built in path following controller for holonomic drive trains
+  //         PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+  //         PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+  //     ),
+  //     config, // The robot configuration
+  //     []() {
+  //         // Boolean supplier that controls when the path will be mirrored for the red alliance
+  //         // This will flip the path being followed to the red side of the field.
+  //         // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+  //
+  //         /*auto alliance = DriverStation::GetAlliance();*/
+  //         /*if (alliance) {*/
+  //         /*    return false; // Disabled auto path flipping*/
+  //         /*}*/
+  //         return false;
+  //     },
+  //     this // Reference to this subsystem to set requirements
+  // );
 }
